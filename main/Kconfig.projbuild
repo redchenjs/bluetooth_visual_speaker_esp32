@@ -1,0 +1,9 @@
+menu "Bluetooth Configuration"
+
+config BT_NAME
+    string "Bluetooth Name"
+	default "ESP_SPEAKER"
+	help
+		Bluetooth name exposed by the device.
+
+endmenu
