@@ -5,8 +5,7 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include "freertos/FreeRTOSConfig.h"
-
+#include "freertos/FreeRTOS.h"
 #include "esp_bt.h"
 #include "esp_bt_main.h"
 #include "nvs_flash.h"
