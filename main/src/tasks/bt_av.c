@@ -5,9 +5,6 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "esp_log.h"

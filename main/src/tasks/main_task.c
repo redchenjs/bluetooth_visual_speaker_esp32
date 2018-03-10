@@ -5,11 +5,9 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include "freertos/FreeRTOSConfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include "tasks/main_task.h"
 #include "tasks/bt_speaker.h"
 #include "tasks/led_indicator.h"
 

@@ -5,15 +5,10 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include <stdint.h>
 #include <string.h>
-#include <stdbool.h>
 
-#include "freertos/xtensa_api.h"
-#include "freertos/FreeRTOSConfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
-#include "freertos/task.h"
 #include "esp_log.h"
 
 #include "tasks/bt_av.h"
