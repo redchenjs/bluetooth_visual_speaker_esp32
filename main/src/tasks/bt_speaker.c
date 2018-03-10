@@ -70,6 +70,7 @@ void bt_speaker_task(void *arg)
     bt_speaker_task_queue = xQueueCreate(10, sizeof(bt_app_msg_t));
     /* Bluetooth device name, connection mode and profile set up */
     bt_speaker_work_dispatch(bt_av_hdl_stack_evt, BT_AV_EVT_STACK_UP, NULL, 0, NULL);
+    ESP_LOGI(TAG, "\"%s\"", CONFIG_BT_NAME);
     bt_app_msg_t msg;
     while (1) {
         if (pdTRUE == xQueueReceive(bt_speaker_task_queue, &msg, portMAX_DELAY)) {

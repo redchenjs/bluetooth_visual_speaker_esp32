@@ -20,6 +20,8 @@
 
 #include "tasks/bt_av.h"
 #include "tasks/bt_speaker.h"
+#include "tasks/mp3_player.h"
+#include "tasks/oled_display.h"
 #include "tasks/led_indicator.h"
 
 #define TAG "bt_av"
@@ -94,13 +96,12 @@ void bt_av_hdl_stack_evt(uint16_t event, void *p_param)
     ESP_LOGD(TAG, "%s evt %d", __func__, event);
     switch (event) {
     case BT_AV_EVT_STACK_UP:
-        ESP_LOGI(TAG, "starting \"%s\"", CONFIG_BT_NAME);
         /* set up device name */
         esp_bt_dev_set_device_name(CONFIG_BT_NAME);
 
         /* initialize A2DP sink */
         esp_a2d_register_callback(&bt_av_a2d_cb);
-        esp_a2d_sink_register_data_callback(bt_av_a2d_data_cb);
+        esp_a2d_register_data_callback(bt_av_a2d_data_cb);
         esp_a2d_sink_init();
 
         /* initialize AVRCP controller */
@@ -127,19 +128,26 @@ void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         ESP_LOGI(TAG, "a2dp conn_stat evt: state %d, [%02x:%02x:%02x:%02x:%02x:%02x]",
              a2d->conn_stat.state, bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         if (ESP_A2D_CONNECTION_STATE_CONNECTED == a2d->conn_stat.state) {
+            oled_display_show_image(1);
             led_indicator_set_mode(3);
+            mp3_player_play_file(0);
         } else if (ESP_A2D_CONNECTION_STATE_DISCONNECTED == a2d->conn_stat.state) {
-            led_indicator_set_mode(5);
+            oled_display_show_image(0);
+            led_indicator_set_mode(7);
+            mp3_player_play_file(1);
         }
         break;
     case ESP_A2D_AUDIO_STATE_EVT:
         a2d = (esp_a2d_cb_param_t *)(p_param);
         ESP_LOGI(TAG, "a2dp audio_stat evt: state %d", a2d->audio_stat.state);
         if (ESP_A2D_AUDIO_STATE_STARTED == a2d->audio_stat.state) {
+            oled_display_show_image(3);
             led_indicator_set_mode(1);
         } else if (ESP_A2D_AUDIO_STATE_REMOTE_SUSPEND == a2d->audio_stat.state){
+            oled_display_show_image(2);
             led_indicator_set_mode(2);
         } else if (ESP_A2D_AUDIO_STATE_STOPPED == a2d->audio_stat.state){
+            oled_display_show_image(1);
             led_indicator_set_mode(3);
         }
         break;
@@ -157,7 +165,7 @@ void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             } else if (oct0 & (0x01 << 4)) {
                 sample_rate = 48000;
             }
-            i2s_set_clk(0, sample_rate, 16, 2);
+            set_dac_sample_rate(sample_rate);
 
             ESP_LOGI(TAG, "configure audio player %x-%x-%x-%x",
                      a2d->audio_cfg.mcc.cie.sbc[0],
