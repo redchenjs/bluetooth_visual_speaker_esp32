@@ -15,7 +15,7 @@
 
 #include "driver/i2s.h"
 
-#include "tasks/main_task.h"
+#include "system/event.h"
 #include "tasks/mp3_player.h"
 
 #define TAG "mp3_player"

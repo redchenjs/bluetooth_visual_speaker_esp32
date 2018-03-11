@@ -19,9 +19,9 @@
 #include "driver/i2s.h"
 
 #include "tasks/bt_av.h"
-#include "tasks/bt_speaker.h"
+#include "tasks/gui_task.h"
 #include "tasks/mp3_player.h"
-#include "tasks/oled_display.h"
+#include "tasks/bt_speaker.h"
 #include "tasks/led_indicator.h"
 
 #define TAG "bt_av"
@@ -128,26 +128,26 @@ void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         ESP_LOGI(TAG, "a2dp conn_stat evt: state %d, [%02x:%02x:%02x:%02x:%02x:%02x]",
              a2d->conn_stat.state, bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         if (ESP_A2D_CONNECTION_STATE_CONNECTED == a2d->conn_stat.state) {
-            oled_display_show_image(1);
-            led_indicator_set_mode(3);
+            gui_show_image(1);
             mp3_player_play_file(0);
+            led_indicator_set_mode(3);
         } else if (ESP_A2D_CONNECTION_STATE_DISCONNECTED == a2d->conn_stat.state) {
-            oled_display_show_image(0);
-            led_indicator_set_mode(7);
+            gui_show_image(0);
             mp3_player_play_file(1);
+            led_indicator_set_mode(7);
         }
         break;
     case ESP_A2D_AUDIO_STATE_EVT:
         a2d = (esp_a2d_cb_param_t *)(p_param);
         ESP_LOGI(TAG, "a2dp audio_stat evt: state %d", a2d->audio_stat.state);
         if (ESP_A2D_AUDIO_STATE_STARTED == a2d->audio_stat.state) {
-            oled_display_show_image(3);
+            gui_show_image(3);
             led_indicator_set_mode(1);
         } else if (ESP_A2D_AUDIO_STATE_REMOTE_SUSPEND == a2d->audio_stat.state){
-            oled_display_show_image(2);
+            gui_show_image(2);
             led_indicator_set_mode(2);
         } else if (ESP_A2D_AUDIO_STATE_STOPPED == a2d->audio_stat.state){
-            oled_display_show_image(1);
+            gui_show_image(1);
             led_indicator_set_mode(3);
         }
         break;
