@@ -24,12 +24,13 @@
 #define SSD1331_GPIO_PIN_RST  14
 
 #define SSD1331_PIN_SET()   do { \
-                                gpio_set_level(SSD1331_GPIO_PIN_DC, 0);\
+                                gpio_set_level(SSD1331_GPIO_PIN_DC,  0);\
                                 gpio_set_level(SSD1331_GPIO_PIN_RST, 0);\
                                 gpio_set_direction(SSD1331_GPIO_PIN_DC,  GPIO_MODE_OUTPUT);\
                                 gpio_set_direction(SSD1331_GPIO_PIN_RST, GPIO_MODE_OUTPUT);\
-                                vTaskDelay(500 / portTICK_PERIOD_MS);\
+                                vTaskDelay(100 / portTICK_PERIOD_MS);\
                                 gpio_set_level(SSD1331_GPIO_PIN_RST, 1);\
+                                vTaskDelay(100 / portTICK_PERIOD_MS);\
                             } while (0)
 
 #define SSD1331_DC_SET()    do {\
@@ -604,7 +605,7 @@ void ssd1331_init(void)
     // ssd1331_write_byte(SET_BUILTIN_LINEAR_LUT, SSD1331_CMD);    // Default
     ssd1331_set_gray_scale_table();                             // Set Pulse Width for Gray Scale Table
 
-    ssd1331_clear_gram();
+    // ssd1331_clear_gram();
 
     ssd1331_write_byte(SET_DISPLAY_ON_NORMAL, SSD1331_CMD);     // Display On
 }
