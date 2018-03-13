@@ -57,6 +57,47 @@
 /* Driver exported functions.                                                */
 /*===========================================================================*/
 
+static const uint8_t init_data[] = {
+	SSD1331_DISPLAY_OFF,
+	SSD1331_START_LINE, 0x00,
+	SSD1331_COM_OFFSET, 0x00,
+	SSD1331_PIXELS_NORMAL,
+	SSD1331_MULTIPLEX, 0x3F,
+	SSD1331_RESET, SSD1331_RESET_OFF,
+	SSD1331_POWER, SSD1331_POWER_ON,
+	SSD1331_PHASE_PERIOD, 0x31,
+	SSD1331_CLOCKS, 0xF0,
+	SSD1331_PRECHARGE_A, 0x64,
+	SSD1331_PRECHARGE_B, 0x78,
+	SSD1331_PRECHARGE_C, 0x64,
+	SSD1331_PRECHARGE_VOLTAGE, 0x3A,
+	SSD1331_DESELECT_VOLTAGE, 0x3E,
+	SSD1331_CONTRAST_A, 0x91,
+	SSD1331_CONTRAST_B, 0x50,
+	SSD1331_CONTRAST_C, 0x7D,
+	SSD1331_BRIGHTNESS, (GDISP_INITIAL_BACKLIGHT*10)/63,
+	#if GDISP_LLD_PIXELFORMAT == GDISP_PIXELFORMAT_RGB565
+		SSD1331_MODE, SSD1331_MODE_16_BIT|SSD1331_MODE_COM_SPLIT|SSD1331_MODE_COLUMN_REVERSE|SSD1331_MODE_COM_REVERSE,
+	#elif GDISP_LLD_PIXELFORMAT == GDISP_PIXELFORMAT_BGR565
+		SSD1331_MODE, SSD1331_MODE_16_BIT|SSD1331_MODE_COM_SPLIT|SSD1331_MODE_BGRSSD1331_MODE_COLUMN_REVERSE|SSD1331_MODE_COM_REVERSE,
+	#elif GDISP_LLD_PIXELFORMAT == GDISP_PIXELFORMAT_RGB332
+		SSD1331_MODE, SSD1331_MODE_8_BIT|SSD1331_MODE_COM_SPLITSSD1331_MODE_COLUMN_REVERSE|SSD1331_MODE_COM_REVERSE,
+	#elif GDISP_LLD_PIXELFORMAT == GDISP_PIXELFORMAT_BGR332
+		SSD1331_MODE, SSD1331_MODE_8_BIT|SSD1331_MODE_COM_SPLIT|SSD1331_MODE_BGRSSD1331_MODE_COLUMN_REVERSE|SSD1331_MODE_COM_REVERSE,
+	#else
+		#error "SSD1331: Invalid color format"
+	#endif
+	SSD1331_DRAW_MODE, SSD1331_DRAW_FILLRECT
+};
+
+static const uint8_t gray_scale_table[] = {
+	SSD1331_GRAYSCALE,
+    0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E, 0x10,
+	0x12, 0x15, 0x19, 0x1D, 0x21, 0x25, 0x2A, 0x30,
+	0x36, 0x3C, 0x42, 0x48, 0x50, 0x58, 0x60, 0x68,
+	0x70, 0x78, 0x82, 0x8C, 0x96, 0xA0, 0xAA, 0xB4
+};
+
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	g->priv = gfxAlloc(GDISP_SCREEN_HEIGHT * GDISP_SCREEN_WIDTH * 2);
 	if (g->priv == NULL) {
@@ -69,6 +110,20 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 
 	// Initialise the board interface
 	init_board(g);
+
+	// Hardware reset
+	setpin_reset(g, TRUE);
+	gfxSleepMilliseconds(20);
+	setpin_reset(g, FALSE);
+	gfxSleepMilliseconds(20);
+
+	for(int i=0;i<sizeof(init_data);i++)
+		write_cmd(g, init_data[i]);
+
+	for(int i=0;i<sizeof(gray_scale_table);i++)
+		write_cmd(g, gray_scale_table[i]);
+
+	write_cmd(g, SSD1331_DISPLAY_ON);
 
 	/* Initialise the GDISP structure */
 	g->g.Width = GDISP_SCREEN_WIDTH;

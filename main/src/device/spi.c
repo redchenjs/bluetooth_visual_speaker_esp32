@@ -6,11 +6,9 @@
  */
 
 #include "driver/spi_master.h"
+#include "driver/ssd1331.h"
 
 spi_device_handle_t spi1;
-spi_transaction_t spi1_t;
-
-extern void (*spi1_pre_transfer_callback)(spi_transaction_t *);
 
 void spi1_init(void)
 {
@@ -29,7 +27,7 @@ void spi1_init(void)
         .mode=0,                                //SPI mode 0
         .spics_io_num=27,                       //CS pin
         .queue_size=3,                          //We want to be able to queue 3 transactions at a time
-        .pre_cb=spi1_pre_transfer_callback,     //Specify pre-transfer callback to handle D/C line
+        .pre_cb=ssd1331_setpin_dc,              //Specify pre-transfer callback to handle D/C line
     };
     //Initialize the SPI bus
     ret=spi_bus_initialize(HSPI_HOST, &buscfg, 1);

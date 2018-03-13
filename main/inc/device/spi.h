@@ -11,7 +11,6 @@
 #include "driver/spi_master.h"
 
 extern spi_device_handle_t spi1;
-extern spi_transaction_t spi1_t;
 
 extern void spi1_init(void);
 
