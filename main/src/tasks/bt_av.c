@@ -146,9 +146,13 @@ void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         } else if (ESP_A2D_AUDIO_STATE_REMOTE_SUSPEND == a2d->audio_stat.state){
             gui_show_image(2);
             led_indicator_set_mode(2);
+            // avoid noise
+            i2s_zero_dma_buffer(0);
         } else if (ESP_A2D_AUDIO_STATE_STOPPED == a2d->audio_stat.state){
             gui_show_image(1);
             led_indicator_set_mode(3);
+            // avoid noise
+            i2s_zero_dma_buffer(0);
         }
         break;
     case ESP_A2D_AUDIO_CFG_EVT:
