@@ -16,13 +16,13 @@
 typedef struct fbInfo {
 	void *			pixels;			// The pixel buffer
 	coord_t			linelen;		// The number of bytes per display line
-	} fbInfo;
+} fbInfo;
 
 #include "board_framebuffer.h"
 
 typedef struct fbPriv {
 	fbInfo			fbi;			// Display information
-	} fbPriv;
+} fbPriv;
 
 /*===========================================================================*/
 /* Driver local routines    .                                                */

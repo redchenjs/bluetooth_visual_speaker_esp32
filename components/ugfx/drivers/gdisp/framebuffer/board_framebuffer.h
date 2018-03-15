@@ -5,13 +5,8 @@
  *              http://ugfx.org/license.html
  */
 
-// Set this to your frame buffer pixel format.
-#ifndef GDISP_LLD_PIXELFORMAT
-	#define GDISP_LLD_PIXELFORMAT		GDISP_PIXELFORMAT_BGR888
-#endif
-
-// Uncomment this if your frame buffer device requires flushing
-//#define GDISP_HARDWARE_FLUSH		TRUE
+#ifndef _GDISP_LLD_BOARD_H
+#define _GDISP_LLD_BOARD_H
 
 #ifdef GDISP_DRIVER_VMT
 
@@ -53,5 +48,7 @@
 			(void) pwr;
 		}
 	#endif
+
+#endif
 
 #endif /* GDISP_LLD_BOARD_IMPLEMENTATION */
