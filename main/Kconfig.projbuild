@@ -1,9 +1,50 @@
-menu "Bluetooth Configuration"
+menu "Bluetooth Speaker Configuration"
 
 config BT_NAME
     string "Bluetooth Name"
 	default "ESP_SPEAKER"
 	help
 		Bluetooth name exposed by the device.
+
+choice I2S_OUTPUT
+    prompt "I2S Output"
+    default I2S_OUTPUT_EXTERNAL_I2S
+    help
+        Select to use Internal DAC or External I2S CODEC
+
+config I2S_OUTPUT_INTERNAL_DAC
+    bool "Internal DAC"
+    help
+        Select this to use Internal DAC output
+
+config I2S_OUTPUT_EXTERNAL_I2S
+    bool "External I2S CODEC"
+    help
+        Select this to use External I2S output
+
+endchoice
+
+choice OLED_PANEL
+    prompt "OLED Panel"
+    default OLED_PANEL_NONE
+    help
+        Select to use which OLED Panel
+
+config OLED_PANEL_NONE
+    bool "None OLED Panel"
+    help
+        Select this to disable GUI
+
+config OLED_PANEL_SSD1331
+    bool "SSD1331 96x64 OLED Panel"
+    help
+        Select this to use SSD1331 96x64 OLED Panel
+
+config OLED_PANEL_SSD1351
+    bool "SSD1351 128x128 OLED Panel"
+    help
+        Select this to use SSD1351 128x128 OLED Panel
+
+endchoice
 
 endmenu
