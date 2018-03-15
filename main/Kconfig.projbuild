@@ -1,4 +1,4 @@
-menu "Bluetooth Speaker Configuration"
+menu "Bluetooth Speaker"
 
 config BT_NAME
     string "Bluetooth Name"
