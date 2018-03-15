@@ -23,16 +23,16 @@ void spi1_init(void)
         .max_transfer_sz=96*64*2
     };
     spi_device_interface_config_t devcfg={
-        .clock_speed_hz=26000000,               //Clock out at 26 MHz
-        .mode=0,                                //SPI mode 0
-        .spics_io_num=27,                       //CS pin
-        .queue_size=3,                          //We want to be able to queue 3 transactions at a time
-        .pre_cb=ssd1331_setpin_dc,              //Specify pre-transfer callback to handle D/C line
+        .clock_speed_hz=20000000,               // Clock out at 20 MHz
+        .mode=0,                                // SPI mode 0
+        .spics_io_num=27,                       // CS pin
+        .queue_size=3,                          // We want to be able to queue 3 transactions at a time
+        .pre_cb=ssd1331_setpin_dc,              // Specify pre-transfer callback to handle D/C line
     };
-    //Initialize the SPI bus
+    // Initialize the SPI bus
     ret=spi_bus_initialize(HSPI_HOST, &buscfg, 1);
     assert(ret==ESP_OK);
-    //Attach the LCD to the SPI bus
+    // Attach the LCD to the SPI bus
     ret=spi_bus_add_device(HSPI_HOST, &devcfg, &spi1);
     assert(ret==ESP_OK);
 }
