@@ -175,7 +175,7 @@
 //        #define GDISP_HARDWARE_QUERY                 FALSE
 //        #define GDISP_HARDWARE_CLIP                  FALSE
 
-       #define GDISP_PIXELFORMAT                     GDISP_PIXELFORMAT_RGB888
+       #define GDISP_PIXELFORMAT                     GDISP_PIXELFORMAT_RGB565
    #endif
 
 //#define GDISP_USE_GFXNET                             FALSE
