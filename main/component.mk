@@ -9,4 +9,4 @@
 
 COMPONENT_SRCDIRS := src src/tasks src/system src/driver src/device
 COMPONENT_ADD_INCLUDEDIRS := inc
-COMPONENT_EMBED_FILES := res/snd/snd0.mp3 res/snd/snd1.mp3 res/ani/ani0.gif res/ani/ani1.gif res/ani/ani2.gif res/ani/ani3.gif
+COMPONENT_EMBED_FILES := res/snd/snd0.mp3 res/snd/snd1.mp3 res/ani/ani0_96x64.gif res/ani/ani1_96x64.gif res/ani/ani2_96x64.gif res/ani/ani3_96x64.gif res/ani/ani0_128x128.gif res/ani/ani1_128x128.gif res/ani/ani2_128x128.gif res/ani/ani3_128x128.gif

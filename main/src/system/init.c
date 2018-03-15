@@ -16,7 +16,9 @@
 void device_init(void)
 {
     bt0_init();
+#if defined(CONFIG_OLED_PANEL_SSD1331) || defined(CONFIG_OLED_PANEL_SSD1351)
     spi1_init();
+#endif
     i2s0_init();
     gpio0_init();
     spiffs0_init();

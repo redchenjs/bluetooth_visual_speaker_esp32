@@ -14,21 +14,30 @@
 #define TAG "gui_task"
 
 static const uint8_t *img_file_ptr[][2] = {
-                                            {ani0_gif_ptr, ani0_gif_end}, // "Bluetooth"
-                                            {ani1_gif_ptr, ani1_gif_end}, // "Standby"
-                                            {ani2_gif_ptr, ani2_gif_end}, // "Pause"
-                                            {ani3_gif_ptr, ani3_gif_end}  // "Playing"
+#if defined(CONFIG_OLED_PANEL_SSD1331)
+                                            {ani0_96x64_gif_ptr, ani0_96x64_gif_end}, // "Bluetooth"
+                                            {ani1_96x64_gif_ptr, ani1_96x64_gif_end}, // "Standby"
+                                            {ani2_96x64_gif_ptr, ani2_96x64_gif_end}, // "Pause"
+                                            {ani3_96x64_gif_ptr, ani3_96x64_gif_end}  // "Playing"
+#elif defined(CONFIG_OLED_PANEL_SSD1351)
+                                            {ani0_128x128_gif_ptr, ani0_128x128_gif_end}, // "Bluetooth"
+                                            {ani1_128x128_gif_ptr, ani1_128x128_gif_end}, // "Standby"
+                                            {ani2_128x128_gif_ptr, ani2_128x128_gif_end}, // "Pause"
+                                            {ani3_128x128_gif_ptr, ani3_128x128_gif_end}  // "Playing"
+#endif
                                          };
 uint8_t img_file_index = 0;
 
 void gui_show_image(uint8_t filename_index)
 {
+#if defined(CONFIG_OLED_PANEL_SSD1331) || defined(CONFIG_OLED_PANEL_SSD1351)
     if (filename_index >= (sizeof(img_file_ptr) / 2)) {
         ESP_LOGE(TAG, "invalid filename index");
         return;
     }
     img_file_index = filename_index;
     xEventGroupSetBits(task_event_group, GUI_RELOAD_BIT);
+#endif
 }
 
 void gui_task(void *pvParameter)

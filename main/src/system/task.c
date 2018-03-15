@@ -15,7 +15,9 @@
 
 void task_init(void)
 {
+#if defined(CONFIG_OLED_PANEL_SSD1331) || defined(CONFIG_OLED_PANEL_SSD1351)
     xTaskCreate(gui_task, "gui_task", 2048, NULL, 5, NULL);
+#endif
     xTaskCreate(mp3_player_task, "mp3_player_task", 8192, NULL, 5, NULL);
     xTaskCreate(bt_speaker_task, "bt_speaker_task", 2560, NULL, 5, NULL);
     xTaskCreate(led_indicator_task, "led_indicator_task", 1024, NULL, 5, NULL);

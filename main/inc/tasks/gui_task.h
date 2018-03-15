@@ -10,18 +10,33 @@
 
 #include <stdint.h>
 
-// ani0.gif
-extern const uint8_t ani0_gif_ptr[] asm("_binary_ani0_gif_start");
-extern const uint8_t ani0_gif_end[] asm("_binary_ani0_gif_end");
-// ani1.gif
-extern const uint8_t ani1_gif_ptr[] asm("_binary_ani1_gif_start");
-extern const uint8_t ani1_gif_end[] asm("_binary_ani1_gif_end");
-// ani2.gif
-extern const uint8_t ani2_gif_ptr[] asm("_binary_ani2_gif_start");
-extern const uint8_t ani2_gif_end[] asm("_binary_ani2_gif_end");
-// ani3.gif
-extern const uint8_t ani3_gif_ptr[] asm("_binary_ani3_gif_start");
-extern const uint8_t ani3_gif_end[] asm("_binary_ani3_gif_end");
+#if defined(CONFIG_OLED_PANEL_SSD1331)
+// ani0_96x64.gif
+extern const uint8_t ani0_96x64_gif_ptr[] asm("_binary_ani0_96x64_gif_start");
+extern const uint8_t ani0_96x64_gif_end[] asm("_binary_ani0_96x64_gif_end");
+// ani1_96x64.gif
+extern const uint8_t ani1_96x64_gif_ptr[] asm("_binary_ani1_96x64_gif_start");
+extern const uint8_t ani1_96x64_gif_end[] asm("_binary_ani1_96x64_gif_end");
+// ani2_96x64.gif
+extern const uint8_t ani2_96x64_gif_ptr[] asm("_binary_ani2_96x64_gif_start");
+extern const uint8_t ani2_96x64_gif_end[] asm("_binary_ani2_96x64_gif_end");
+// ani3_96x64.gif
+extern const uint8_t ani3_96x64_gif_ptr[] asm("_binary_ani3_96x64_gif_start");
+extern const uint8_t ani3_96x64_gif_end[] asm("_binary_ani3_96x64_gif_end");
+#elif defined(CONFIG_OLED_PANEL_SSD1351)
+// ani0_128x128.gif
+extern const uint8_t ani0_128x128_gif_ptr[] asm("_binary_ani0_128x128_gif_start");
+extern const uint8_t ani0_128x128_gif_end[] asm("_binary_ani0_128x128_gif_end");
+// ani1_128x128.gif
+extern const uint8_t ani1_128x128_gif_ptr[] asm("_binary_ani1_128x128_gif_start");
+extern const uint8_t ani1_128x128_gif_end[] asm("_binary_ani1_128x128_gif_end");
+// ani2_128x128.gif
+extern const uint8_t ani2_128x128_gif_ptr[] asm("_binary_ani2_128x128_gif_start");
+extern const uint8_t ani2_128x128_gif_end[] asm("_binary_ani2_128x128_gif_end");
+// ani3_128x128.gif
+extern const uint8_t ani3_128x128_gif_ptr[] asm("_binary_ani3_128x128_gif_start");
+extern const uint8_t ani3_128x128_gif_end[] asm("_binary_ani3_128x128_gif_end");
+#endif
 
 extern void gui_show_image(uint8_t filename_index);
 extern void gui_task(void *pvParameter);
