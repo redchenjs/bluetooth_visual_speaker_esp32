@@ -23,7 +23,7 @@ void i2s0_init(void)
         .bits_per_sample = 16,                                              
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
         .communication_format = I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB,
-        .dma_buf_count = 32,
+        .dma_buf_count = 8,
         .dma_buf_len = 64,
         .use_apll = use_apll,
         .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1                                // Interrupt level 1
