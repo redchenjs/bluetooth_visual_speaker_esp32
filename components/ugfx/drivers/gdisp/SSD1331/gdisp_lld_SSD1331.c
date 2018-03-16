@@ -100,7 +100,7 @@ static const uint8_t gray_scale_table[] = {
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 	g->priv = gfxAlloc(GDISP_SCREEN_HEIGHT * GDISP_SCREEN_WIDTH * 2);
 	if (g->priv == NULL) {
-		return FALSE;
+		gfxHalt("GDISP SSD1331: Failed to allocate private memory");
 	}
 
 	for(int i=0; i < GDISP_SCREEN_HEIGHT * GDISP_SCREEN_WIDTH * 2; i++) {
