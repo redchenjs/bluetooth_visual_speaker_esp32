@@ -54,7 +54,43 @@ void bt_av_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 /* cb with decoded samples */
 void bt_av_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
-    i2s_write_bytes(0, (const char *)data, len, portMAX_DELAY);
+    TickType_t max_wait = 20 / portTICK_PERIOD_MS;
+#if defined(CONFIG_I2S_OUTPUT_INTERNAL_DAC)
+    uint8_t num_channel = 2;
+    uint8_t bytes_per_sample = sizeof(uint8_t) * 2;     // 16-bit per channel
+    uint8_t stride = bytes_per_sample * num_channel;
+
+    // pointer to left / right sample position
+    char *ptr_l = (char *)data;
+    char *ptr_r = (char *)data + stride;
+
+    int bytes_pushed = 0;
+    for (int i = 0; i < len/stride; i++) {
+        // assume 16 bit src bit_depth
+        short left  = *(short *) ptr_l;
+        short right = *(short *) ptr_r;
+
+        // The built-in DAC wants unsigned samples, so we shift the range
+        // from -32768-32767 to 0-65535.
+        left  = left  + 0x8000;
+        right = right + 0x8000;
+
+        uint32_t sample = (uint16_t) left;
+        sample = (sample << 16 & 0xffff0000) | ((uint16_t) right);
+
+        bytes_pushed = i2s_push_sample(0, (const char*) &sample, max_wait);
+
+        // DMA buffer full - retry
+        if (bytes_pushed == 0) {
+            i--;
+        } else {
+            ptr_r += stride;
+            ptr_l += stride;
+        }
+    }
+#else
+    i2s_write_bytes(0, (const char *)data, len, max_wait);
+#endif
 }
 
 void bt_av_rc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t *param)

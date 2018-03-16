@@ -84,6 +84,8 @@ err:
 /* render callback for the libmad synth */
 void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels)
 {
+    TickType_t max_wait = 20 / portTICK_PERIOD_MS;
+
     // pointer to left / right sample position
     char *ptr_l = (char*) sample_buff_ch0;
     char *ptr_r = (char*) sample_buff_ch1;
@@ -94,12 +96,26 @@ void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num
     }
 
     int bytes_pushed = 0;
-    TickType_t max_wait = 20 / portTICK_PERIOD_MS; // portMAX_DELAY = bad idea
     for (int i = 0; i < num_samples; i++) {
+#if defined(CONFIG_I2S_OUTPUT_INTERNAL_DAC)
+        // assume 16 bit src bit_depth
+        short left  = *(short *) ptr_l;
+        short right = *(short *) ptr_r;
+
+        // The built-in DAC wants unsigned samples, so we shift the range
+        // from -32768-32767 to 0-65535.
+        left  = left  + 0x8000;
+        right = right + 0x8000;
+
+        uint32_t sample = (uint16_t) left;
+        sample = (sample << 16 & 0xffff0000) | ((uint16_t) right);
+
+        bytes_pushed = i2s_push_sample(0, (const char*) &sample, max_wait);
+#else
         /* low - high / low - high */
         const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]};
         bytes_pushed = i2s_push_sample(0, (const char*) &samp32, max_wait);
-
+#endif
         // DMA buffer full - retry
         if (bytes_pushed == 0) {
             i--;
