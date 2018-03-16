@@ -7,13 +7,13 @@
 
 #include "gdriver.c"
 
-#if defined(CONFIG_OLED_PANEL_SSD1331)
+#if defined(CONFIG_SCREEN_PANEL_SSD1331)
 
 #undef GDISP_DRIVER_LIST
 #define GDISP_DRIVER_LIST GDISPVMT_SSD1331
 #include "../../drivers/gdisp/SSD1331/gdisp_lld_SSD1331.c"
 
-#elif defined(CONFIG_OLED_PANEL_SSD1351)
+#elif defined(CONFIG_SCREEN_PANEL_SSD1351)
 
 #undef GDISP_DRIVER_LIST
 #define GDISP_DRIVER_LIST GDISPVMT_SSD1351

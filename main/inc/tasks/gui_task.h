@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#if defined(CONFIG_OLED_PANEL_SSD1331)
+#if defined(CONFIG_SCREEN_PANEL_SSD1331)
 // ani0_96x64.gif
 extern const uint8_t ani0_96x64_gif_ptr[] asm("_binary_ani0_96x64_gif_start");
 extern const uint8_t ani0_96x64_gif_end[] asm("_binary_ani0_96x64_gif_end");
@@ -23,7 +23,7 @@ extern const uint8_t ani2_96x64_gif_end[] asm("_binary_ani2_96x64_gif_end");
 // ani3_96x64.gif
 extern const uint8_t ani3_96x64_gif_ptr[] asm("_binary_ani3_96x64_gif_start");
 extern const uint8_t ani3_96x64_gif_end[] asm("_binary_ani3_96x64_gif_end");
-#elif defined(CONFIG_OLED_PANEL_SSD1351)
+#elif defined(CONFIG_SCREEN_PANEL_SSD1351)
 // ani0_128x128.gif
 extern const uint8_t ani0_128x128_gif_ptr[] asm("_binary_ani0_128x128_gif_start");
 extern const uint8_t ani0_128x128_gif_end[] asm("_binary_ani0_128x128_gif_end");
