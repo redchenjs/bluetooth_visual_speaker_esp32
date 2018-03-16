@@ -1,5 +1,5 @@
 /*
- * ssd1331.c
+ * ssd1331.h
  *
  *  Created on: 2018-02-10 15:55
  *      Author: Jack Chen <redchenjs@live.com>

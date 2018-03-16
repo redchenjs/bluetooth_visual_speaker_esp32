@@ -1,5 +1,5 @@
 /*
- * ssd1351.c
+ * ssd1351.h
  *
  *  Created on: 2018-03-14 18:04
  *      Author: Jack Chen <redchenjs@live.com>
