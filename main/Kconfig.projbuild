@@ -10,12 +10,17 @@ choice I2S_OUTPUT
     prompt "I2S Output"
     default I2S_OUTPUT_EXTERNAL_I2S
     help
-        Select to use Internal DAC or External I2S CODEC
+        Select to use which output interface
 
 config I2S_OUTPUT_INTERNAL_DAC
     bool "Internal DAC"
     help
         Select this to use Internal DAC output
+
+config I2S_OUTPUT_PDM
+    bool "PDM"
+    help
+        Select this to use PDM output
 
 config I2S_OUTPUT_EXTERNAL_I2S
     bool "External I2S CODEC"
@@ -24,26 +29,31 @@ config I2S_OUTPUT_EXTERNAL_I2S
 
 endchoice
 
-choice OLED_PANEL
-    prompt "OLED Panel"
-    default OLED_PANEL_NONE
+choice SCREEN_PANEL
+    prompt "Screen Panel"
+    default SCREEN_PANEL_NONE
     help
-        Select to use which OLED Panel
+        Select to use which screen panel
 
-config OLED_PANEL_NONE
-    bool "None OLED Panel"
+config SCREEN_PANEL_NONE
+    bool "None Screen Panel"
     help
         Select this to disable GUI
 
-config OLED_PANEL_SSD1331
+config SCREEN_PANEL_SSD1331
     bool "SSD1331 96x64 OLED Panel"
     help
         Select this to use SSD1331 96x64 OLED Panel
 
-config OLED_PANEL_SSD1351
+config SCREEN_PANEL_SSD1351
     bool "SSD1351 128x128 OLED Panel"
     help
         Select this to use SSD1351 128x128 OLED Panel
+
+config SCREEN_PANEL_ST7789
+    bool "ST7789 240x240 IPS LCD Panel"
+    help
+        Select this to use ST7789 240x240 IPS LCD Panel
 
 endchoice
 
