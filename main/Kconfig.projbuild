@@ -50,10 +50,15 @@ config SCREEN_PANEL_SSD1351
     help
         Select this to use SSD1351 128x128 OLED Panel
 
-config SCREEN_PANEL_ST7789
-    bool "ST7789 240x240 IPS LCD Panel"
+config SCREEN_PANEL_ST7735
+    bool "ST7735 160x80 LCD Panel"
     help
-        Select this to use ST7789 240x240 IPS LCD Panel
+        Select this to use ST7735 160x80 LCD Panel
+
+config SCREEN_PANEL_ST7789
+    bool "ST7789 240x240 LCD Panel"
+    help
+        Select this to use ST7789 240x240 LCD Panel
 
 endchoice
 
