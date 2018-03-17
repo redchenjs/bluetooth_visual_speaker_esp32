@@ -19,6 +19,18 @@
 #define GDISP_DRIVER_LIST GDISPVMT_SSD1351
 #include "../../drivers/gdisp/SSD1351/gdisp_lld_SSD1351.c"
 
+#elif defined(CONFIG_SCREEN_PANEL_ST7735)
+
+#undef GDISP_DRIVER_LIST
+#define GDISP_DRIVER_LIST GDISPVMT_ST7735
+#include "../../drivers/gdisp/ST7735/gdisp_lld_ST7735.c"
+
+#elif defined(CONFIG_SCREEN_PANEL_ST7789)
+
+#undef GDISP_DRIVER_LIST
+#define GDISP_DRIVER_LIST GDISPVMT_ST7789
+#include "../../drivers/gdisp/ST7789/gdisp_lld_ST7789.c"
+
 #else
 
 #include "../../drivers/gdisp/framebuffer/gdisp_lld_framebuffer.c"
