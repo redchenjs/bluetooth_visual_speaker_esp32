@@ -36,6 +36,32 @@ extern const uint8_t ani2_128x128_gif_end[] asm("_binary_ani2_128x128_gif_end");
 // ani3_128x128.gif
 extern const uint8_t ani3_128x128_gif_ptr[] asm("_binary_ani3_128x128_gif_start");
 extern const uint8_t ani3_128x128_gif_end[] asm("_binary_ani3_128x128_gif_end");
+#elif defined(CONFIG_SCREEN_PANEL_ST7735)
+// ani0_160x80.gif
+extern const uint8_t ani0_160x80_gif_ptr[] asm("_binary_ani0_160x80_gif_start");
+extern const uint8_t ani0_160x80_gif_end[] asm("_binary_ani0_160x80_gif_end");
+// ani1_160x80.gif
+extern const uint8_t ani1_160x80_gif_ptr[] asm("_binary_ani1_160x80_gif_start");
+extern const uint8_t ani1_160x80_gif_end[] asm("_binary_ani1_160x80_gif_end");
+// ani2_160x80.gif
+extern const uint8_t ani2_160x80_gif_ptr[] asm("_binary_ani2_160x80_gif_start");
+extern const uint8_t ani2_160x80_gif_end[] asm("_binary_ani2_160x80_gif_end");
+// ani3_160x80.gif
+extern const uint8_t ani3_160x80_gif_ptr[] asm("_binary_ani3_160x80_gif_start");
+extern const uint8_t ani3_160x80_gif_end[] asm("_binary_ani3_160x80_gif_end");
+#elif defined(CONFIG_SCREEN_PANEL_ST7789)
+// ani0_240x240.gif
+extern const uint8_t ani0_240x240_gif_ptr[] asm("_binary_ani0_240x240_gif_start");
+extern const uint8_t ani0_240x240_gif_end[] asm("_binary_ani0_240x240_gif_end");
+// ani1_240x240.gif
+extern const uint8_t ani1_240x240_gif_ptr[] asm("_binary_ani1_240x240_gif_start");
+extern const uint8_t ani1_240x240_gif_end[] asm("_binary_ani1_240x240_gif_end");
+// ani2_240x240.gif
+extern const uint8_t ani2_240x240_gif_ptr[] asm("_binary_ani2_240x240_gif_start");
+extern const uint8_t ani2_240x240_gif_end[] asm("_binary_ani2_240x240_gif_end");
+// ani3_240x240.gif
+extern const uint8_t ani3_240x240_gif_ptr[] asm("_binary_ani3_240x240_gif_start");
+extern const uint8_t ani3_240x240_gif_end[] asm("_binary_ani3_240x240_gif_end");
 #endif
 
 extern void gui_show_image(uint8_t filename_index);

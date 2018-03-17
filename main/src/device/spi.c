@@ -8,6 +8,8 @@
 #include "driver/spi_master.h"
 #include "driver/ssd1331.h"
 #include "driver/ssd1351.h"
+#include "driver/st7735.h"
+#include "driver/st7789.h"
 
 spi_device_handle_t spi1;
 
@@ -25,18 +27,37 @@ void spi1_init(void)
         .max_transfer_sz=96*64*2
 #elif defined(CONFIG_SCREEN_PANEL_SSD1351)
         .max_transfer_sz=128*128*2
+#elif defined(CONFIG_SCREEN_PANEL_ST7735)
+        .max_transfer_sz=160*80*2
+#elif defined(CONFIG_SCREEN_PANEL_ST7789)
+        .max_transfer_sz=240*240*2
 #endif
     };
     spi_device_interface_config_t devcfg={
+#if defined(CONFIG_SCREEN_PANEL_SSD1331)
         .clock_speed_hz=20000000,               // Clock out at 20 MHz
         .mode=0,                                // SPI mode 0
         .spics_io_num=27,                       // CS pin
-#if defined(CONFIG_SCREEN_PANEL_SSD1331)
         .queue_size=3,                          // We want to be able to queue 3 transactions at a time
         .pre_cb=ssd1331_setpin_dc,              // Specify pre-transfer callback to handle D/C line
 #elif defined(CONFIG_SCREEN_PANEL_SSD1351)
+        .clock_speed_hz=20000000,               // Clock out at 20 MHz
+        .mode=0,                                // SPI mode 0
+        .spics_io_num=27,                       // CS pin
         .queue_size=6,                          // We want to be able to queue 6 transactions at a time
         .pre_cb=ssd1351_setpin_dc,              // Specify pre-transfer callback to handle D/C line
+#elif defined(CONFIG_SCREEN_PANEL_ST7735)
+        .clock_speed_hz=20000000,               // Clock out at 20 MHz
+        .mode=0,                                // SPI mode 0
+        .spics_io_num=27,                       // CS pin
+        .queue_size=6,                          // We want to be able to queue 6 transactions at a time
+        .pre_cb=st7735_setpin_dc,               // Specify pre-transfer callback to handle D/C line
+#elif defined(CONFIG_SCREEN_PANEL_ST7789)
+        .clock_speed_hz=20000000,               // Clock out at 20 MHz
+        .mode=0,                                // SPI mode 0
+        .spics_io_num=27,                       // CS pin
+        .queue_size=6,                          // We want to be able to queue 6 transactions at a time
+        .pre_cb=st7789_setpin_dc,               // Specify pre-transfer callback to handle D/C line
 #endif
     };
     // Initialize the SPI bus

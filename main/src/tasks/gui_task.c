@@ -24,13 +24,23 @@ static const uint8_t *img_file_ptr[][2] = {
                                             {ani1_128x128_gif_ptr, ani1_128x128_gif_end}, // "Standby"
                                             {ani2_128x128_gif_ptr, ani2_128x128_gif_end}, // "Pause"
                                             {ani3_128x128_gif_ptr, ani3_128x128_gif_end}  // "Playing"
+#elif defined(CONFIG_SCREEN_PANEL_ST7735)
+                                            {ani0_160x80_gif_ptr, ani0_160x80_gif_end}, // "Bluetooth"
+                                            {ani1_160x80_gif_ptr, ani1_160x80_gif_end}, // "Standby"
+                                            {ani2_160x80_gif_ptr, ani2_160x80_gif_end}, // "Pause"
+                                            {ani3_160x80_gif_ptr, ani3_160x80_gif_end}  // "Playing"
+#elif defined(CONFIG_SCREEN_PANEL_ST7789)
+                                            {ani0_240x240_gif_ptr, ani0_240x240_gif_end}, // "Bluetooth"
+                                            {ani1_240x240_gif_ptr, ani1_240x240_gif_end}, // "Standby"
+                                            {ani2_240x240_gif_ptr, ani2_240x240_gif_end}, // "Pause"
+                                            {ani3_240x240_gif_ptr, ani3_240x240_gif_end}  // "Playing"
 #endif
                                          };
 uint8_t img_file_index = 0;
 
 void gui_show_image(uint8_t filename_index)
 {
-#if defined(CONFIG_SCREEN_PANEL_SSD1331) || defined(CONFIG_SCREEN_PANEL_SSD1351)
+#if !defined(CONFIG_SCREEN_PANEL_NONE)
     if (filename_index >= (sizeof(img_file_ptr) / 2)) {
         ESP_LOGE(TAG, "invalid filename index");
         return;
