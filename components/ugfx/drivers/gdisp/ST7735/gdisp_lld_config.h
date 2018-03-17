@@ -12,11 +12,12 @@
 /* Driver hardware support.                                                  */
 /*===========================================================================*/
 
-#define GDISP_HARDWARE_STREAM_WRITE		TRUE
-#define GDISP_HARDWARE_CONTROL			TRUE
-#define GDISP_HARDWARE_FILLS			TRUE
+#define GDISP_HARDWARE_FLUSH            TRUE
+#define GDISP_HARDWARE_STREAM_WRITE     TRUE
+#define GDISP_HARDWARE_STREAM_READ      TRUE
+#define GDISP_HARDWARE_CONTROL          TRUE
 
-#define GDISP_LLD_PIXELFORMAT			GDISP_PIXELFORMAT_RGB565
+#define GDISP_LLD_PIXELFORMAT           GDISP_PIXELFORMAT_RGB565
 
 #endif	/* GFX_USE_GDISP */
 
