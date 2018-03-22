@@ -12,6 +12,9 @@
 
 #include "device/spi.h"
 
+#define SSD1351_SCREEN_WIDTH   128
+#define SSD1351_SCREEN_HEIGHT  128
+
 extern void ssd1351_init_board(void);
 extern void ssd1351_setpin_dc(spi_transaction_t *);
 extern void ssd1351_setpin_reset(uint8_t rst);

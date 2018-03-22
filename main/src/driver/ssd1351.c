@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "device/spi.h"
+#include "driver/ssd1351.h"
 
 #define SSD1351_GPIO_PIN_DC   23
 #define SSD1351_GPIO_PIN_RST  14
@@ -69,8 +70,8 @@ void ssd1351_refresh_gram(uint8_t *gram)
     spi1_trans[0].flags = SPI_TRANS_USE_TXDATA;
 
     spi1_trans[1].length = 2*8;
-    spi1_trans[1].tx_data[0] = 0x00;    // 0, startx
-    spi1_trans[1].tx_data[1] = 0x7f;    // 127, endx
+    spi1_trans[1].tx_data[0] = 0x00;    // startx
+    spi1_trans[1].tx_data[1] = SSD1351_SCREEN_WIDTH - 1;    // endx
     spi1_trans[1].user = (void*)1;
     spi1_trans[1].flags = SPI_TRANS_USE_TXDATA;
 
@@ -80,8 +81,8 @@ void ssd1351_refresh_gram(uint8_t *gram)
     spi1_trans[2].flags = SPI_TRANS_USE_TXDATA;
 
     spi1_trans[3].length = 2*8,
-    spi1_trans[3].tx_data[0] = 0x00;    // 0, starty
-    spi1_trans[3].tx_data[1] = 0x7f;    // 127, endy
+    spi1_trans[3].tx_data[0] = 0x00;    // starty
+    spi1_trans[3].tx_data[1] = SSD1351_SCREEN_HEIGHT - 1;   // endy
     spi1_trans[3].user = (void*)1;
     spi1_trans[3].flags = SPI_TRANS_USE_TXDATA;
 
@@ -90,7 +91,7 @@ void ssd1351_refresh_gram(uint8_t *gram)
     spi1_trans[4].user = (void*)0;
     spi1_trans[4].flags = SPI_TRANS_USE_TXDATA;
 
-    spi1_trans[5].length = 128*128*2*8;
+    spi1_trans[5].length = SSD1351_SCREEN_WIDTH*SSD1351_SCREEN_HEIGHT*2*8;
     spi1_trans[5].tx_buffer = gram;
     spi1_trans[5].user = (void*)1;
 
