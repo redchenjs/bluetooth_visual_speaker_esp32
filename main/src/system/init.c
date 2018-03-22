@@ -16,9 +16,7 @@
 void device_init(void)
 {
     bt0_init();
-#if !defined(CONFIG_SCREEN_PANEL_NONE)
     spi1_init();
-#endif
     i2s0_init();
 #if !defined(CONFIG_I2S_OUTPUT_INTERNAL_DAC) && !defined(CONFIG_I2S_OUTPUT_PDM)
     gpio0_init();
