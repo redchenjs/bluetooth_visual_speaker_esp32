@@ -83,10 +83,10 @@ void st7735_refresh_gram(uint8_t *gram)
     spi1_trans[2].flags = SPI_TRANS_USE_TXDATA;
 
     spi1_trans[3].length = 4*8,
-    spi1_trans[3].tx_data[0] = 0x00;    // starty hith byte
+    spi1_trans[3].tx_data[0] = 0x00;    // starty high byte
     spi1_trans[3].tx_data[1] = 0x1A;    // starty low byte
-    spi1_trans[3].tx_data[2] = 0x00;    // starty high byte
-    spi1_trans[3].tx_data[3] = 0x69;    // endy high byte
+    spi1_trans[3].tx_data[2] = 0x00;    // endy high byte
+    spi1_trans[3].tx_data[3] = 0x69;    // endy low byte
     spi1_trans[3].user = (void*)1;
     spi1_trans[3].flags = SPI_TRANS_USE_TXDATA;
 
