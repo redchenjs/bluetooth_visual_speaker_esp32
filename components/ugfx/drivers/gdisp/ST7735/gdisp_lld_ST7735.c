@@ -63,9 +63,9 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     init_board(g);
 
     // Hardware reset
-    setpin_reset(g, TRUE);
+    setpin_reset(g, 0);
     gfxSleepMilliseconds(120);
-    setpin_reset(g, FALSE);
+    setpin_reset(g, 1);
     gfxSleepMilliseconds(120);
 
     write_cmd(g, ST7735_SWRESET);   //  1: Software reset, 0 args, w/delay
