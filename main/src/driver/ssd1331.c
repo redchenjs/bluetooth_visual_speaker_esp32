@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "device/spi.h"
+#include "driver/ssd1331.h"
 
 #define SSD1331_GPIO_PIN_DC   23
 #define SSD1331_GPIO_PIN_RST  14
@@ -65,19 +66,19 @@ void ssd1331_refresh_gram(uint8_t *gram)
 
     spi1_trans[0].length = 3*8;
     spi1_trans[0].tx_data[0] = 0x15;    // Set Column Address
-    spi1_trans[0].tx_data[1] = 0x00;    // 0, startx
-    spi1_trans[0].tx_data[2] = 0x5f;    // 95, endx
+    spi1_trans[0].tx_data[1] = 0x00;    // startx
+    spi1_trans[0].tx_data[2] = SSD1331_SCREEN_WIDTH - 1;    // endx
     spi1_trans[0].user = (void*)0;
     spi1_trans[0].flags = SPI_TRANS_USE_TXDATA;
 
     spi1_trans[1].length = 3*8,
     spi1_trans[1].tx_data[0] = 0x75;    // Set Row Address
-    spi1_trans[1].tx_data[1] = 0x00;    // 0, starty
-    spi1_trans[1].tx_data[2] = 0x3f;    // 63, endy
+    spi1_trans[1].tx_data[1] = 0x00;    // starty
+    spi1_trans[1].tx_data[2] = SSD1331_SCREEN_HEIGHT - 1;   // endy
     spi1_trans[1].user = (void*)0;
     spi1_trans[1].flags = SPI_TRANS_USE_TXDATA;
 
-    spi1_trans[2].length = 96*64*2*8;
+    spi1_trans[2].length = SSD1331_SCREEN_WIDTH*SSD1331_SCREEN_HEIGHT*2*8;
     spi1_trans[2].tx_buffer = gram;
     spi1_trans[2].user = (void*)1;
 
