@@ -1,0 +1,10 @@
+#ifndef _GFXCONF_H
+#define _GFXCONF_H
+
+#define GFX_USE_GFILE				TRUE
+
+#define GFILE_NEED_FATFS			TRUE
+#define GFILE_NEED_NOAUTOMOUNT		TRUE
+#define GFILE_NEED_PRINTG			TRUE
+
+#endif /* _GFXCONF_H */
