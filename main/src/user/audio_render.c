@@ -8,6 +8,7 @@
 #include "freertos/FreeRTOS.h"
 #include "esp_log.h"
 
+#include "device/i2s.h"
 #include "driver/i2s.h"
 
 /* render callback for the libmad synth */
@@ -42,9 +43,5 @@ void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num
 /* Called by the NXP modifications of libmad. Sets the needed output sample rate. */
 void set_dac_sample_rate(int rate)
 {
-    static int dac_sample_rate = 44100;
-    if (rate != dac_sample_rate) {
-        i2s_set_sample_rates(0, rate);
-        dac_sample_rate = rate;
-    }
+    i2s0_set_sample_rate(rate);
 }
