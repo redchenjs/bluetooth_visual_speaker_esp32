@@ -20,5 +20,5 @@ void user_init(void)
     xTaskCreate(ble_daemon, "ble_daemon", 1024, NULL, 6, NULL);
     xTaskCreate(led_daemon, "led_daemon", 1024, NULL, 5, NULL);
     xTaskCreate(gui_daemon, "gui_daemon", 4096, NULL, 5, NULL);
-    xTaskCreate(audio_daemon, "audio_daemon", 8448, NULL, 7, NULL);
+    xTaskCreate(audio_daemon, "audio_daemon", 8448, NULL, 5, NULL);
 }
