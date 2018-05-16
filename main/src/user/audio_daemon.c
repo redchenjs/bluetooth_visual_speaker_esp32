@@ -28,24 +28,34 @@ static uint8_t mp3_file_index = 0;
 
 void audio_daemon(void *pvParameters)
 {
-    //Allocate structs needed for mp3 decoding
+    // allocate structs needed for mp3 decoding
     struct mad_stream *stream = malloc(sizeof(struct mad_stream));
     struct mad_frame  *frame  = malloc(sizeof(struct mad_frame));
     struct mad_synth  *synth  = malloc(sizeof(struct mad_synth));
 
-    if (stream == NULL) { ESP_LOGE(TAG, "malloc(stream) failed"); goto err; }
-    if (frame  == NULL) { ESP_LOGE(TAG, "malloc(frame) failed");  goto err; }
-    if (synth  == NULL) { ESP_LOGE(TAG, "malloc(synth) failed");  goto err; }
+    if (stream == NULL) {ESP_LOGE(TAG, "malloc(stream) failed"); goto err;}
+    if (frame  == NULL) {ESP_LOGE(TAG, "malloc(frame) failed");  goto err;}
+    if (synth  == NULL) {ESP_LOGE(TAG, "malloc(synth) failed");  goto err;}
 
     while (1) {
-        xEventGroupWaitBits(daemon_event_group, AUDIO_DAEMON_READY_BIT, pdTRUE, pdTRUE, portMAX_DELAY);
+        xEventGroupWaitBits(
+            daemon_event_group,
+            AUDIO_DAEMON_READY_BIT,
+            pdTRUE,
+            pdTRUE,
+            portMAX_DELAY
+        );
 
-        //Initialize mp3 parts
+        // initialize mp3 parts
         mad_stream_init(stream);
         mad_frame_init(frame);
         mad_synth_init(synth);
 
-        mad_stream_buffer(stream, mp3_file_ptr[mp3_file_index][0], mp3_file_ptr[mp3_file_index][1] - mp3_file_ptr[mp3_file_index][0]);
+        mad_stream_buffer(
+            stream,
+            mp3_file_ptr[mp3_file_index][0],
+            mp3_file_ptr[mp3_file_index][1] - mp3_file_ptr[mp3_file_index][0]
+        );
         while (1) {
             if (mad_frame_decode(frame, stream) == -1) {
                 if (!MAD_RECOVERABLE(stream->error)) {
