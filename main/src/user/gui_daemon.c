@@ -511,24 +511,13 @@ exit:
                 for (uint16_t k=0; k<128; k++) {
                     fft_plan->input[2*k] = (float)fifo_read();
                     fft_plan->input[2*k+1] = 0.0;
-                    // printf("input %02d: %f %f\n", k, fft_plan->input[2*k], fft_plan->input[2*k+1]);
                 }
-                // fifo_read_fft(fft_plan->input, 128);
-                // for (uint16_t k=0; k<128; k++) {
-                //     // fft_plan->input[2*k] = (float)fifo_read();
-                //     // fft_plan->input[2*k+1] = 0.0;
-                //     printf("input %02d: %f %f\n", k, fft_plan->input[2*k], fft_plan->input[2*k+1]);
-                // }
 
                 fft_execute(fft_plan);
 
                 for (uint16_t k=0; k<64; k++) {
                     fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2));
                 }
-
-                // for (uint16_t k=0; k<128; k++) {
-                //     printf("output %02d: %f %f\n", k, fft_plan->output[2*k], fft_plan->output[2*k+1]);
-                // }
 
                 color_idx = 511;
                 for (uint16_t i=0; i<64; i++) {
@@ -545,7 +534,7 @@ exit:
                     color_idx -= 8;
                 }
 
-                gfxSleepMilliseconds(100);
+                gfxSleepMilliseconds(30);
             }
             fft_destroy(fft_plan);
             break;
@@ -601,7 +590,7 @@ exit:
                     color_idx -= 8;
                 }
 
-                gfxSleepMilliseconds(50);
+                gfxSleepMilliseconds(30);
             }
             fft_destroy(fft_plan);
             break;
