@@ -36,7 +36,6 @@ void fifo_write(int16_t data)
 {
     if (fifo_buf_num++ == FIFO_SIZE) {
         fifo_buf_num = FIFO_SIZE;
-        return;
     }
     fifo_next_write->data = data;
     fifo_next_write = fifo_next_write->next;
