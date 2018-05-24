@@ -60,8 +60,11 @@ void bt_av_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 void bt_av_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
     i2s0_set_sample_rate(a2dp_sample_rate);
+
+    size_t bytes_written = 0;
     TickType_t max_wait = 20 / portTICK_PERIOD_MS;
-    i2s_write_bytes(0, (const char *)data, len, max_wait);
+    i2s_write(0, (const char *)data, len, &bytes_written, max_wait);
+
     uint32_t idx = 0;
     while (len > 0) {
         fifo_write(data[idx+1] << 8 | data[idx]);
