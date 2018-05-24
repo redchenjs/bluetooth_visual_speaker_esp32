@@ -189,7 +189,7 @@ void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t 
         }
         break;
     case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-        ESP_LOGI(TAG, "update connection params status = %d, min_int = %d, max_int = %d,conn_int = %d,latency = %d, timeout = %d",
+        ESP_LOGI(TAG, "update connection params status = %d, min_int = %d, max_int = %d, conn_int = %d, latency = %d, timeout = %d",
                  param->update_conn_params.status,
                  param->update_conn_params.min_int,
                  param->update_conn_params.max_int,
@@ -313,7 +313,10 @@ void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gat
     }
     case ESP_GATTS_WRITE_EVT: {
         if (!param->write.is_prep) {
-            gui_set_mode(*(param->write.value) - 0x30);
+            uint8_t mode = *(param->write.value) - 0x30;
+            ESP_LOGI(TAG, "set gui mode %u", mode);
+            gui_set_mode(mode);
+
             if (gl_profile_tab[PROFILE_A_APP_ID].descr_handle == param->write.handle && param->write.len == 2) {
                 uint16_t descr_value = param->write.value[1]<<8 | param->write.value[0];
                 if (descr_value == 0x0001) {
@@ -408,6 +411,7 @@ void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gat
     case ESP_GATTS_STOP_EVT:
         break;
     case ESP_GATTS_CONNECT_EVT: {
+        ESP_LOGI(TAG, "device connected");
         esp_ble_conn_update_params_t conn_params = {0};
         memcpy(conn_params.bda, param->connect.remote_bda, sizeof(esp_bd_addr_t));
         /* For the IOS system, please reference the apple official documents about the ble connection parameters restrictions. */
@@ -421,6 +425,7 @@ void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gat
         break;
     }
     case ESP_GATTS_DISCONNECT_EVT:
+        ESP_LOGI(TAG, "device disconnected");
         esp_ble_gap_start_advertising(&adv_params);
         break;
     case ESP_GATTS_CONF_EVT:
