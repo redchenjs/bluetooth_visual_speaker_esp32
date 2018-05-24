@@ -10,7 +10,8 @@
 
 #include <stdint.h>
 
-extern void gui_set_mode(uint8_t mode);
 extern void gui_daemon(void *pvParameter);
+extern void gui_set_mode(uint8_t mode);
+extern uint8_t gui_get_mode(void);
 
 #endif /* INC_USER_GUI_DAEMON_H_ */

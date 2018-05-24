@@ -22,7 +22,7 @@
 
 #define TAG "gui_daemon"
 
-static uint8_t gui_mode = 0;
+static uint8_t gui_mode = 13;
 
 static uint32_t gui_get_color(uint16_t color_idx, uint16_t color_lum)
 {
@@ -519,7 +519,7 @@ exit:
                     fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2));
                 }
 
-                color_idx = 511;
+                color_idx = 63;
                 for (uint16_t i=0; i<64; i++) {
                     uint8_t temp = fft_amp[i] / 8192;
                     gui_fill_area(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
@@ -531,7 +531,11 @@ exit:
                             x = 0;
                         }
                     }
-                    color_idx -= 8;
+
+                    color_idx += 7;
+                    if (color_idx == 511) {
+                        color_idx = 7;
+                    }
                 }
 
                 gfxSleepMilliseconds(30);
@@ -542,8 +546,8 @@ exit:
         case 13: {   // 音频FFT 螺旋彩虹
             uint8_t x = 0;
             uint8_t y = 0;
-            uint16_t color_idx = 0;
-            uint16_t color_lum = 400;
+            uint16_t color_idx[64] = {0};
+            uint16_t color_lum[64] = {400};
             uint16_t fft_amp[64] = {0};
             const uint8_t led_idx_table[][64] = {
                 {
@@ -559,6 +563,10 @@ exit:
                     0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7,
                 }
             };
+            for (uint16_t i=0; i<64; i++) {
+                color_idx[i] = i * 8;
+                color_lum[i] = 400;
+            }
             fft_config_t *fft_plan = fft_init(128, FFT_COMPLEX, FFT_FORWARD, NULL, NULL);
             while (1) {
                 if (xEventGroupGetBits(daemon_event_group) & GUI_DAEMON_RELOAD_BIT) {
@@ -578,16 +586,25 @@ exit:
                     fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2));
                 }
 
-                color_idx = 511;
                 for (uint16_t i=0; i<64; i++) {
                     x = led_idx_table[0][i];
                     y = led_idx_table[1][i];
 
                     uint8_t temp = fft_amp[i] / 8192;
                     gui_fill_area(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
-                    gui_fill_area(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_lum);
+                    gui_fill_area(x, 7-y, 7-temp, x, 7-y, 7, color_idx[63-i], color_lum[63-i]);
 
-                    color_idx -= 8;
+                    color_idx[i]++;
+                    if (color_idx[i] == 511) {
+                        color_idx[i] = 0;
+                    }
+                }
+
+                for (uint16_t i=0; i<64; i++) {
+                    color_idx[i]++;
+                    if (color_idx[i] == 511) {
+                        color_idx[i] = 0;
+                    }
                 }
 
                 gfxSleepMilliseconds(30);
@@ -609,4 +626,9 @@ void gui_set_mode(uint8_t mode)
 {
     gui_mode = mode;
     xEventGroupSetBits(daemon_event_group, GUI_DAEMON_RELOAD_BIT);
+}
+
+uint8_t gui_get_mode(void)
+{
+    return gui_mode;
 }
