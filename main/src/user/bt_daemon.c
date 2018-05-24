@@ -16,7 +16,7 @@
 
 static xQueueHandle bt_daemon_task_queue = NULL;
 
-#define TAG "bt_speaker"
+#define TAG "bt_daemon"
 
 static bool bt_daemon_send_msg(bt_app_msg_t *msg)
 {
@@ -68,9 +68,8 @@ bool bt_daemon_work_dispatch(bt_app_cb_t p_cback, uint16_t event, void *p_params
 void bt_daemon(void *pvParameter)
 {
     bt_daemon_task_queue = xQueueCreate(10, sizeof(bt_app_msg_t));
-    /* Bluetooth device name, connection mode and profile set up */
+    /* bluetooth device name, connection mode and profile set up */
     bt_daemon_work_dispatch(bt_av_hdl_stack_evt, BT_AV_EVT_STACK_UP, NULL, 0, NULL);
-    ESP_LOGI(TAG, "\"%s\"", CONFIG_BT_NAME);
     bt_app_msg_t msg;
     while (1) {
         if (pdTRUE == xQueueReceive(bt_daemon_task_queue, &msg, portMAX_DELAY)) {
@@ -82,7 +81,7 @@ void bt_daemon(void *pvParameter)
             default:
                 ESP_LOGW(TAG, "%s, unhandled sig: %d", __func__, msg.sig);
                 break;
-            } // switch (msg.sig)
+            }
 
             if (msg.param) {
                 free(msg.param);
