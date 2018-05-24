@@ -8,10 +8,6 @@
 #ifndef INC_USER_BLE_GATTS_H_
 #define INC_USER_BLE_GATTS_H_
 
-#define PROFILE_NUM 2
-#define PROFILE_A_APP_ID 0
-#define PROFILE_B_APP_ID 1
-
 #include "esp_gatts_api.h"
 #include "esp_gap_ble_api.h"
 
