@@ -18,6 +18,7 @@
 #include "freertos/task.h"
 #include "driver/i2s.h"
 
+#include "device/i2s.h"
 #include "device/fifo.h"
 
 #include "user/bt_av.h"
@@ -25,9 +26,10 @@
 #include "user/gui_daemon.h"
 #include "user/led_daemon.h"
 #include "user/audio_daemon.h"
-#include "user/audio_render.h"
 
 #define TAG "bt_av"
+
+static int a2dp_sample_rate = 44100;
 
 static void bt_av_alloc_meta_buffer(esp_avrc_ct_cb_param_t *param)
 {
@@ -57,10 +59,10 @@ void bt_av_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 /* cb with decoded samples */
 void bt_av_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
+    i2s0_set_sample_rate(a2dp_sample_rate);
     TickType_t max_wait = 20 / portTICK_PERIOD_MS;
     i2s_write_bytes(0, (const char *)data, len, max_wait);
-
-    uint8_t idx = 0;
+    uint32_t idx = 0;
     while (len > 0) {
         fifo_write(data[idx+1] << 8 | data[idx]);
         idx += 4;
@@ -139,11 +141,11 @@ void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         ESP_LOGI(TAG, "a2dp conn_stat evt: state %d, [%02x:%02x:%02x:%02x:%02x:%02x]",
              a2d->conn_stat.state, bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         if (ESP_A2D_CONNECTION_STATE_CONNECTED == a2d->conn_stat.state) {
-            led_set_mode(3);
             audio_play_file(0);
+            led_set_mode(3);
         } else if (ESP_A2D_CONNECTION_STATE_DISCONNECTED == a2d->conn_stat.state) {
-            led_set_mode(7);
             audio_play_file(1);
+            led_set_mode(7);
         }
         break;
     case ESP_A2D_AUDIO_STATE_EVT:
@@ -151,9 +153,11 @@ void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         ESP_LOGI(TAG, "a2dp audio_stat evt: state %d", a2d->audio_stat.state);
         if (ESP_A2D_AUDIO_STATE_STARTED == a2d->audio_stat.state) {
             led_set_mode(1);
-        } else if (ESP_A2D_AUDIO_STATE_REMOTE_SUSPEND == a2d->audio_stat.state){
+        } else if (ESP_A2D_AUDIO_STATE_REMOTE_SUSPEND == a2d->audio_stat.state) {
+            i2s_zero_dma_buffer(0);
             led_set_mode(2);
-        } else if (ESP_A2D_AUDIO_STATE_STOPPED == a2d->audio_stat.state){
+        } else if (ESP_A2D_AUDIO_STATE_STOPPED == a2d->audio_stat.state) {
+            i2s_zero_dma_buffer(0);
             led_set_mode(3);
         }
         break;
@@ -171,7 +175,7 @@ void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             } else if (oct0 & (0x01 << 4)) {
                 sample_rate = 48000;
             }
-            set_dac_sample_rate(sample_rate);
+            a2dp_sample_rate = sample_rate;
 
             ESP_LOGI(TAG, "configure audio player %x-%x-%x-%x",
                      a2d->audio_cfg.mcc.cie.sbc[0],
@@ -197,7 +201,6 @@ void bt_av_hdl_avrc_evt(uint16_t event, void *p_param)
         bda = rc->conn_stat.remote_bda;
         ESP_LOGI(TAG, "avrc conn_stat evt: state %d, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  rc->conn_stat.connected, bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
-
         if (rc->conn_stat.connected) {
             bt_av_new_track();
         }
