@@ -15,23 +15,23 @@
 void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels)
 {
     // pointer to left / right sample position
-    char *ptr_l = (char*) sample_buff_ch0;
-    char *ptr_r = (char*) sample_buff_ch1;
+    char *ptr_l = (char*)sample_buff_ch0;
+    char *ptr_r = (char*)sample_buff_ch1;
     uint8_t stride = sizeof(short);
 
     if (num_channels == 1) {
         ptr_r = ptr_l;
     }
 
-    int bytes_pushed = 0;
+    size_t bytes_written = 0;
     TickType_t max_wait = 20 / portTICK_PERIOD_MS; // portMAX_DELAY = bad idea
     for (int i = 0; i < num_samples; i++) {
         /* low - high / low - high */
         const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]};
-        bytes_pushed = i2s_push_sample(0, (const char*) &samp32, max_wait);
+        i2s_write(0, (const char *)&samp32, 1, &bytes_written, max_wait);
 
         // DMA buffer full - retry
-        if (bytes_pushed == 0) {
+        if (bytes_written == 0) {
             i--;
         } else {
             ptr_r += stride;
