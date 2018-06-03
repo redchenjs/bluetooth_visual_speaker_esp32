@@ -522,8 +522,13 @@ exit:
                 color_idx = 63;
                 for (uint16_t i=0; i<64; i++) {
                     uint8_t temp = fft_amp[i] / 8192;
-                    gui_fill_area(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
-                    gui_fill_area(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_lum);
+                    if (temp != 0) {
+                        gui_fill_area(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
+                        gui_fill_area(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_lum);
+                    } else {
+                        gui_fill_area(x, 7-y, 0, x, 7-y, 6, 0, 511);
+                        gui_fill_area(x, 7-y, 7, x, 7-y, 7, color_idx, color_lum);
+                    }
 
                     if (y++ == 7) {
                         y = 0;
@@ -591,19 +596,22 @@ exit:
                     y = led_idx_table[1][i];
 
                     uint8_t temp = fft_amp[i] / 8192;
-                    gui_fill_area(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
-                    gui_fill_area(x, 7-y, 7-temp, x, 7-y, 7, color_idx[63-i], color_lum[63-i]);
+                    if (temp != 0) {
+                        gui_fill_area(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
+                        gui_fill_area(x, 7-y, 7-temp, x, 7-y, 7, color_idx[i], color_lum[i]);
+                    } else {
+                        gui_fill_area(x, 7-y, 0, x, 7-y, 6, 0, 511);
+                        gui_fill_area(x, 7-y, 7, x, 7-y, 7, color_idx[i], color_lum[i]);
+                    }
 
-                    color_idx[i]++;
-                    if (color_idx[i] == 511) {
-                        color_idx[i] = 0;
+                    if (color_idx[i]-- == 0) {
+                        color_idx[i] = 511;
                     }
                 }
 
                 for (uint16_t i=0; i<64; i++) {
-                    color_idx[i]++;
-                    if (color_idx[i] == 511) {
-                        color_idx[i] = 0;
+                    if (color_idx[i]-- == 0) {
+                        color_idx[i] = 511;
                     }
                 }
 
