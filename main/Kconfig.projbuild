@@ -1,16 +1,10 @@
 menu "Full Color Light Cube"
 
 config BT_NAME
-    string "BT Name"
+    string "Bluetooth Name"
 	default "Light Cube"
 	help
-		BT name exposed by the device.
-
-config BLE_NAME
-    string "BLE Name"
-	default "Light Cube"
-	help
-		BLE name exposed by the device.
+		Bluetooth name exposed by the device.
 
 menuconfig ENABLE_LED
     bool "Enable LED"
