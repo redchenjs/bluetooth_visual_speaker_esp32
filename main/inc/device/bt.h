@@ -8,6 +8,6 @@
 #ifndef DEVICE_BT_C_
 #define DEVICE_BT_C_
 
-extern void bt0_init(void);
+extern void bt_init(void);
 
 #endif /* DEVICE_BT_C_ */
