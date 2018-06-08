@@ -6,6 +6,7 @@
  */
 
 #include "device/bt.h"
+#include "device/nvs.h"
 #include "device/spi.h"
 #include "device/i2s.h"
 #include "device/fifo.h"
@@ -14,7 +15,8 @@
 
 void device_init(void)
 {
-    bt0_init();
+    nvs_init();
+    bt_init();
     spi1_init();
     i2s0_init();
     fifo_init();
