@@ -3,6 +3,8 @@
 # project subdirectory.
 #
 
+IDF_PATH ?= $(PWD)/esp-idf
+
 PROJECT_NAME := full_color_led_cube
 
 include $(IDF_PATH)/make/project.mk
