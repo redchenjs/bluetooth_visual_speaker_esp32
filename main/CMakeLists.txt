@@ -1,0 +1,5 @@
+set(COMPONENT_SRCDIRS src src/user src/system src/board src/chip)
+set(COMPONENT_ADD_INCLUDEDIRS inc)
+set(COMPONENT_EMBED_FILES res/snd/snd0.mp3 res/snd/snd1.mp3)
+
+register_component()
