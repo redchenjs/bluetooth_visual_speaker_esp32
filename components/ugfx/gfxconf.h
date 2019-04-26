@@ -85,38 +85,38 @@
 #define GDISP_NEED_QUERY                             TRUE
 #define GDISP_NEED_MULTITHREAD                       TRUE
 #define GDISP_NEED_STREAMING                         TRUE
-// #define GDISP_NEED_TEXT                              TRUE
-//    #define GDISP_NEED_TEXT_WORDWRAP                 TRUE
-//    #define GDISP_NEED_TEXT_BOXPADLR                 1
-//    #define GDISP_NEED_TEXT_BOXPADTB                 1
-//    #define GDISP_NEED_ANTIALIAS                     TRUE
-//    #define GDISP_NEED_UTF8                          TRUE
-//    #define GDISP_NEED_TEXT_KERNING                  TRUE
-//    #define GDISP_INCLUDE_FONT_UI1                   TRUE
-//    #define GDISP_INCLUDE_FONT_UI2                   TRUE		// The smallest preferred font.
-//    #define GDISP_INCLUDE_FONT_LARGENUMBERS          TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS10          TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS12          TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS16          TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS20          TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS24          TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS32          TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANSBOLD12      TRUE
-//    #define GDISP_INCLUDE_FONT_FIXED_10X20           TRUE
-//    #define GDISP_INCLUDE_FONT_FIXED_7X14            TRUE
-//    #define GDISP_INCLUDE_FONT_FIXED_5X8             TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS12_AA       TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS16_AA       TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS20_AA       TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS24_AA       TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANS32_AA       TRUE
-//    #define GDISP_INCLUDE_FONT_DEJAVUSANSBOLD12_AA   TRUE
+#define GDISP_NEED_TEXT                              TRUE
+   #define GDISP_NEED_TEXT_WORDWRAP                 TRUE
+   #define GDISP_NEED_TEXT_BOXPADLR                 1
+   #define GDISP_NEED_TEXT_BOXPADTB                 1
+   #define GDISP_NEED_ANTIALIAS                     TRUE
+   #define GDISP_NEED_UTF8                          TRUE
+   #define GDISP_NEED_TEXT_KERNING                  TRUE
+   #define GDISP_INCLUDE_FONT_UI1                   TRUE
+   #define GDISP_INCLUDE_FONT_UI2                   TRUE		// The smallest preferred font.
+   #define GDISP_INCLUDE_FONT_LARGENUMBERS          TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS10          TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS12          TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS16          TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS20          TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS24          TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS32          TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANSBOLD12      TRUE
+   #define GDISP_INCLUDE_FONT_FIXED_10X20           TRUE
+   #define GDISP_INCLUDE_FONT_FIXED_7X14            TRUE
+   #define GDISP_INCLUDE_FONT_FIXED_5X8             TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS12_AA       TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS16_AA       TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS20_AA       TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS24_AA       TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANS32_AA       TRUE
+   #define GDISP_INCLUDE_FONT_DEJAVUSANSBOLD12_AA   TRUE
 //    #define GDISP_INCLUDE_USER_FONTS                 FALSE
 
-// #define GDISP_NEED_IMAGE                             TRUE
-//    #define GDISP_NEED_IMAGE_NATIVE                  TRUE
-//    #define GDISP_NEED_IMAGE_GIF                     TRUE
-//        #define GDISP_IMAGE_GIF_BLIT_BUFFER_SIZE     32
+#define GDISP_NEED_IMAGE                             TRUE
+   // #define GDISP_NEED_IMAGE_NATIVE                  TRUE
+   // #define GDISP_NEED_IMAGE_GIF                     TRUE
+      //  #define GDISP_IMAGE_GIF_BLIT_BUFFER_SIZE     32
 //    #define GDISP_NEED_IMAGE_BMP                     TRUE
 //        #define GDISP_NEED_IMAGE_BMP_1               TRUE
 //        #define GDISP_NEED_IMAGE_BMP_4               TRUE
@@ -147,7 +147,7 @@
 //        #define GDISP_IMAGE_PNG_BLIT_BUFFER_SIZE     32
 //        #define GDISP_IMAGE_PNG_FILE_BUFFER_SIZE     8
 //        #define GDISP_IMAGE_PNG_Z_BUFFER_SIZE        32768
-//    #define GDISP_NEED_IMAGE_ACCOUNTING              TRUE
+   // #define GDISP_NEED_IMAGE_ACCOUNTING              TRUE
 
 //#define GDISP_NEED_PIXMAP                            FALSE
 //    #define GDISP_NEED_PIXMAP_IMAGE                  FALSE
@@ -159,23 +159,23 @@
 
 #define GDISP_TOTAL_DISPLAYS                         1
 
-#define GDISP_DRIVER_LIST                            GDISPVMT_CUBE0414
+#define GDISP_DRIVER_LIST
    #ifdef GDISP_DRIVER_LIST
-//        // For code and speed optimization define as TRUE or FALSE if all controllers have the same capability
-//        #define GDISP_HARDWARE_STREAM_WRITE          FALSE
-//        #define GDISP_HARDWARE_STREAM_READ           FALSE
-//        #define GDISP_HARDWARE_STREAM_POS            FALSE
-//        #define GDISP_HARDWARE_DRAWPIXEL             FALSE
-//        #define GDISP_HARDWARE_CLEARS                FALSE
-//        #define GDISP_HARDWARE_FILLS                 FALSE
-//        #define GDISP_HARDWARE_BITFILLS              FALSE
-//        #define GDISP_HARDWARE_SCROLL                FALSE
-//        #define GDISP_HARDWARE_PIXELREAD             FALSE
-//        #define GDISP_HARDWARE_CONTROL               FALSE
-//        #define GDISP_HARDWARE_QUERY                 FALSE
-//        #define GDISP_HARDWARE_CLIP                  FALSE
-
-       #define GDISP_PIXELFORMAT                     GDISP_PIXELFORMAT_RGB888
+      // For code and speed optimization define as TRUE or FALSE if all controllers have the same capability
+      // #define GDISP_HARDWARE_STREAM_WRITE          FALSE
+      // #define GDISP_HARDWARE_STREAM_READ           FALSE
+      // #define GDISP_HARDWARE_STREAM_POS            FALSE
+      // #define GDISP_HARDWARE_DRAWPIXEL             FALSE
+      // #define GDISP_HARDWARE_CLEARS                FALSE
+      // #define GDISP_HARDWARE_FILLS                 FALSE
+      // #define GDISP_HARDWARE_BITFILLS              FALSE
+      // #define GDISP_HARDWARE_SCROLL                FALSE
+      // #define GDISP_HARDWARE_PIXELREAD             FALSE
+      // #define GDISP_HARDWARE_CONTROL               FALSE
+      // #define GDISP_HARDWARE_QUERY                 FALSE
+      // #define GDISP_HARDWARE_CLIP                  FALSE
+      // #ifdef CONFIG_VFX_OUTPUT_CUBE0414
+      #define GDISP_PIXELFORMAT                     GDISP_PIXELFORMAT_RGB888
    #endif
 
 //#define GDISP_USE_GFXNET                             FALSE
@@ -188,28 +188,28 @@
 ///////////////////////////////////////////////////////////////////////////
 // GWIN                                                                  //
 ///////////////////////////////////////////////////////////////////////////
-// #define GFX_USE_GWIN                                 TRUE
+#define GFX_USE_GWIN                                 TRUE
 
-// #define GWIN_NEED_WINDOWMANAGER                      TRUE
-//    #define GWIN_REDRAW_IMMEDIATE                    TRUE
+#define GWIN_NEED_WINDOWMANAGER                      TRUE
+   #define GWIN_REDRAW_IMMEDIATE                    TRUE
 //    #define GWIN_REDRAW_SINGLEOP                     FALSE
-//    #define GWIN_NEED_FLASHING                       TRUE
+   #define GWIN_NEED_FLASHING                       TRUE
 //        #define GWIN_FLASHING_PERIOD                 250
 
-// #define GWIN_NEED_CONSOLE                            TRUE
-//    #define GWIN_CONSOLE_USE_HISTORY                 TRUE
-//        #define GWIN_CONSOLE_HISTORY_AVERAGING       TRUE
-//        #define GWIN_CONSOLE_HISTORY_ATCREATE        TRUE
+#define GWIN_NEED_CONSOLE                            TRUE
+   #define GWIN_CONSOLE_USE_HISTORY                 TRUE
+       #define GWIN_CONSOLE_HISTORY_AVERAGING       TRUE
+       #define GWIN_CONSOLE_HISTORY_ATCREATE        TRUE
 //    #define GWIN_CONSOLE_ESCSEQ                      FALSE
 //    #define GWIN_CONSOLE_USE_BASESTREAM              FALSE
 //    #define GWIN_CONSOLE_USE_FLOAT                   FALSE
-// #define GWIN_NEED_GRAPH                              TRUE
+#define GWIN_NEED_GRAPH                              TRUE
 //#define GWIN_NEED_GL3D                               FALSE
 
-// #define GWIN_NEED_WIDGET                             TRUE
+#define GWIN_NEED_WIDGET                             TRUE
 //#define GWIN_FOCUS_HIGHLIGHT_WIDTH                   1
-//    #define GWIN_NEED_LABEL                          TRUE
-//        #define GWIN_LABEL_ATTRIBUTE                 TRUE
+   #define GWIN_NEED_LABEL                          TRUE
+       #define GWIN_LABEL_ATTRIBUTE                 TRUE
 //    #define GWIN_NEED_BUTTON                         TRUE
     //    #define GWIN_BUTTON_LAZY_RELEASE             TRUE
 //    #define GWIN_NEED_SLIDER                         TRUE
@@ -217,22 +217,22 @@
 //        #define GWIN_SLIDER_DEAD_BAND                5
 //        #define GWIN_SLIDER_TOGGLE_INC               20
 //    #define GWIN_NEED_CHECKBOX                       TRUE
-//    #define GWIN_NEED_IMAGE                          TRUE
-//        #define GWIN_NEED_IMAGE_ANIMATION            TRUE
+   #define GWIN_NEED_IMAGE                          TRUE
+       #define GWIN_NEED_IMAGE_ANIMATION            TRUE
 //    #define GWIN_NEED_RADIO                          TRUE
 //    #define GWIN_NEED_LIST                           TRUE
     //    #define GWIN_NEED_LIST_IMAGES                TRUE
-//    #define GWIN_NEED_PROGRESSBAR                    TRUE
-//        #define GWIN_PROGRESSBAR_AUTO                TRUE
+   #define GWIN_NEED_PROGRESSBAR                    TRUE
+       #define GWIN_PROGRESSBAR_AUTO                TRUE
 //    #define GWIN_NEED_KEYBOARD                       TRUE
 //        #define GWIN_KEYBOARD_DEFAULT_LAYOUT         VirtualKeyboard_English1
 //        #define GWIN_NEED_KEYBOARD_ENGLISH1          TRUE
 //    #define GWIN_NEED_TEXTEDIT                       TRUE
-//    #define GWIN_FLAT_STYLING                        TRUE
-//    #define GWIN_WIDGET_TAGS                         TRUE
+   #define GWIN_FLAT_STYLING                        TRUE
+   #define GWIN_WIDGET_TAGS                         TRUE
 
-// #define GWIN_NEED_CONTAINERS                         TRUE
-//    #define GWIN_NEED_CONTAINER                      TRUE
+#define GWIN_NEED_CONTAINERS                         TRUE
+   #define GWIN_NEED_CONTAINER                      TRUE
 //    #define GWIN_NEED_FRAME                          FALSE
 //    #define GWIN_NEED_TABSET                         FALSE
 //        #define GWIN_TABSET_TABHEIGHT                18
@@ -241,17 +241,17 @@
 ///////////////////////////////////////////////////////////////////////////
 // GTRANS                                                                //
 ///////////////////////////////////////////////////////////////////////////
-// #define GFX_USE_GTRANS                               TRUE
+#define GFX_USE_GTRANS                               TRUE
 
 
 ///////////////////////////////////////////////////////////////////////////
 // GEVENT                                                                //
 ///////////////////////////////////////////////////////////////////////////
-// #define GFX_USE_GEVENT                               TRUE
+#define GFX_USE_GEVENT                               TRUE
 
 //#define GEVENT_ASSERT_NO_RESOURCE                    FALSE
-// #define GEVENT_MAXIMUM_SIZE                          32
-// #define GEVENT_MAX_SOURCE_LISTENERS                  32
+#define GEVENT_MAXIMUM_SIZE                          32
+#define GEVENT_MAX_SOURCE_LISTENERS                  32
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -266,17 +266,17 @@
 ///////////////////////////////////////////////////////////////////////////
 // GQUEUE                                                                //
 ///////////////////////////////////////////////////////////////////////////
-// #define GFX_USE_GQUEUE                               TRUE
+#define GFX_USE_GQUEUE                               TRUE
 
-// #define GQUEUE_NEED_ASYNC                            TRUE
-// #define GQUEUE_NEED_GSYNC                            TRUE
+#define GQUEUE_NEED_ASYNC                            TRUE
+#define GQUEUE_NEED_GSYNC                            TRUE
 //#define GQUEUE_NEED_FSYNC                            FALSE
 // #define GQUEUE_NEED_BUFFERS                          TRUE
 
 ///////////////////////////////////////////////////////////////////////////
 // GINPUT                                                                //
 ///////////////////////////////////////////////////////////////////////////
-// #define GFX_USE_GINPUT                               TRUE
+#define GFX_USE_GINPUT                               TRUE
 
 // #define GINPUT_NEED_MOUSE                            TRUE
 //    #define GINPUT_TOUCH_STARTRAW                    TRUE
@@ -301,7 +301,7 @@
 ///////////////////////////////////////////////////////////////////////////
 // GFILE                                                                 //
 ///////////////////////////////////////////////////////////////////////////
-// #define GFX_USE_GFILE                                TRUE
+#define GFX_USE_GFILE                                TRUE
 
 // #define GFILE_NEED_PRINTG                            TRUE
 // #define GFILE_NEED_SCANG                             TRUE
@@ -311,7 +311,7 @@
 // #define GFILE_NEED_NOAUTOMOUNT                       TRUE
 // #define GFILE_NEED_NOAUTOSYNC                        TRUE
 
-// #define GFILE_NEED_MEMFS                             TRUE
+#define GFILE_NEED_MEMFS                             TRUE
 //#define GFILE_NEED_ROMFS                             FALSE
 //#define GFILE_NEED_RAMFS                             FALSE
 //#define GFILE_NEED_FATFS                             FALSE
@@ -339,11 +339,11 @@
 ///////////////////////////////////////////////////////////////////////////
 // GMISC                                                                 //
 ///////////////////////////////////////////////////////////////////////////
-// #define GFX_USE_GMISC                                TRUE
+#define GFX_USE_GMISC                                TRUE
 
 //#define GMISC_NEED_ARRAYOPS                          FALSE
-// #define GMISC_NEED_FASTTRIG                          TRUE
-// #define GMISC_NEED_FIXEDTRIG                         TRUE
+#define GMISC_NEED_FASTTRIG                          TRUE
+#define GMISC_NEED_FIXEDTRIG                         TRUE
 //#define GMISC_NEED_INVSQRT                           FALSE
 //    #define GMISC_INVSQRT_MIXED_ENDIAN               FALSE
 //    #define GMISC_INVSQRT_REAL_SLOW                  FALSE

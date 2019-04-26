@@ -83,8 +83,8 @@ extern "C" {
 #define gfxYield()					taskYIELD()
 #define gfxSystemTicks()			xTaskGetTickCount()
 #define gfxMillisecondsToTicks(ms)	((systemticks_t)((ms) / portTICK_PERIOD_MS))
-#define gfxSystemLock(mux)			taskENTER_CRITICAL(mux)
-#define gfxSystemUnlock(mux)		taskEXIT_CRITICAL(mux)
+#define gfxSystemLock(mux)			portENTER_CRITICAL(mux)
+#define gfxSystemUnlock(mux)		portEXIT_CRITICAL(mux)
 
 void gfxMutexInit(gfxMutex* s);
 #define gfxMutexDestroy(pmutex)		vSemaphoreDelete(*(pmutex))

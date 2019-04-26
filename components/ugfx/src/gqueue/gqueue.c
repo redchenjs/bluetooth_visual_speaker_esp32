@@ -35,6 +35,7 @@ void _gqueueDeinit(void)
 		// This is just a shortcut to speed execution
 		if (!pqueue->head)
 			return 0;
+
 		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 		gfxSystemLock(&mux);
 		pi = gfxQueueASyncGetI(pqueue);
@@ -139,6 +140,7 @@ void _gqueueDeinit(void)
 
 	bool_t gfxQueueASyncIsIn(gfxQueueASync *pqueue, const gfxQueueASyncItem *pitem) {
 		bool_t	res;
+
 		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 		gfxSystemLock(&mux);
 		res = gfxQueueASyncIsInI(pqueue, pitem);
@@ -172,6 +174,7 @@ void _gqueueDeinit(void)
 
 		if (!gfxSemWait(&pqueue->sem, ms))
 			return 0;
+
 		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 		gfxSystemLock(&mux);
 		pi = pqueue->head;
@@ -281,6 +284,7 @@ void _gqueueDeinit(void)
 
 	bool_t gfxQueueGSyncIsIn(gfxQueueGSync *pqueue, const gfxQueueGSyncItem *pitem) {
 		bool_t		res;
+
 		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 		gfxSystemLock(&mux);
 		res = gfxQueueGSyncIsInI(pqueue, pitem);
@@ -315,6 +319,7 @@ void _gqueueDeinit(void)
 
 		if (!gfxSemWait(&pqueue->sem, ms))
 			return 0;
+
 		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 		gfxSystemLock(&mux);
 		pi = pqueue->head;
@@ -332,6 +337,7 @@ void _gqueueDeinit(void)
 		if (!pitem) return;				// Safety
 		gfxSemInit(&pitem->sem, 0, 1);
 		pitem->next = 0;
+
 		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 		gfxSystemLock(&mux);
 		if (!pqueue->head) {
@@ -340,7 +346,7 @@ void _gqueueDeinit(void)
 			pqueue->tail->next = pitem;
 			pqueue->tail = pitem;
 		}
-		gfxSystemUnlock();
+		gfxSystemUnlock(&mux);
 
 		gfxSemSignal(&pqueue->sem);
 
@@ -351,12 +357,13 @@ void _gqueueDeinit(void)
 		if (!pitem) return;				// Safety
 		gfxSemInit(&pitem->sem, 0, 1);
 
-		gfxSystemLock();
+		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+		gfxSystemLock(&mux);
 		pitem->next = pqueue->head;
 		pqueue->head = pitem;
 		if (!pitem->next)
 			pqueue->tail = pitem;
-		gfxSystemUnlock();
+		gfxSystemUnlock(&mux);
 
 		gfxSemSignal(&pqueue->sem);
 
@@ -367,7 +374,8 @@ void _gqueueDeinit(void)
 		if (!pitem) return;				// Safety
 		gfxSemInit(&pitem->sem, 0, 1);
 
-		gfxSystemLock();
+		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+		gfxSystemLock(&mux);
 		if (pafter && gfxQueueGSyncIsInI(pqueue, pafter)) {
 			pitem->next = pafter->next;
 			pafter->next = pitem;
@@ -382,7 +390,7 @@ void _gqueueDeinit(void)
 				pqueue->tail = pitem;
 			}
 		}
-		gfxSystemUnlock();
+		gfxSystemUnlock(&mux);
 
 		gfxSemSignal(&pqueue->sem);
 
@@ -394,13 +402,15 @@ void _gqueueDeinit(void)
 		gfxQueueFSyncItem *pi;
 
 		if (!pitem) return;				// Safety
-		gfxSystemLock();
+
+		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+		gfxSystemLock(&mux);
 		if (pqueue->head) {
 			if (pqueue->head == pitem) {
 				pqueue->head = pitem->next;
 			found:
 				pitem->next = 0;
-				gfxSystemUnlock();
+				gfxSystemUnlock(&mux);
 				gfxSemSignal(&pitem->sem);
 				gfxSemDestroy(&pitem->sem);
 				return;
@@ -414,15 +424,16 @@ void _gqueueDeinit(void)
 				}
 			}
 		}
-		gfxSystemUnlock();
+		gfxSystemUnlock(&mux);
 	}
 
 	bool_t gfxQueueFSyncIsIn(gfxQueueFSync *pqueue, const gfxQueueFSyncItem *pitem) {
 		bool_t	res;
 
-		gfxSystemLock();
+		portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+		gfxSystemLock(&mux);
 		res = gfxQueueFSyncIsInI(pqueue, pitem);
-		gfxSystemUnlock();
+		gfxSystemUnlock(&mux);
 
 		return res;
 	}
