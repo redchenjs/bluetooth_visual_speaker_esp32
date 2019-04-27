@@ -22,7 +22,7 @@
 
 static uint8_t vfx_mode = 13;
 
-static uint32_t vfx_get_color(uint16_t color_idx, uint16_t color_lum)
+static uint32_t read_color_from_table(uint16_t color_idx, uint16_t color_lum)
 {
     uint16_t table_x = color_idx;
     uint16_t table_y = color_lum;
@@ -31,32 +31,32 @@ static uint32_t vfx_get_color(uint16_t color_idx, uint16_t color_lum)
     return pixel_color;
 }
 
-static void vfx_write_pixel(uint8_t x, uint8_t y, uint8_t z,
-                            uint16_t color_idx, uint16_t color_lum)
+static void write_pixel(uint8_t x, uint8_t y, uint8_t z,
+                        uint16_t color_idx, uint16_t color_lum)
 {
-    uint32_t pixel_color = vfx_get_color(color_idx, color_lum);
+    uint32_t pixel_color = read_color_from_table(color_idx, color_lum);
     uint8_t pixel_x = x + y * 8;
     uint8_t pixel_y = z;
     GDisplay *g = gdispGetDisplay(0);
     gdispGDrawPixel(g, pixel_x, pixel_y, pixel_color);
 }
 
-static void vfx_fill_area(uint8_t x0, uint8_t y0, uint8_t z0,
-                          uint8_t x1, uint8_t y1, uint8_t z1,
-                          uint16_t color_idx, uint16_t color_lum)
+static void fill_cube(uint8_t x0, uint8_t y0, uint8_t z0,
+                      uint8_t x1, uint8_t y1, uint8_t z1,
+                      uint16_t color_idx, uint16_t color_lum)
 {
     for (uint8_t x=x0; x<=x1; x++) {
         for (uint8_t y=y0; y<=y1; y++) {
             for (uint8_t z=z0; z<=z1; z++) {
-                vfx_write_pixel(x, y, z, color_idx, color_lum);
+                write_pixel(x, y, z, color_idx, color_lum);
             }
         }
     }
 }
 
-static void vfx_write_cube(uint8_t x0, uint8_t y0, uint8_t z0,
-                           uint8_t x1, uint8_t y1, uint8_t z1,
-                           const uint8_t *bitmap)
+static void write_cube_bitmap(uint8_t x0, uint8_t y0, uint8_t z0,
+                              uint8_t x1, uint8_t y1, uint8_t z1,
+                              const uint8_t *bitmap)
 {
     uint8_t x = 0;
     uint8_t y = 0;
@@ -69,9 +69,9 @@ static void vfx_write_cube(uint8_t x0, uint8_t y0, uint8_t z0,
         uint8_t temp = *(bitmap + i);
         for (uint8_t j=0; j<8; j++) {
             if (temp & 0x80) {
-                vfx_write_pixel(x, y, z, color_idx, color_lum);
+                write_pixel(x, y, z, color_idx, color_lum);
             } else {
-                vfx_write_pixel(x, y, z, 0, 511);
+                write_pixel(x, y, z, 0, 511);
             }
             temp <<= 1;
             if (z++ == 7) {
@@ -95,7 +95,7 @@ static void vfx_write_cube(uint8_t x0, uint8_t y0, uint8_t z0,
     }
 }
 
-static void vfx_write_layer(uint8_t layer, const uint8_t *bitmap)
+static void write_layer_bitmap(uint8_t layer, const uint8_t *bitmap)
 {
     uint8_t x = 0;
     uint8_t y = 0;
@@ -108,9 +108,9 @@ static void vfx_write_layer(uint8_t layer, const uint8_t *bitmap)
         uint8_t temp = *(bitmap + i);
         for (uint8_t j=0; j<8; j++) {
             if (temp & 0x80) {
-                vfx_write_pixel(x, y, z, color_idx, color_lum);
+                write_pixel(x, y, z, color_idx, color_lum);
             } else {
-                vfx_write_pixel(x, y, z, 0, 511);
+                write_pixel(x, y, z, 0, 511);
             }
             temp <<= 1;
             if (y++ == 7) {
@@ -131,7 +131,7 @@ static void vfx_write_layer(uint8_t layer, const uint8_t *bitmap)
     }
 }
 
-static void vfx_display_number(uint8_t num, uint8_t layer, uint16_t color_idx, uint16_t color_lum)
+static void write_layer_number(uint8_t num, uint8_t layer, uint16_t color_idx, uint16_t color_lum)
 {
     uint8_t x = 0;
     uint8_t y = layer;
@@ -140,9 +140,9 @@ static void vfx_display_number(uint8_t num, uint8_t layer, uint16_t color_idx, u
         unsigned char temp = bitmap_number[num][i];
         for (uint8_t j=0; j<8; j++) {
             if (temp & 0x80) {
-                vfx_write_pixel(x, y, z, color_idx, color_lum);
+                write_pixel(x, y, z, color_idx, color_lum);
             } else {
-                vfx_write_pixel(x, y, z, 0, 511);
+                write_pixel(x, y, z, 0, 511);
             }
             temp <<= 1;
             if (z++ == 7) {
@@ -155,7 +155,7 @@ static void vfx_display_number(uint8_t num, uint8_t layer, uint16_t color_idx, u
     }
 }
 
-static void vfx_clear_cube(void)
+static void clear_cube(void)
 {
     GDisplay *g = gdispGetDisplay(0);
     gdispGFillArea(g, 0, 0, 64, 8, 0x000000);
@@ -178,11 +178,11 @@ void vfx_task(void *pvParameter)
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
                 while (1) {
-                    vfx_write_pixel(x, y, z, color_idx, color_lum);
+                    write_pixel(x, y, z, color_idx, color_lum);
                     if (x++ == 7) {
                         x = 0;
                         if (y++ == 7) {
@@ -208,10 +208,10 @@ void vfx_task(void *pvParameter)
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
-                vfx_fill_area(0, 0, 0, 7, 7, 7, color_idx, color_lum);
+                fill_cube(0, 0, 0, 7, 7, 7, color_idx, color_lum);
                 if (color_idx++ == 511) {
                     color_idx = 0;
                 }
@@ -226,10 +226,10 @@ void vfx_task(void *pvParameter)
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
-                vfx_fill_area(0, 0, 0, 7, 7, 7, color_idx, color_lum);
+                fill_cube(0, 0, 0, 7, 7, 7, color_idx, color_lum);
                 if (lum_dir == 0) {     // 暗->明
                     if (color_lum-- == 256) {
                         color_lum = 256;
@@ -285,16 +285,16 @@ void vfx_task(void *pvParameter)
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[i], --j);
+                        write_pixel(x, y, z, color_idx[i], --j);
                         if (i >= led_num - 1) {
                             x = (led_idx[i-(led_num-1)] % 64) % 8;
                             y = (led_idx[i-(led_num-1)] % 64) / 8;
                             z = led_idx[i-(led_num-1)] / 64;
-                            vfx_write_pixel(x, y, z, color_idx[i-(led_num-1)], ++k);
+                            write_pixel(x, y, z, color_idx[i-(led_num-1)], ++k);
                         }
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            vfx_clear_cube();
+                            clear_cube();
                             goto exit;
                         }
                         gfxSleepMilliseconds(8);
@@ -307,14 +307,14 @@ void vfx_task(void *pvParameter)
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[i], --j);
+                        write_pixel(x, y, z, color_idx[i], --j);
                         x = (led_idx[(512-(led_num-1))+i] % 64) % 8;
                         y = (led_idx[(512-(led_num-1))+i] % 64) / 8;
                         z = led_idx[(512-(led_num-1))+i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[(512-(led_num-1))+i], ++k);
+                        write_pixel(x, y, z, color_idx[(512-(led_num-1))+i], ++k);
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            vfx_clear_cube();
+                            clear_cube();
                             goto exit;
                         }
                         gfxSleepMilliseconds(8);
@@ -331,12 +331,12 @@ exit:
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
-                vfx_display_number(num, 3, color_idx, color_lum);
-                vfx_display_number(num, 4, color_idx, color_lum);
-                vfx_display_number(num, 5, color_idx, color_lum);
+                write_layer_number(num, 3, color_idx, color_lum);
+                write_layer_number(num, 4, color_idx, color_lum);
+                write_layer_number(num, 5, color_idx, color_lum);
                 if (color_idx++ == 511) {
                     color_idx = 0;
                 }
@@ -355,13 +355,13 @@ exit:
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
                 uint16_t color_base = color_idx;
                 while (1) {
                     for (uint8_t i=0; i<8; i++) {
-                        vfx_write_pixel(x, y, i, color_idx, color_lum);
+                        write_pixel(x, y, i, color_idx, color_lum);
                     }
                     if (x++ == 7) {
                         x = 0;
@@ -391,32 +391,32 @@ exit:
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
                 for (uint8_t i=layer0; i<=layer1; i++) {
-                    vfx_display_number(num, i, color_idx, color_lum);
+                    write_layer_number(num, i, color_idx, color_lum);
                 }
                 if (layer1 != 7 && layer0 != 0) {
-                    vfx_display_number(num, layer0, 0, 511);
+                    write_layer_number(num, layer0, 0, 511);
                     layer1++;
                     layer0++;
                 } else if (layer1 == 7) {
                     if (layer0++ == 7) {
-                        vfx_display_number(num, 7, 0, 511);
+                        write_layer_number(num, 7, 0, 511);
                         layer0 = 0;
                         layer1 = 0;
                         if (num++ == 9) {
                             num = 0;
                         }
                     } else {
-                        vfx_display_number(num, layer0 - 1, 0, 511);
+                        write_layer_number(num, layer0 - 1, 0, 511);
                     }
                 } else {
                     if ((layer1 - layer0) != 3) {
                         layer1++;
                     } else {
-                        vfx_display_number(num, 0, 0, 511);
+                        write_layer_number(num, 0, 0, 511);
                         layer1++;
                         layer0++;
                     }
@@ -433,10 +433,10 @@ exit:
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
-                vfx_write_cube(0, 0, 0, 7, 7, 7, bitmap_wave[frame_idx]);
+                write_cube_bitmap(0, 0, 0, 7, 7, 7, bitmap_wave[frame_idx]);
                 if (frame_idx++ == 44) {
                     frame_idx = 8;
                 }
@@ -450,12 +450,12 @@ exit:
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
                 frame_pre = frame_idx;
                 for (uint8_t i=0; i<8; i++) {
-                    vfx_write_layer(i, bitmap_line[frame_idx]);
+                    write_layer_bitmap(i, bitmap_line[frame_idx]);
                     if (frame_idx++ == 27) {
                         frame_idx = 0;
                     }
@@ -475,12 +475,12 @@ exit:
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
                 frame_pre = frame_idx;
                 for (uint8_t i=0; i<8; i++) {
-                    vfx_write_layer(i, bitmap_line[frame_idx]);
+                    write_layer_bitmap(i, bitmap_line[frame_idx]);
                     if (frame_idx-- == 0) {
                         frame_idx = 27;
                     }
@@ -504,7 +504,7 @@ exit:
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
 
@@ -523,11 +523,11 @@ exit:
                 for (uint16_t i=0; i<64; i++) {
                     uint8_t temp = fft_amp[i] / 8192;
                     if (temp != 0) {
-                        vfx_fill_area(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
-                        vfx_fill_area(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_lum);
+                        fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
+                        fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_lum);
                     } else {
-                        vfx_fill_area(x, 7-y, 0, x, 7-y, 6, 0, 511);
-                        vfx_fill_area(x, 7-y, 7, x, 7-y, 7, color_idx, color_lum);
+                        fill_cube(x, 7-y, 0, x, 7-y, 6, 0, 511);
+                        fill_cube(x, 7-y, 7, x, 7-y, 7, color_idx, color_lum);
                     }
 
                     if (y++ == 7) {
@@ -576,7 +576,7 @@ exit:
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
+                    clear_cube();
                     break;
                 }
 
@@ -597,11 +597,11 @@ exit:
 
                     uint8_t temp = fft_amp[i] / 8192;
                     if (temp != 0) {
-                        vfx_fill_area(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
-                        vfx_fill_area(x, 7-y, 7-temp, x, 7-y, 7, color_idx[i], color_lum[i]);
+                        fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
+                        fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx[i], color_lum[i]);
                     } else {
-                        vfx_fill_area(x, 7-y, 0, x, 7-y, 6, 0, 511);
-                        vfx_fill_area(x, 7-y, 7, x, 7-y, 7, color_idx[i], color_lum[i]);
+                        fill_cube(x, 7-y, 0, x, 7-y, 6, 0, 511);
+                        fill_cube(x, 7-y, 7, x, 7-y, 7, color_idx[i], color_lum[i]);
                     }
 
                     if (color_idx[i]-- == 0) {
@@ -621,7 +621,7 @@ exit:
             break;
         }
         default:
-            vfx_clear_cube();
+            clear_cube();
             gfxSleepMilliseconds(100);
             break;
         }
