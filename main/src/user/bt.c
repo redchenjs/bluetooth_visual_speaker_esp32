@@ -14,7 +14,7 @@
 
 #include "user/bt.h"
 #include "user/bt_av.h"
-#include "user/ble_gatts.h"
+#include "user/gatts.h"
 
 static xQueueHandle bt_task_queue = NULL;
 
@@ -69,7 +69,7 @@ bool bt_work_dispatch(bt_app_cb_t p_cback, uint16_t event, void *p_params, int p
 
 void bt_task(void *pvParameter)
 {
-    ble_gatts_init();
+    gatts_init();
     bt_task_queue = xQueueCreate(10, sizeof(bt_app_msg_t));
     /* bluetooth device name, connection mode and profile set up */
     bt_work_dispatch(bt_av_hdl_stack_evt, BT_AV_EVT_STACK_UP, NULL, 0, NULL);
