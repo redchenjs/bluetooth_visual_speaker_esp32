@@ -257,19 +257,37 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         break;
     case ESP_GATTS_READ_EVT: {
         esp_gatt_rsp_t rsp;
-        uint8_t value = vfx_get_mode();
+        uint8_t mode = vfx_get_mode();
+        uint16_t ctr = vfx_get_ctr();
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
-        rsp.attr_value.len = 1;
-        rsp.attr_value.value[0] = value;
+        rsp.attr_value.len = 4;
+        rsp.attr_value.value[0] = rsp.attr_value.len - 1;
+        rsp.attr_value.value[1] = mode;
+        rsp.attr_value.value[2] = ctr >> 8;
+        rsp.attr_value.value[3] = ctr & 0xff;
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
         break;
     }
     case ESP_GATTS_WRITE_EVT: {
         if (!param->write.is_prep) {
-            uint8_t mode = *(param->write.value);
-            ESP_LOGI(TAG, "set vfx mode %u", mode);
-            vfx_set_mode(mode);
+            if (param->write.value[0] == 3 && param->write.len == 4) {
+                uint8_t mode = param->write.value[1] % 0x10;
+                uint16_t ctr = (param->write.value[2] << 8 | param->write.value[3]) % 0x0200;
+                ESP_LOGI(TAG, "set vfx mode 0x%02X, ctr 0x%04X", mode, ctr);
+                vfx_set_ctr(ctr);
+                vfx_set_mode(mode);
+            } else if (param->write.value[0] == 2 && param->write.len == 3) {
+                uint16_t ctr = (param->write.value[1] << 8 | param->write.value[2]) % 0x0200;
+                ESP_LOGI(TAG, "set vfx ctr 0x%04X", ctr);
+                vfx_set_ctr(ctr);
+            } else if (param->write.value[0] == 1 && param->write.len == 2) {
+                uint8_t mode = param->write.value[1] % 0x10;
+                ESP_LOGI(TAG, "set vfx mode 0x%02X", mode);
+                vfx_set_mode(mode);
+            } else {
+                ESP_LOGW(TAG, "unknown command");
+            }
         }
         gatts_write_event_env(gatts_if, &a_prepare_write_env, param);
         break;
