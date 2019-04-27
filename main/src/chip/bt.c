@@ -21,5 +21,5 @@ void bt_init(void)
     ESP_ERROR_CHECK(esp_bluedroid_init());
     ESP_ERROR_CHECK(esp_bluedroid_enable());
 
-    ESP_LOGI(TAG, "btdm initialized.");
+    ESP_LOGI(TAG, "dual mode initialized.");
 }
