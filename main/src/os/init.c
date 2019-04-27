@@ -27,9 +27,14 @@ void os_init(void)
 void chip_init(void)
 {
     nvs_init();
+
     bt_init();
-    spi1_init();
+
     i2s0_init();
+
+#ifdef CONFIG_ENABLE_VFX
+    spi1_init();
+#endif
 }
 
 void board_init(void) {}
