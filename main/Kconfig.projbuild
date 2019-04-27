@@ -1,22 +1,125 @@
-menu "Full Color Light Cube"
+menu "Bluetooth Speaker"
 
 config BT_NAME
     string "Bluetooth Name"
-	default "Light Cube"
+	default "ESP32 Bluetooth Speaker"
 	help
 		Bluetooth name exposed by the device.
 
-menuconfig ENABLE_LED
+menu "VFX Configuration"
+config ENABLE_VFX
+    bool "Enable Visual Effects"
+    default y
+    help
+        Select this to enable visual effects output.
+
+choice VFX_OUTPUT
+    prompt "VFX Output Device"
+    default VFX_OUTPUT_ST7735
+    depends on ENABLE_VFX
+    help
+        Select which device to output vfx.
+
+config VFX_OUTPUT_CUBE0414
+    bool "CUBE0414 RGB Light Cube"
+config VFX_OUTPUT_ST7735
+    bool "ST7735 80x160 LCD Panel"
+endchoice
+
+choice SCREEN_PANEL_OUTPUT
+    prompt "Screen Panel Output Mode"
+    default SCREEN_PANEL_OUTPUT_FFT
+    depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
+    help
+        Select screen panel output mode.
+
+config SCREEN_PANEL_OUTPUT_FFT
+    bool "Display Music FFT"
+config SCREEN_PANEL_OUTPUT_MMAP
+    bool "Display CUBE0414's Memory Mapping"
+endchoice
+
+config LIGHT_CUBE_DC_PIN
+    int "Light Cube DC Pin"
+    default 23
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+
+config SCREEN_PANEL_RST_PIN
+    int "Screen Panel RST Pin"
+    default 14
+    depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
+
+config SCREEN_PANEL_DC_PIN
+    int "Screen Panel DC Pin"
+    default 23
+    depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
+
+config SPI_SCLK_PIN
+    int "SPI SCLK Pin"
+    default 5
+    depends on ENABLE_VFX
+
+config SPI_MOSI_PIN
+    int "SPI MOSI Pin"
+    default 18
+    depends on ENABLE_VFX
+
+config SPI_CS_PIN
+    int "SPI CS Pin"
+    default 27
+    depends on ENABLE_VFX
+endmenu
+
+menu "LED Configuration"
+config ENABLE_LED
     bool "Enable LED"
     default y
     help
         Select this to enable led.
 
+choice LED_MODE
+    prompt "LED Mode"
+    default LED_MODE_HIGH
+    depends on ENABLE_LED
+    help
+        Select LED Mode.
+
+config LED_MODE_HIGH
+    bool "High level is on"
+config LED_MODE_LOW
+    bool "Low level is on"
+endchoice
+
 config LED_PIN
     int "LED Pin"
     default 25
     depends on ENABLE_LED
+endmenu
+
+menu "Audio Configuration"
+config ENABLE_AUDIO_PROMPT
+    bool "Enable Audio Prompt"
+    default y
     help
-        LED pin for the device to use.
+        Select this to enable audio prompt.
+
+config I2S_BCLK_PIN
+    int "I2S BCLK Pin"
+    default 22
+
+config I2S_LRCK_PIN
+    int "I2S LRCK Pin"
+    default 21
+
+config I2S_DOUT_PIN
+    int "I2S DOUT Pin"
+    default 19
+endmenu
+
+config FIRMWARE_VERSION
+    string "Firmware Version"
+    default "v1.0.0"
+    help
+        Set firmware version.
 
 endmenu

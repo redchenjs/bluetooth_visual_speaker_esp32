@@ -1,5 +1,4 @@
-files/
 build/
+.vscode/
 sdkconfig
 sdkconfig.old
-spiffs.bin

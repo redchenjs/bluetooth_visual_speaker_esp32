@@ -12,8 +12,8 @@
 #include "esp_gap_ble_api.h"
 #include "esp_gatt_common_api.h"
 
+#include "user/vfx.h"
 #include "user/ble_gatts.h"
-#include "user/gui_daemon.h"
 
 #define TAG "ble_gatts"
 
@@ -302,20 +302,19 @@ void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gat
         break;
     case ESP_GATTS_READ_EVT: {
         esp_gatt_rsp_t rsp;
-        uint8_t value = gui_get_mode();
+        uint8_t value = vfx_get_mode();
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
-        rsp.attr_value.len = 2;
-        rsp.attr_value.value[0] = (value / 10) % 10 + 0x30;
-        rsp.attr_value.value[1] = value % 10 + 0x30;
+        rsp.attr_value.len = 1;
+        rsp.attr_value.value[0] = value;
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
         break;
     }
     case ESP_GATTS_WRITE_EVT: {
         if (!param->write.is_prep) {
-            uint8_t mode = *(param->write.value) - 0x30;
-            ESP_LOGI(TAG, "set gui mode %u", mode);
-            gui_set_mode(mode);
+            uint8_t mode = *(param->write.value);
+            ESP_LOGI(TAG, "set vfx mode %u", mode);
+            vfx_set_mode(mode);
 
             if (gl_profile_tab[PROFILE_A_APP_ID].descr_handle == param->write.handle && param->write.len == 2) {
                 uint16_t descr_value = param->write.value[1]<<8 | param->write.value[0];
@@ -466,5 +465,16 @@ void ble_gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if,
                 gl_profile_tab[idx].gatts_cb(event, gatts_if, param);
             }
         }
+    }
+}
+
+void ble_gatts_init(void)
+{
+    ESP_ERROR_CHECK(esp_ble_gatts_register_callback(ble_gatts_event_handler));
+    ESP_ERROR_CHECK(esp_ble_gap_register_callback(ble_gap_event_handler));
+    ESP_ERROR_CHECK(esp_ble_gatts_app_register(0));
+    esp_err_t local_mtu_ret = esp_ble_gatt_set_local_mtu(500);
+    if (local_mtu_ret) {
+        ESP_LOGE(TAG, "set local MTU failed, error code = %x", local_mtu_ret);
     }
 }

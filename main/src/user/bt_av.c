@@ -18,14 +18,13 @@
 #include "freertos/task.h"
 #include "driver/i2s.h"
 
-#include "device/i2s.h"
-#include "device/fifo.h"
-
+#include "chip/i2s.h"
+#include "user/fifo.h"
 #include "user/bt_av.h"
-#include "user/bt_daemon.h"
-#include "user/gui_daemon.h"
-#include "user/led_daemon.h"
-#include "user/audio_daemon.h"
+#include "user/bt.h"
+#include "user/vfx.h"
+#include "user/led.h"
+#include "user/audio.h"
 
 #define TAG "bt_av"
 
@@ -48,7 +47,7 @@ void bt_av_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
     case ESP_A2D_CONNECTION_STATE_EVT:
     case ESP_A2D_AUDIO_STATE_EVT:
     case ESP_A2D_AUDIO_CFG_EVT:
-        bt_daemon_work_dispatch(bt_av_hdl_a2d_evt, event, param, sizeof(esp_a2d_cb_param_t), NULL);
+        bt_work_dispatch(bt_av_hdl_a2d_evt, event, param, sizeof(esp_a2d_cb_param_t), NULL);
         break;
     default:
         ESP_LOGE(TAG, "invalid a2dp_cb event: %d", event);
@@ -82,7 +81,7 @@ void bt_av_rc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t *param)
     case ESP_AVRC_CT_PASSTHROUGH_RSP_EVT:
     case ESP_AVRC_CT_CHANGE_NOTIFY_EVT:
     case ESP_AVRC_CT_REMOTE_FEATURES_EVT: {
-        bt_daemon_work_dispatch(bt_av_hdl_avrc_evt, event, param, sizeof(esp_avrc_ct_cb_param_t), NULL);
+        bt_work_dispatch(bt_av_hdl_avrc_evt, event, param, sizeof(esp_avrc_ct_cb_param_t), NULL);
         break;
     }
     default:

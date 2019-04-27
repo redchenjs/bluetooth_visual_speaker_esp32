@@ -5,18 +5,14 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include "system/event.h"
-#include "system/init.h"
-#include "system/user.h"
+#include "os/init.h"
 
 int app_main(void)
 {
-    event_init();       // System Event
-
-    device_init();      // Onchip Module
-    driver_init();      // Other Module
-
+    os_init();          // OS Event
+    chip_init();        // OnChip Module
+    board_init();       // OnBoard Module
     user_init();        // User Task
-    
+
     return 0;
 }

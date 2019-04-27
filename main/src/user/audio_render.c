@@ -5,11 +5,12 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include "freertos/FreeRTOS.h"
 #include "esp_log.h"
 
-#include "device/i2s.h"
+#include "freertos/FreeRTOS.h"
 #include "driver/i2s.h"
+
+#include "chip/i2s.h"
 
 /* render callback for the libmad synth */
 void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels)
