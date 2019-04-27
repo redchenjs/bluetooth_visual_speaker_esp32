@@ -50,7 +50,7 @@ void bt_av_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
         bt_work_dispatch(bt_av_hdl_a2d_evt, event, param, sizeof(esp_a2d_cb_param_t), NULL);
         break;
     default:
-        ESP_LOGE(TAG, "invalid a2dp_cb event: %d", event);
+        ESP_LOGE(TAG, "invalid a2dp event: %d", event);
         break;
     }
 }
@@ -85,7 +85,7 @@ void bt_av_rc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t *param)
         break;
     }
     default:
-        ESP_LOGE(TAG, "invalid avrc_cb event: %d", event);
+        ESP_LOGE(TAG, "invalid avrc event: %d", event);
         break;
     }
 }
