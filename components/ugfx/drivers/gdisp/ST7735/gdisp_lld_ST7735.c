@@ -65,22 +65,22 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     gfxSleepMilliseconds(120);
     write_cmd(g, ST7735_SLPOUT);    //  2: Out of sleep mode, 0 args, w/delay
     gfxSleepMilliseconds(120);
-    write_cmd(g, ST7735_FRMCTR1);   //  3: Frame rate ctrl - normal mode, 3 args:
-        write_data(g, 0x05);
-        write_data(g, 0x3C);
-        write_data(g, 0x3C);
+    write_cmd(g, ST7735_FRMCTR1);   //  3: Frame rate control - normal mode, 3 args:
+        write_data(g, 0x00);
+        write_data(g, 0x04);
+        write_data(g, 0x04);
     write_cmd(g, ST7735_FRMCTR2);   //  4: Frame rate control - idle mode, 3 args:
-        write_data(g, 0x05);
-        write_data(g, 0x3C);
-        write_data(g, 0x3C);
-    write_cmd(g, ST7735_FRMCTR3);   //  5: Frame rate ctrl - partial mode, 6 args:
-        write_data(g, 0x05);
-        write_data(g, 0x3C);
-        write_data(g, 0x3C);
-        write_data(g, 0x05);
-        write_data(g, 0x3C);
-        write_data(g, 0x3C);
-    write_cmd(g, ST7735_INVCTR);    //  6: Display inversion ctrl, 1 arg, no delay:
+        write_data(g, 0x00);
+        write_data(g, 0x04);
+        write_data(g, 0x04);
+    write_cmd(g, ST7735_FRMCTR3);   //  5: Frame rate control - partial mode, 6 args:
+        write_data(g, 0x00);
+        write_data(g, 0x04);
+        write_data(g, 0x04);
+        write_data(g, 0x00);
+        write_data(g, 0x04);
+        write_data(g, 0x04);
+    write_cmd(g, ST7735_INVCTR);    //  6: Display inversion control, 1 arg, no delay:
         write_data(g, 0x03);
     write_cmd(g, ST7735_PWCTR1);    //  7: Power control, 3 args, no delay:
         write_data(g, 0x0E);
@@ -272,6 +272,7 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
         }
         g->g.Orientation = (orientation_t)g->p.ptr;
         return;
+
     case GDISP_CONTROL_BACKLIGHT:
         if ((unsigned)g->p.ptr > 100)
             g->p.ptr = (void *)100;
