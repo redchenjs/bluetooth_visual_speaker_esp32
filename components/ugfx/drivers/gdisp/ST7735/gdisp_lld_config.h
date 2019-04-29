@@ -1,3 +1,10 @@
+/*
+ * gdisp_lld_config.h
+ *
+ *  Created on: 2019-04-29 22:04
+ *      Author: Jack Chen <redchenjs@live.com>
+ */
+
 #ifndef _GDISP_LLD_CONFIG_H
 #define _GDISP_LLD_CONFIG_H
 
