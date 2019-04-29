@@ -9,7 +9,10 @@
 
 #undef GDISP_DRIVER_LIST
 
-#ifdef CONFIG_VFX_OUTPUT_ST7735
+#ifdef CONFIG_VFX_OUTPUT_ST7789
+    #define GDISP_DRIVER_LIST GDISPVMT_ST7789
+    #include "drivers/gdisp/ST7789/gdisp_lld_ST7789.c"
+#elif defined(CONFIG_VFX_OUTPUT_ST7735)
     #define GDISP_DRIVER_LIST GDISPVMT_ST7735
     #include "drivers/gdisp/ST7735/gdisp_lld_ST7735.c"
 #else

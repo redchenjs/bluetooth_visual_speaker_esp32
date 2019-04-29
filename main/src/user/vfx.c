@@ -42,11 +42,17 @@ static void write_pixel(uint8_t x, uint8_t y, uint8_t z,
     GDisplay *g = gdispGetDisplay(0);
 #ifdef CONFIG_VFX_OUTPUT_CUBE0414
     gdispGDrawPixel(g, pixel_x, pixel_y, pixel_color);
-#else
+#elif defined(CONFIG_VFX_OUTPUT_ST7735)
     if (pixel_x <= 31) {
         gdispGFillArea(g, pixel_x * 5, pixel_y * 5, 5, 5, pixel_color);
     } else {
         gdispGFillArea(g, (pixel_x - 32) * 5, (pixel_y + 8) * 5, 5, 5, pixel_color);
+    }
+#else
+    if (pixel_x <= 31) {
+        gdispGFillArea(g, pixel_x * 7 + 8, pixel_y * 7 + 12, 7, 7, pixel_color);
+    } else {
+        gdispGFillArea(g, (pixel_x - 32) * 7 + 8, (pixel_y + 8) * 7 + 12, 7, 7, pixel_color);
     }
 #endif
 }
@@ -164,17 +170,19 @@ static void write_layer_number(uint8_t num, uint8_t layer, uint16_t color_idx, u
         }
     }
 }
+#endif // defined(VFX_OUTPUT_CUBE0414) || defined(SCREEN_PANEL_OUTPUT_MMAP)
 
 static void clear_cube(void)
 {
     GDisplay *g = gdispGetDisplay(0);
 #ifdef CONFIG_VFX_OUTPUT_CUBE0414
     gdispGFillArea(g, 0, 0, 64, 8, 0x000000);
-#else
+#elif defined(CONFIG_VFX_OUTPUT_ST7735)
     gdispGFillArea(g, 0, 0, 160, 80, 0x000000);
+#else
+    gdispGFillArea(g, 0, 0, 240, 135, 0x000000);
 #endif
 }
-#endif // defined(VFX_OUTPUT_CUBE0414) || defined(SCREEN_PANEL_OUTPUT_MMAP)
 
 static void vfx_task_handle(void *pvParameter)
 {
@@ -203,7 +211,7 @@ static void vfx_task_handle(void *pvParameter)
         while (1) {
             if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                 xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                gdispGFillArea(g, 0, 0, 160, 80, 0x000000);
+                clear_cube();
                 break;
             }
 
@@ -219,6 +227,7 @@ static void vfx_task_handle(void *pvParameter)
             }
 
             color_tmp = color_idx;
+#if defined(CONFIG_VFX_OUTPUT_ST7735)
             for (uint16_t i=0; i<52; i++) {
                 uint8_t temp = fft_amp[i] / 819;
                 uint32_t pixel_color = read_color_from_table(color_idx, color_ctr);
@@ -238,7 +247,27 @@ static void vfx_task_handle(void *pvParameter)
                 uint16_t fill_cx = 3;
                 uint16_t fill_y  = 80 - temp;
                 uint16_t fill_cy = temp;
+#else
+            for (uint16_t i=0; i<60; i++) {
+                uint8_t temp = fft_amp[i] / 485;
+                uint32_t pixel_color = read_color_from_table(color_idx, color_ctr);
 
+                if (temp > 135) {
+                    temp = 135;
+                } else if (temp < 1) {
+                    temp = 1;
+                }
+
+                uint16_t clear_x  = i * 4;
+                uint16_t clear_cx = 4;
+                uint16_t clear_y  = 0;
+                uint16_t clear_cy = 135 - temp;
+
+                uint16_t fill_x  = i * 4;
+                uint16_t fill_cx = 4;
+                uint16_t fill_y  = 135 - temp;
+                uint16_t fill_cy = temp;
+#endif
                 gdispGFillArea(g, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
                 gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 

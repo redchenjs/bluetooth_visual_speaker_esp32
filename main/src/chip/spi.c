@@ -10,6 +10,7 @@
 #include "driver/spi_master.h"
 
 #include "board/st7735.h"
+#include "board/st7789.h"
 #include "board/cube0414.h"
 
 #define TAG "spi"
@@ -29,6 +30,8 @@ void spi1_init(void)
         .max_transfer_sz = CUBE0414_X*CUBE0414_Y*CUBE0414_Z*3
 #elif defined(CONFIG_VFX_OUTPUT_ST7735)
         .max_transfer_sz = ST7735_SCREEN_WIDTH*ST7735_SCREEN_HEIGHT*2
+#elif defined(CONFIG_VFX_OUTPUT_ST7789)
+        .max_transfer_sz = ST7789_SCREEN_WIDTH*ST7789_SCREEN_HEIGHT*2
 #endif
     };
     spi_device_interface_config_t devcfg={
@@ -42,6 +45,10 @@ void spi1_init(void)
         .clock_speed_hz = 26000000,               // Clock out at 26 MHz
         .queue_size = 6,                          // We want to be able to queue 6 transactions at a time
         .pre_cb = st7735_setpin_dc,               // Specify pre-transfer callback to handle D/C line
+#elif defined(CONFIG_VFX_OUTPUT_ST7789)
+        .clock_speed_hz = 40000000,               // Clock out at 40 MHz
+        .queue_size = 6,                          // We want to be able to queue 6 transactions at a time
+        .pre_cb = st7789_setpin_dc,               // Specify pre-transfer callback to handle D/C line
 #endif
         .flags = SPI_DEVICE_3WIRE | SPI_DEVICE_HALFDUPLEX
     };

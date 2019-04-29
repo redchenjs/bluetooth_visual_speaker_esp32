@@ -22,7 +22,7 @@ config BLE_ADV_NAME
 
 choice VFX_OUTPUT
     prompt "VFX Output Device"
-    default VFX_OUTPUT_ST7735
+    default VFX_OUTPUT_ST7789
     depends on ENABLE_VFX
     help
         Select which device to output vfx.
@@ -31,6 +31,8 @@ config VFX_OUTPUT_CUBE0414
     bool "CUBE0414 RGB Light Cube"
 config VFX_OUTPUT_ST7735
     bool "ST7735 80x160 LCD Panel"
+config VFX_OUTPUT_ST7789
+    bool "ST7789 135x240 LCD Panel"
 endchoice
 
 choice SCREEN_PANEL_OUTPUT
