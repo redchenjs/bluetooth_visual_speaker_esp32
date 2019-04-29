@@ -12,10 +12,12 @@
 #include "freertos/event_groups.h"
 
 typedef enum user_event_group_bits {
-    VFX_RELOAD_BIT  = BIT0,
-    AUDIO_READY_BIT = BIT1
+    AUDIO_RUN_BIT  = BIT0,
+    VFX_RELOAD_BIT = BIT1
 } user_event_group_bits_t;
 
 extern EventGroupHandle_t user_event_group;
+
+extern void event_init(void);
 
 #endif /* INC_OS_EVENT_H_ */

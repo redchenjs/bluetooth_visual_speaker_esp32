@@ -10,12 +10,12 @@
 
 #include <stdint.h>
 
-extern void vfx_task(void *pvParameter);
-
 extern void vfx_set_mode(uint8_t mode);
 extern uint8_t vfx_get_mode(void);
 
 extern void vfx_set_ctr(uint16_t ctr);
 extern uint16_t vfx_get_ctr(void);
+
+extern void vfx_init(void);
 
 #endif /* INC_USER_VFX_H_ */

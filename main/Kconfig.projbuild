@@ -2,7 +2,7 @@ menu "Bluetooth Speaker"
 
 config BT_NAME
     string "Bluetooth Name"
-	default "ESP32 Bluetooth Speaker"
+	default "Bluetooth Speaker"
 	help
 		Bluetooth name exposed by the device.
 
@@ -12,6 +12,13 @@ config ENABLE_VFX
     default y
     help
         Select this to enable visual effects output.
+
+config BLE_ADV_NAME
+    string "BLE Advertising Name"
+	default "Bluetooth Speaker BLE"
+    depends on ENABLE_VFX
+	help
+		BLE Advertising name for the control interface.
 
 choice VFX_OUTPUT
     prompt "VFX Output Device"

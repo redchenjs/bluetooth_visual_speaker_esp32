@@ -21,5 +21,10 @@ void bt_init(void)
     ESP_ERROR_CHECK(esp_bluedroid_init());
     ESP_ERROR_CHECK(esp_bluedroid_enable());
 
+#ifdef CONFIG_ENABLE_VFX
     ESP_LOGI(TAG, "dual mode initialized.");
+#else
+    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
+    ESP_LOGI(TAG, "classic mode initialized.");
+#endif
 }

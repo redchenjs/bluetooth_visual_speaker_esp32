@@ -10,7 +10,27 @@
 #include "freertos/FreeRTOS.h"
 #include "driver/i2s.h"
 
+#include "os/event.h"
 #include "chip/i2s.h"
+#include "user/fifo.h"
+
+esp_err_t i2s_write_wrapper(i2s_port_t i2s_num, const void *src, size_t size, size_t *bytes_written, TickType_t ticks_to_wait)
+{
+    esp_err_t err = i2s_write(i2s_num, src, size, bytes_written, ticks_to_wait);
+
+#ifdef CONFIG_ENABLE_VFX
+        // Copy data to FIFO
+        uint32_t idx = 0;
+        const uint8_t *data = (const uint8_t *)src;
+        while (size > 0) {
+            fifo_write(data[idx+1] << 8 | data[idx]);
+            idx  += 4;
+            size -= 4;
+        }
+#endif
+
+    return err;
+}
 
 /* render callback for the libmad synth */
 void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels)
@@ -29,7 +49,7 @@ void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num
     for (int i = 0; i < num_samples; i++) {
         /* low - high / low - high */
         const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]};
-        i2s_write(0, (const char *)&samp32, sizeof(samp32), &bytes_written, max_wait);
+        i2s_write_wrapper(0, (const char *)&samp32, sizeof(samp32), &bytes_written, max_wait);
 
         // DMA buffer full - retry
         if (bytes_written == 0) {

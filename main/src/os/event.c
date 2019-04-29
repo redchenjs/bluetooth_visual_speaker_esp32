@@ -11,3 +11,8 @@
 #define TAG "event"
 
 EventGroupHandle_t user_event_group;
+
+void event_init(void)
+{
+    user_event_group = xEventGroupCreate();
+}

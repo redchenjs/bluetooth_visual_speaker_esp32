@@ -15,8 +15,9 @@ typedef struct fifo_element {
     struct fifo_element *next;
 } fifo_element_t;
 
-extern void fifo_init(void);
 extern void fifo_write(int16_t data);
 extern int16_t fifo_read(void);
+
+extern void fifo_init(void);
 
 #endif /* INC_USER_FIFO_H_ */

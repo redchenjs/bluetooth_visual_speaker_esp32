@@ -1,5 +1,5 @@
 /*
- * gatts.c
+ * ble_gatts.c
  *
  *  Created on: 2018-05-12 22:31
  *      Author: Jack Chen <redchenjs@live.com>
@@ -9,13 +9,14 @@
 
 #include "esp_log.h"
 #include "esp_gatts_api.h"
+#include "esp_gap_bt_api.h"
 #include "esp_gap_ble_api.h"
 #include "esp_gatt_common_api.h"
 
 #include "user/vfx.h"
-#include "user/gatts.h"
+#include "user/ble_gatts.h"
 
-#define TAG "gatts"
+#define TAG "ble_gatts"
 
 #define PROFILE_NUM      1
 #define PROFILE_A_APP_ID 0
@@ -23,78 +24,33 @@
 #define GATTS_SERVICE_UUID_A 0x00FF
 #define GATTS_CHAR_UUID_A    0xFF01
 #define GATTS_DESCR_UUID_A   0x3333
-#define GATTS_NUM_HANDLE_A   3
-
-#define BLE_DEVICE_NAME           CONFIG_BT_NAME
-#define BLE_MANUFACTURER_DATA_LEN 17
-
-#define GATTS_CHAR_VAL_LEN_MAX 0x40
+#define GATTS_NUM_HANDLE_A   4
 
 #define PREPARE_BUF_MAX_SIZE   1024
+#define GATTS_CHAR_VAL_LEN_MAX 0x40
 
-static uint8_t char1_str[] = "mode";
+typedef struct {
+    uint8_t *prepare_buf;
+    int      prepare_len;
+} prepare_type_env_t;
 
-esp_attr_value_t gatts_char1_val = {
+static prepare_type_env_t a_prepare_write_env;
+
+static uint8_t ble_char_value_str[] = {0x11, 0x22, 0x33};
+
+static esp_attr_value_t gatts_char1_val = {
     .attr_max_len = GATTS_CHAR_VAL_LEN_MAX,
-    .attr_len     = sizeof(char1_str),
-    .attr_value   = char1_str,
+    .attr_len     = sizeof(ble_char_value_str),
+    .attr_value   = ble_char_value_str,
 };
-
-#define adv_config_flag      (1 << 0)
-#define scan_rsp_config_flag (1 << 1)
-
-static uint8_t adv_config_done = 0;
 
 static esp_ble_adv_params_t adv_params = {
     .adv_int_min       = 0x20,
     .adv_int_max       = 0x40,
     .adv_type          = ADV_TYPE_IND,
-    .own_addr_type     = BLE_ADDR_TYPE_PUBLIC,
+    .own_addr_type     = BLE_ADDR_TYPE_RANDOM,
     .channel_map       = ADV_CHNL_ALL,
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
-};
-
-static uint8_t adv_service_uuid128[32] = {
-    /* LSB <--------------------------------------------------------------------------------> MSB */
-    //first uuid, 16bit, [12],[13] is the value
-    0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xEE, 0x00, 0x00, 0x00,
-    //second uuid, 32bit, [12], [13], [14], [15] is the value
-    0xfb, 0x34, 0x9b, 0x5f, 0x80, 0x00, 0x00, 0x80, 0x00, 0x10, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00,
-};
-
-// The length of adv data must be less than 31 bytes
-static uint8_t manufacturer_data[BLE_MANUFACTURER_DATA_LEN] = {0xf2, 0x22, 0x22, 0x22};
-// adv data
-static esp_ble_adv_data_t adv_data = {
-    .set_scan_rsp = false,
-    .include_name = true,
-    .include_txpower = true,
-    .min_interval = 0x20,
-    .max_interval = 0x40,
-    .appearance = 0x00,
-    .manufacturer_len = BLE_MANUFACTURER_DATA_LEN,
-    .p_manufacturer_data = manufacturer_data,
-    .service_data_len = 0,
-    .p_service_data = NULL,
-    .service_uuid_len = 32,
-    .p_service_uuid = adv_service_uuid128,
-    .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
-};
-// scan response data
-static esp_ble_adv_data_t scan_rsp_data = {
-    .set_scan_rsp = true,
-    .include_name = true,
-    .include_txpower = true,
-    .min_interval = 0x20,
-    .max_interval = 0x40,
-    .appearance = 0x00,
-    .manufacturer_len = BLE_MANUFACTURER_DATA_LEN,
-    .p_manufacturer_data = manufacturer_data,
-    .service_data_len = 0,
-    .p_service_data = NULL,
-    .service_uuid_len = 32,
-    .p_service_uuid = adv_service_uuid128,
-    .flag = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT),
 };
 
 typedef struct gatts_profile_inst {
@@ -112,27 +68,40 @@ typedef struct gatts_profile_inst {
     esp_bt_uuid_t descr_uuid;
 } gatts_profile_inst_t;
 
-typedef struct {
-    uint8_t *prepare_buf;
-    int      prepare_len;
-} prepare_type_env_t;
-
-static prepare_type_env_t a_prepare_write_env;
+#ifdef CONFIG_ENABLE_VFX
+static void ble_init_adv_data(const char *name)
+{
+    int len = strlen(name);
+    uint8_t raw_adv_data[len+5];
+    // flag
+    raw_adv_data[0] = 2;
+    raw_adv_data[1] = ESP_BT_EIR_TYPE_FLAGS;
+    raw_adv_data[2] = (ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT);
+    // adv name
+    raw_adv_data[3] = len + 1;
+    raw_adv_data[4] = ESP_BLE_AD_TYPE_NAME_CMPL;
+    for (int i=0; i<len; i++) {
+        raw_adv_data[i+5] = *(name++);
+    }
+    // the length of adv data must be less than 31 bytes
+    esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
+    if (raw_adv_ret) {
+        ESP_LOGE(TAG, "config raw adv data failed, error code = 0x%x ", raw_adv_ret);
+    }
+    esp_err_t raw_scan_ret = esp_ble_gap_config_scan_rsp_data_raw(raw_adv_data, sizeof(raw_adv_data));
+    if (raw_scan_ret) {
+        ESP_LOGE(TAG, "config raw scan rsp data failed, error code = 0x%x", raw_scan_ret);
+    }
+}
+#endif
 
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
     switch (event) {
-    case ESP_GAP_BLE_ADV_DATA_SET_COMPLETE_EVT:
-        adv_config_done &= (~adv_config_flag);
-        if (adv_config_done == 0) {
-            esp_ble_gap_start_advertising(&adv_params);
-        }
+    case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
         break;
-    case ESP_GAP_BLE_SCAN_RSP_DATA_SET_COMPLETE_EVT:
-        adv_config_done &= (~scan_rsp_config_flag);
-        if (adv_config_done == 0) {
-            esp_ble_gap_start_advertising(&adv_params);
-        }
+    case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
+        esp_ble_gap_start_advertising(&adv_params);
         break;
     case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
         // advertising start complete event to indicate advertising start successfully or failed
@@ -143,18 +112,61 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
     case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
         if (param->adv_stop_cmpl.status != ESP_BT_STATUS_SUCCESS) {
             ESP_LOGE(TAG, "advertising stop failed");
-        } else {
-            ESP_LOGI(TAG, "stop adv successfully");
         }
         break;
-    case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-        ESP_LOGI(TAG, "update connection params status = %d, min_int = %d, max_int = %d, conn_int = %d, latency = %d, timeout = %d",
-                 param->update_conn_params.status,
-                 param->update_conn_params.min_int,
-                 param->update_conn_params.max_int,
-                 param->update_conn_params.conn_int,
-                 param->update_conn_params.latency,
-                 param->update_conn_params.timeout);
+    case ESP_GAP_BLE_PASSKEY_REQ_EVT:                            /* passkey request event */
+        break;
+    case ESP_GAP_BLE_OOB_REQ_EVT:                                /* OOB request event */
+        break;
+    case ESP_GAP_BLE_LOCAL_IR_EVT:                               /* BLE local IR event */
+        break;
+    case ESP_GAP_BLE_LOCAL_ER_EVT:                               /* BLE local ER event */
+        break;
+    case ESP_GAP_BLE_NC_REQ_EVT:
+        /* the app will receive this evt when the IO has DisplayYesNO capability and the peer device IO also has DisplayYesNo capability.
+        show the passkey number to the user to confirm it with the number displayed by peer deivce. */
+        ESP_LOGI(TAG, "the passkey Notify number:%06d", param->ble_security.key_notif.passkey);
+        break;
+    case ESP_GAP_BLE_SEC_REQ_EVT:
+        /* send the positive(true) security response to the peer device to accept the security request.
+        If not accept the security request, should sent the security response with negative(false) accept value*/
+        esp_ble_gap_security_rsp(param->ble_security.ble_req.bd_addr, true);
+        break;
+    case ESP_GAP_BLE_PASSKEY_NOTIF_EVT:
+        /* the app will receive this evt when the IO has Output capability and the peer device IO has Input capability.
+        show the passkey number to the user to input it in the peer deivce. */
+        ESP_LOGI(TAG, "the passkey Notify number:%06d", param->ble_security.key_notif.passkey);
+        break;
+    case ESP_GAP_BLE_KEY_EVT:
+        // shows the ble key info share with peer device to the user.
+        ESP_LOGI(TAG, "key type = %d", param->ble_security.ble_key.key_type);
+        break;
+    case ESP_GAP_BLE_AUTH_CMPL_EVT: {
+        esp_bd_addr_t bd_addr;
+        memcpy(bd_addr, param->ble_security.auth_cmpl.bd_addr, sizeof(esp_bd_addr_t));
+        ESP_LOGI(TAG, "remote BD_ADDR: %08x%04x",\
+                (bd_addr[0] << 24) + (bd_addr[1] << 16) + (bd_addr[2] << 8) + bd_addr[3],
+                (bd_addr[4] << 8) + bd_addr[5]);
+        ESP_LOGI(TAG, "address type = %d", param->ble_security.auth_cmpl.addr_type);
+        ESP_LOGI(TAG, "pair status = %s",param->ble_security.auth_cmpl.success ? "success" : "fail");
+        if (!param->ble_security.auth_cmpl.success) {
+            ESP_LOGI(TAG, "fail reason = 0x%x",param->ble_security.auth_cmpl.fail_reason);
+        } else {
+            ESP_LOGI(TAG, "auth mode = %d", param->ble_security.auth_cmpl.auth_mode);
+        }
+        break;
+    }
+    case ESP_GAP_BLE_REMOVE_BOND_DEV_COMPLETE_EVT:
+        break;
+    case ESP_GAP_BLE_SET_LOCAL_PRIVACY_COMPLETE_EVT:
+        if (param->local_privacy_cmpl.status != ESP_BT_STATUS_SUCCESS) {
+            ESP_LOGE(TAG, "config local privacy failed, error status = %x", param->local_privacy_cmpl.status);
+            break;
+        }
+#ifdef CONFIG_ENABLE_VFX
+        // init BLE adv data and scan response data
+        ble_init_adv_data(CONFIG_BLE_ADV_NAME);
+#endif
         break;
     default:
         break;
@@ -218,41 +230,25 @@ static void gatts_exec_write_event_env(prepare_type_env_t *prepare_write_env, es
     prepare_write_env->prepare_len = 0;
 }
 
-static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 /* One gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT */
 static gatts_profile_inst_t gl_profile_tab[PROFILE_NUM] = {
     [PROFILE_A_APP_ID] = {
-        .gatts_cb = gatts_profile_a_event_handler,
+        .gatts_cb = profile_a_event_handler,
         .gatts_if = ESP_GATT_IF_NONE,       /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
     },
 };
 
-static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
+static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
     switch (event) {
     case ESP_GATTS_REG_EVT:
+        // generate a resolvable random address
+        esp_ble_gap_config_local_privacy(true);
         gl_profile_tab[PROFILE_A_APP_ID].service_id.is_primary = true;
         gl_profile_tab[PROFILE_A_APP_ID].service_id.id.inst_id = 0x00;
         gl_profile_tab[PROFILE_A_APP_ID].service_id.id.uuid.len = ESP_UUID_LEN_16;
         gl_profile_tab[PROFILE_A_APP_ID].service_id.id.uuid.uuid.uuid16 = GATTS_SERVICE_UUID_A;
-
-        esp_err_t set_dev_name_ret = esp_ble_gap_set_device_name(BLE_DEVICE_NAME);
-        if (set_dev_name_ret) {
-            ESP_LOGE(TAG, "set device name failed, error code = %x", set_dev_name_ret);
-        }
-        // config adv data
-        esp_err_t ret = esp_ble_gap_config_adv_data(&adv_data);
-        if (ret) {
-            ESP_LOGE(TAG, "config adv data failed, error code = %x", ret);
-        }
-        adv_config_done |= adv_config_flag;
-        // config scan response data
-        ret = esp_ble_gap_config_adv_data(&scan_rsp_data);
-        if (ret) {
-            ESP_LOGE(TAG, "config scan response data failed, error code = %x", ret);
-        }
-        adv_config_done |= scan_rsp_config_flag;
-
         esp_ble_gatts_create_service(gatts_if, &gl_profile_tab[PROFILE_A_APP_ID].service_id, GATTS_NUM_HANDLE_A);
         break;
     case ESP_GATTS_READ_EVT: {
@@ -297,7 +293,6 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         gatts_exec_write_event_env(&a_prepare_write_env, param);
         break;
     case ESP_GATTS_MTU_EVT:
-        ESP_LOGI(TAG, "set mtu %d", param->mtu.mtu);
         break;
     case ESP_GATTS_UNREG_EVT:
         break;
@@ -319,17 +314,9 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
     case ESP_GATTS_ADD_INCL_SRVC_EVT:
         break;
     case ESP_GATTS_ADD_CHAR_EVT: {
-        uint16_t length = 0;
-        const uint8_t *prf_char;
-
         gl_profile_tab[PROFILE_A_APP_ID].char_handle = param->add_char.attr_handle;
         gl_profile_tab[PROFILE_A_APP_ID].descr_uuid.len = ESP_UUID_LEN_16;
         gl_profile_tab[PROFILE_A_APP_ID].descr_uuid.uuid.uuid16 = GATTS_DESCR_UUID_A;
-        esp_err_t get_attr_ret = esp_ble_gatts_get_attr_value(param->add_char.attr_handle, &length, &prf_char);
-        if (get_attr_ret == ESP_FAIL) {
-            ESP_LOGE(TAG, "illegal handle");
-        }
-
         esp_err_t add_descr_ret = esp_ble_gatts_add_char_descr(gl_profile_tab[PROFILE_A_APP_ID].service_handle,
                                                                &gl_profile_tab[PROFILE_A_APP_ID].descr_uuid,
                                                                ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
@@ -350,28 +337,15 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
     case ESP_GATTS_STOP_EVT:
         break;
     case ESP_GATTS_CONNECT_EVT: {
-        ESP_LOGI(TAG, "device connected");
         esp_ble_conn_update_params_t conn_params = {0};
         memcpy(conn_params.bda, param->connect.remote_bda, sizeof(esp_bd_addr_t));
-        /* For the IOS system, please reference the apple official documents about the ble connection parameters restrictions. */
-        conn_params.latency = 0;
-        conn_params.max_int = 0x20;    // max_int = 0x20*1.25ms = 40ms
-        conn_params.min_int = 0x10;    // min_int = 0x10*1.25ms = 20ms
-        conn_params.timeout = 400;     // timeout = 400*10ms = 4000ms
-        gl_profile_tab[PROFILE_A_APP_ID].conn_id = param->connect.conn_id;
-        // start sent the update connection parameters to the peer device.
-        esp_ble_gap_update_conn_params(&conn_params);
+        esp_ble_set_encryption(param->connect.remote_bda, ESP_BLE_SEC_ENCRYPT_MITM);
         break;
     }
     case ESP_GATTS_DISCONNECT_EVT:
-        ESP_LOGI(TAG, "device disconnected");
         esp_ble_gap_start_advertising(&adv_params);
         break;
     case ESP_GATTS_CONF_EVT:
-        if (param->conf.status != ESP_GATT_OK) {
-            esp_log_buffer_hex(TAG, param->conf.value, param->conf.len);
-        }
-        break;
     case ESP_GATTS_OPEN_EVT:
     case ESP_GATTS_CANCEL_OPEN_EVT:
     case ESP_GATTS_CLOSE_EVT:
@@ -408,13 +382,30 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
     }
 }
 
-void gatts_init(void)
+void ble_gatts_init(void)
 {
-    ESP_ERROR_CHECK(esp_ble_gap_register_callback(gap_event_handler));
     ESP_ERROR_CHECK(esp_ble_gatts_register_callback(gatts_event_handler));
+    ESP_ERROR_CHECK(esp_ble_gap_register_callback(gap_event_handler));
     ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_A_APP_ID));
-    esp_err_t local_mtu_ret = esp_ble_gatt_set_local_mtu(500);
-    if (local_mtu_ret) {
-        ESP_LOGE(TAG, "set local MTU failed, error code = %x", local_mtu_ret);
-    }
+
+    /* set the security iocap & auth_req & key size & init key response key parameters to the stack*/
+    esp_ble_auth_req_t auth_req = ESP_LE_AUTH_BOND;     // bonding with peer device after authentication
+    esp_ble_io_cap_t iocap = ESP_IO_CAP_NONE;           // set the IO capability to No output No input
+    uint8_t key_size = 16;      // the key size should be 7~16 bytes
+    uint8_t init_key = ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK;
+    uint8_t rsp_key = ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK;
+    // set static passkey
+    uint32_t passkey = 123456;
+    uint8_t auth_option = ESP_BLE_ONLY_ACCEPT_SPECIFIED_AUTH_DISABLE;
+    esp_ble_gap_set_security_param(ESP_BLE_SM_SET_STATIC_PASSKEY, &passkey, sizeof(uint32_t));
+    esp_ble_gap_set_security_param(ESP_BLE_SM_AUTHEN_REQ_MODE, &auth_req, sizeof(uint8_t));
+    esp_ble_gap_set_security_param(ESP_BLE_SM_IOCAP_MODE, &iocap, sizeof(uint8_t));
+    esp_ble_gap_set_security_param(ESP_BLE_SM_MAX_KEY_SIZE, &key_size, sizeof(uint8_t));
+    esp_ble_gap_set_security_param(ESP_BLE_SM_ONLY_ACCEPT_SPECIFIED_SEC_AUTH, &auth_option, sizeof(uint8_t));
+    /* If your BLE device act as a Slave, the init_key means you hope which types of key of the master should distribut to you,
+    and the response key means which key you can distribut to the Master;
+    If your BLE device act as a master, the response key means you hope which types of key of the slave should distribut to you,
+    and the init key means which key you can distribut to the slave. */
+    esp_ble_gap_set_security_param(ESP_BLE_SM_SET_INIT_KEY, &init_key, sizeof(uint8_t));
+    esp_ble_gap_set_security_param(ESP_BLE_SM_SET_RSP_KEY, &rsp_key, sizeof(uint8_t));
 }

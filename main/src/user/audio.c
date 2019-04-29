@@ -22,12 +22,13 @@
 #define TAG "audio"
 
 static const char *mp3_file_ptr[][2] = {
-    {snd0_mp3_ptr, snd0_mp3_end}, // "Bluetooth Connected"
-    {snd1_mp3_ptr, snd1_mp3_end}  // "Bluetooth Disconnected"
+    {snd0_mp3_ptr, snd0_mp3_end}, // "蓝牙已连接"
+    {snd1_mp3_ptr, snd1_mp3_end}  // "蓝牙已断开"
 };
 static uint8_t mp3_file_index = 0;
+static uint8_t playback_delay = 0;
 
-void audio_task(void *pvParameters)
+static void audio_task_handle(void *pvParameters)
 {
     // Allocate structs needed for mp3 decoding
     struct mad_stream *stream = malloc(sizeof(struct mad_stream));
@@ -39,7 +40,7 @@ void audio_task(void *pvParameters)
     if (synth  == NULL) { ESP_LOGE(TAG, "malloc(synth) failed");  goto err; }
 
     while (1) {
-        xEventGroupWaitBits(user_event_group, AUDIO_READY_BIT, pdTRUE, pdTRUE, portMAX_DELAY);
+        xEventGroupWaitBits(user_event_group, AUDIO_RUN_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
 
         // Initialize mp3 parts
         mad_stream_init(stream);
@@ -61,12 +62,16 @@ void audio_task(void *pvParameters)
             }
             mad_synth_frame(synth, frame);
         }
-        // avoid noise
-        i2s_zero_dma_buffer(0);
 
         mad_synth_finish(synth);
         mad_frame_finish(frame);
         mad_stream_finish(stream);
+
+        if (playback_delay) {
+            playback_delay = 0;
+        } else {
+            xEventGroupClearBits(user_event_group, AUDIO_RUN_BIT);
+        }
     }
 err:
     free(synth);
@@ -84,6 +89,17 @@ void audio_play_file(uint8_t filename_index)
         return;
     }
     mp3_file_index = filename_index;
-    xEventGroupSetBits(user_event_group, AUDIO_READY_BIT);
+    EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+    if (uxBits & AUDIO_RUN_BIT) {
+        // Previous playback is still not complete
+        playback_delay = 1;
+    } else {
+        xEventGroupSetBits(user_event_group, AUDIO_RUN_BIT);
+    }
 #endif
+}
+
+void audio_init(void)
+{
+    xTaskCreate(audio_task_handle, "audioT", 8448, NULL, 5, NULL);
 }
