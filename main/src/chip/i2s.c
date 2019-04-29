@@ -26,8 +26,9 @@ void i2s0_init(void)
         .sample_rate = i2s0_sample_rate,
         .bits_per_sample = i2s0_bits_per_sample,
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
-        .dma_buf_count = 8,
-        .dma_buf_len = 64
+        .dma_buf_count = 6,
+        .dma_buf_len = 60,
+        .tx_desc_auto_clear = true                                              // Auto clear tx descriptor on underflow
     };
     i2s_pin_config_t pin_config = {
         .bck_io_num   = CONFIG_I2S_BCLK_PIN,
