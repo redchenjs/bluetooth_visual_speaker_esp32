@@ -340,10 +340,16 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         esp_ble_conn_update_params_t conn_params = {0};
         memcpy(conn_params.bda, param->connect.remote_bda, sizeof(esp_bd_addr_t));
         esp_ble_set_encryption(param->connect.remote_bda, ESP_BLE_SEC_ENCRYPT_MITM);
+        uint8_t *bda = param->connect.remote_bda;
+        ESP_LOGI(TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+                "connected", bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         break;
     }
     case ESP_GATTS_DISCONNECT_EVT:
         esp_ble_gap_start_advertising(&adv_params);
+        uint8_t *bda = param->connect.remote_bda;
+        ESP_LOGI(TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+                "disconnected", bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         break;
     case ESP_GATTS_CONF_EVT:
     case ESP_GATTS_OPEN_EVT:
