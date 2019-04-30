@@ -204,7 +204,7 @@ static void vfx_task_handle(void *pvParameter)
         uint16_t color_tmp = 0;
         uint16_t color_idx = 0;
         uint16_t color_ctr = vfx_ctr;
-        uint16_t fft_amp[64] = {0};
+        float fft_amp[64] = {0};
         GDisplay *g = gdispGetDisplay(0);
 
         fft_config_t *fft_plan = fft_init(128, FFT_COMPLEX, FFT_FORWARD, NULL, NULL);
@@ -229,7 +229,7 @@ static void vfx_task_handle(void *pvParameter)
             color_tmp = color_idx;
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
             for (uint16_t i=0; i<52; i++) {
-                uint8_t temp = fft_amp[i] / 819;
+                uint16_t temp = fft_amp[i] / 819.2;
                 uint32_t pixel_color = read_color_from_table(color_idx, color_ctr);
 
                 if (temp > 80) {
@@ -249,7 +249,7 @@ static void vfx_task_handle(void *pvParameter)
                 uint16_t fill_cy = temp;
 #else
             for (uint16_t i=0; i<60; i++) {
-                uint8_t temp = fft_amp[i] / 485;
+                uint16_t temp = fft_amp[i] / 485.5;
                 uint32_t pixel_color = read_color_from_table(color_idx, color_ctr);
 
                 if (temp > 135) {
@@ -763,7 +763,7 @@ static void vfx_task_handle(void *pvParameter)
             uint8_t y = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
-            uint16_t fft_amp[64] = {0};
+            float fft_amp[64] = {0};
             fft_config_t *fft_plan = fft_init(128, FFT_COMPLEX, FFT_FORWARD, NULL, NULL);
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
@@ -785,7 +785,7 @@ static void vfx_task_handle(void *pvParameter)
 
                 color_idx = 63;
                 for (uint16_t i=0; i<64; i++) {
-                    uint8_t temp = fft_amp[i] / 8192;
+                    uint16_t temp = fft_amp[i] / 8192;
                     if (temp != 0) {
                         fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
                         fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_ctr);
@@ -819,7 +819,7 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
-            uint16_t fft_amp[64] = {0};
+            float fft_amp[64] = {0};
             fft_config_t *fft_plan = fft_init(128, FFT_COMPLEX, FFT_FORWARD, NULL, NULL);
             while (1) {
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
@@ -841,7 +841,7 @@ static void vfx_task_handle(void *pvParameter)
 
                 color_idx = color_tmp;
                 for (uint16_t i=0; i<64; i++) {
-                    uint8_t temp = fft_amp[i] / 8192;
+                    uint16_t temp = fft_amp[i] / 8192;
                     if (temp != 0) {
                         fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
                         fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_ctr);
@@ -882,7 +882,7 @@ static void vfx_task_handle(void *pvParameter)
             uint8_t color_cnt = 0;
             uint16_t color_idx[64] = {0};
             uint16_t color_ctr[64] = {vfx_ctr};
-            uint16_t fft_amp[64] = {0};
+            float fft_amp[64] = {0};
             const uint8_t led_idx_table[][64] = {
                 {
                     3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
@@ -924,7 +924,7 @@ static void vfx_task_handle(void *pvParameter)
                     x = led_idx_table[0][i];
                     y = led_idx_table[1][i];
 
-                    uint8_t temp = fft_amp[i] / 8192;
+                    uint16_t temp = fft_amp[i] / 8192;
                     if (temp != 0) {
                         fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
                         fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx[i], color_ctr[i]);
