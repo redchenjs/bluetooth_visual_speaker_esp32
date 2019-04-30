@@ -9,10 +9,11 @@
 
 #include "freertos/FreeRTOS.h"
 #include "driver/i2s.h"
+#include "soc/rtc.h"
 
 #define TAG "i2s"
 
-static int i2s0_sample_rate = 44100;
+static int i2s0_sample_rate = 48000;
 static int i2s0_bits_per_sample = 16;
 
 void i2s0_init(void)
@@ -44,7 +45,13 @@ void i2s0_init(void)
 void i2s0_set_sample_rate(int rate)
 {
     if (rate != i2s0_sample_rate) {
-        i2s_set_sample_rates(I2S_NUM_0, rate);
+        // workaround as i2s apll clock is inaccurate at 44100Hz 16-bit 2ch
+        if (rate == 44100) {
+            rtc_clk_apll_enable(1, 15, 8, 5, 6);
+            ESP_LOGW(TAG, "enable workaround for i2s apll clock at 44100Hz 16-bit 2ch");
+        } else {
+            i2s_set_sample_rates(I2S_NUM_0, rate);
+        }
         i2s0_sample_rate = rate;
     }
 }
