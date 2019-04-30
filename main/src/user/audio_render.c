@@ -23,7 +23,9 @@ esp_err_t i2s_write_wrapper(i2s_port_t i2s_num, const void *src, size_t size, si
         uint32_t idx = 0;
         const uint8_t *data = (const uint8_t *)src;
         while (size > 0) {
-            fifo_write(data[idx+1] << 8 | data[idx]);
+            int16_t data_l = data[idx+1] << 8 | data[idx];
+            int16_t data_r = data[idx+3] << 8 | data[idx+2];
+            fifo_write((data_l + data_r) / 2);
             idx  += 4;
             size -= 4;
         }
