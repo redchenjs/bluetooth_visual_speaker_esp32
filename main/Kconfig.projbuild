@@ -15,7 +15,7 @@ config ENABLE_VFX
 
 config BLE_ADV_NAME
     string "BLE Advertising Name"
-	default "Bluetooth Speaker BLE"
+	default "Bluetooth Speaker Control"
     depends on ENABLE_VFX
 	help
 		BLE Advertising name for the control interface.
