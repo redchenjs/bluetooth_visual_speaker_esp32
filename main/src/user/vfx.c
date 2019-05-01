@@ -57,22 +57,20 @@ static void write_pixel(uint8_t x, uint8_t y, uint8_t z,
 #endif
 }
 
-static void fill_cube(uint8_t x0, uint8_t y0, uint8_t z0,
-                      uint8_t x1, uint8_t y1, uint8_t z1,
+static void fill_cube(uint8_t x,  uint8_t y,  uint8_t z,
+                      uint8_t cx, uint8_t cy, uint8_t cz,
                       uint16_t color_idx, uint16_t color_ctr)
 {
-    for (uint8_t x=x0; x<=x1; x++) {
-        for (uint8_t y=y0; y<=y1; y++) {
-            for (uint8_t z=z0; z<=z1; z++) {
-                write_pixel(x, y, z, color_idx, color_ctr);
+    for (uint8_t i=0; i<cx; i++) {
+        for (uint8_t j=0; j<cy; j++) {
+            for (uint8_t k=0; k<cz; k++) {
+                write_pixel(x+i, y+j, z+k, color_idx, color_ctr);
             }
         }
     }
 }
 
-static void write_cube_bitmap(uint8_t x0, uint8_t y0, uint8_t z0,
-                              uint8_t x1, uint8_t y1, uint8_t z1,
-                              const uint8_t *bitmap)
+static void write_cube_bitmap(const uint8_t *bitmap)
 {
     uint8_t x = 0;
     uint8_t y = 0;
@@ -230,7 +228,7 @@ static void vfx_task_handle(void *pvParameter)
             color_tmp = color_idx;
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
             for (uint16_t i=0; i<52; i++) {
-                uint16_t temp = fft_amp[i] / 32;
+                uint16_t temp = fft_amp[i] / 8.192;
                 uint32_t pixel_color = read_color_from_table(color_idx, color_ctr);
 
                 if (temp > 80) {
@@ -250,7 +248,7 @@ static void vfx_task_handle(void *pvParameter)
                 uint16_t fill_cy = temp;
 #else
             for (uint16_t i=0; i<60; i++) {
-                uint16_t temp = fft_amp[i] / 16;
+                uint16_t temp = fft_amp[i] / 4.8;
                 uint32_t pixel_color = read_color_from_table(color_idx, color_ctr);
 
                 if (temp > 135) {
@@ -366,7 +364,7 @@ static void vfx_task_handle(void *pvParameter)
                     clear_cube();
                     break;
                 }
-                fill_cube(0, 0, 0, 7, 7, 7, color_idx, color_ctr);
+                fill_cube(0, 0, 0, 8, 8, 8, color_idx, color_ctr);
                 if (++color_idx > 511) {
                     color_idx = 0;
                 }
@@ -385,7 +383,7 @@ static void vfx_task_handle(void *pvParameter)
                     clear_cube();
                     break;
                 }
-                fill_cube(0, 0, 0, 7, 7, 7, color_idx, color_ctr);
+                fill_cube(0, 0, 0, 8, 8, 8, color_idx, color_ctr);
                 if (ctr_dir == 0) {     // 暗->明
                     if (color_ctr-- == vfx_ctr) {
                         color_ctr = vfx_ctr;
@@ -701,7 +699,7 @@ static void vfx_task_handle(void *pvParameter)
                     clear_cube();
                     break;
                 }
-                write_cube_bitmap(0, 0, 0, 7, 7, 7, bitmap_wave[frame_idx]);
+                write_cube_bitmap(bitmap_wave[frame_idx]);
                 if (frame_idx++ == 44) {
                     frame_idx = 8;
                 }
@@ -787,14 +785,34 @@ static void vfx_task_handle(void *pvParameter)
 
                 color_idx = 63;
                 for (uint16_t i=0; i<64; i++) {
-                    uint16_t temp = fft_amp[i] / 320;
-                    if (temp != 0) {
-                        fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
-                        fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_ctr);
-                    } else {
-                        fill_cube(x, 7-y, 0, x, 7-y, 6, 0, 511);
-                        fill_cube(x, 7-y, 7, x, 7-y, 7, color_idx, color_ctr);
+                    uint8_t temp = fft_amp[i] / 81.92;
+
+                    if (temp > 8) {
+                        temp = 8;
+                    } else if (temp < 1) {
+                        temp = 1;
                     }
+
+                    uint8_t clear_x  = x;
+                    uint8_t clear_cx = 1;
+                    uint8_t clear_y  = 7 - y;
+                    uint8_t clear_cy = 1;
+                    uint8_t clear_z  = 0;
+                    uint8_t clear_cz = 8 - temp;
+
+                    uint8_t fill_x  = x;
+                    uint8_t fill_cx = 1;
+                    uint8_t fill_y  = 7 - y;
+                    uint8_t fill_cy = 1;
+                    uint8_t fill_z  = 8 - temp;
+                    uint8_t fill_cz = temp;
+
+                    fill_cube(clear_x, clear_y, clear_z,
+                              clear_cx, clear_cy, clear_cz,
+                              0, 511);
+                    fill_cube(fill_x, fill_y, fill_z,
+                              fill_cx, fill_cy, fill_cz,
+                              color_idx, color_ctr);
 
                     if (y++ == 7) {
                         y = 0;
@@ -844,14 +862,34 @@ static void vfx_task_handle(void *pvParameter)
 
                 color_idx = color_tmp;
                 for (uint16_t i=0; i<64; i++) {
-                    uint16_t temp = fft_amp[i] / 320;
-                    if (temp != 0) {
-                        fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
-                        fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_ctr);
-                    } else {
-                        fill_cube(x, 7-y, 0, x, 7-y, 6, 0, 511);
-                        fill_cube(x, 7-y, 7, x, 7-y, 7, color_idx, color_ctr);
+                    uint8_t temp = fft_amp[i] / 81.92;
+
+                    if (temp > 8) {
+                        temp = 8;
+                    } else if (temp < 1) {
+                        temp = 1;
                     }
+
+                    uint8_t clear_x  = x;
+                    uint8_t clear_cx = 1;
+                    uint8_t clear_y  = 7 - y;
+                    uint8_t clear_cy = 1;
+                    uint8_t clear_z  = 0;
+                    uint8_t clear_cz = 8 - temp;
+
+                    uint8_t fill_x  = x;
+                    uint8_t fill_cx = 1;
+                    uint8_t fill_y  = 7 - y;
+                    uint8_t fill_cy = 1;
+                    uint8_t fill_z  = 8 - temp;
+                    uint8_t fill_cz = temp;
+
+                    fill_cube(clear_x, clear_y, clear_z,
+                              clear_cx, clear_cy, clear_cz,
+                              0, 511);
+                    fill_cube(fill_x, fill_y, fill_z,
+                              fill_cx, fill_cy, fill_cz,
+                              color_idx, color_ctr);
 
                     if (y++ == 7) {
                         y = 0;
@@ -928,14 +966,34 @@ static void vfx_task_handle(void *pvParameter)
                     x = led_idx_table[0][i];
                     y = led_idx_table[1][i];
 
-                    uint16_t temp = fft_amp[i] / 320;
-                    if (temp != 0) {
-                        fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
-                        fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx[i], color_ctr[i]);
-                    } else {
-                        fill_cube(x, 7-y, 0, x, 7-y, 6, 0, 511);
-                        fill_cube(x, 7-y, 7, x, 7-y, 7, color_idx[i], color_ctr[i]);
+                    uint8_t temp = fft_amp[i] / 81.92;
+
+                    if (temp > 8) {
+                        temp = 8;
+                    } else if (temp < 1) {
+                        temp = 1;
                     }
+
+                    uint8_t clear_x  = x;
+                    uint8_t clear_cx = 1;
+                    uint8_t clear_y  = 7 - y;
+                    uint8_t clear_cy = 1;
+                    uint8_t clear_z  = 0;
+                    uint8_t clear_cz = 8 - temp;
+
+                    uint8_t fill_x  = x;
+                    uint8_t fill_cx = 1;
+                    uint8_t fill_y  = 7 - y;
+                    uint8_t fill_cy = 1;
+                    uint8_t fill_z  = 8 - temp;
+                    uint8_t fill_cz = temp;
+
+                    fill_cube(clear_x, clear_y, clear_z,
+                              clear_cx, clear_cy, clear_cz,
+                              0, 511);
+                    fill_cube(fill_x, fill_y, fill_z,
+                              fill_cx, fill_cy, fill_cz,
+                              color_idx[i], color_ctr[i]);
 
                     if (color_flg) {
                         if (color_idx[i]-- == 0) {
