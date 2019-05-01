@@ -222,14 +222,15 @@ static void vfx_task_handle(void *pvParameter)
 
             fft_execute(fft_plan);
 
-            for (uint16_t k=0; k<64; k++) {
-                fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2));
+            fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / 128;
+            for (uint16_t k=1; k<64; k++) {
+                fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / 128 * 2;
             }
 
             color_tmp = color_idx;
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
             for (uint16_t i=0; i<52; i++) {
-                uint16_t temp = fft_amp[i] / 819.2;
+                uint16_t temp = fft_amp[i] / 32;
                 uint32_t pixel_color = read_color_from_table(color_idx, color_ctr);
 
                 if (temp > 80) {
@@ -249,7 +250,7 @@ static void vfx_task_handle(void *pvParameter)
                 uint16_t fill_cy = temp;
 #else
             for (uint16_t i=0; i<60; i++) {
-                uint16_t temp = fft_amp[i] / 485.5;
+                uint16_t temp = fft_amp[i] / 16;
                 uint32_t pixel_color = read_color_from_table(color_idx, color_ctr);
 
                 if (temp > 135) {
@@ -779,13 +780,14 @@ static void vfx_task_handle(void *pvParameter)
 
                 fft_execute(fft_plan);
 
-                for (uint16_t k=0; k<64; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2));
+                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / 128;
+                for (uint16_t k=1; k<64; k++) {
+                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / 128 * 2;
                 }
 
                 color_idx = 63;
                 for (uint16_t i=0; i<64; i++) {
-                    uint16_t temp = fft_amp[i] / 8192;
+                    uint16_t temp = fft_amp[i] / 320;
                     if (temp != 0) {
                         fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
                         fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_ctr);
@@ -835,13 +837,14 @@ static void vfx_task_handle(void *pvParameter)
 
                 fft_execute(fft_plan);
 
-                for (uint16_t k=0; k<64; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2));
+                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / 128;
+                for (uint16_t k=1; k<64; k++) {
+                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / 128 * 2;
                 }
 
                 color_idx = color_tmp;
                 for (uint16_t i=0; i<64; i++) {
-                    uint16_t temp = fft_amp[i] / 8192;
+                    uint16_t temp = fft_amp[i] / 320;
                     if (temp != 0) {
                         fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
                         fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx, color_ctr);
@@ -916,15 +919,16 @@ static void vfx_task_handle(void *pvParameter)
 
                 fft_execute(fft_plan);
 
-                for (uint16_t k=0; k<64; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2));
+                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / 128;
+                for (uint16_t k=1; k<64; k++) {
+                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / 128 * 2;
                 }
 
                 for (uint16_t i=0; i<64; i++) {
                     x = led_idx_table[0][i];
                     y = led_idx_table[1][i];
 
-                    uint16_t temp = fft_amp[i] / 8192;
+                    uint16_t temp = fft_amp[i] / 320;
                     if (temp != 0) {
                         fill_cube(x, 7-y, 0, x, 7-y, 7-temp, 0, 511);
                         fill_cube(x, 7-y, 7-temp, x, 7-y, 7, color_idx[i], color_ctr[i]);
