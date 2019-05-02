@@ -14,7 +14,6 @@
 
 #include "user/led.h"
 #include "user/vfx.h"
-#include "user/fifo.h"
 #include "user/audio.h"
 #include "user/bt_app.h"
 #include "user/ble_gatts.h"
@@ -43,11 +42,11 @@ void user_init(void)
 {
     bt_app_init();
 
-#ifdef CONFIG_ENABLE_VFX
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
     ble_gatts_init();
+#endif
 
-    fifo_init();
-
+#ifdef CONFIG_ENABLE_VFX
     vfx_init();
 #endif
 

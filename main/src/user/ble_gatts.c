@@ -68,7 +68,7 @@ typedef struct gatts_profile_inst {
     esp_bt_uuid_t descr_uuid;
 } gatts_profile_inst_t;
 
-#ifdef CONFIG_ENABLE_VFX
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
 static void ble_init_adv_data(const char *name)
 {
     int len = strlen(name);
@@ -119,7 +119,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
             ESP_LOGE(TAG, "config local privacy failed, error status = %x", param->local_privacy_cmpl.status);
             break;
         }
-#ifdef CONFIG_ENABLE_VFX
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
         // init BLE adv data and scan response data
         ble_init_adv_data(CONFIG_BLE_ADV_NAME);
 #endif

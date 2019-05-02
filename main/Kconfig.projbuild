@@ -13,12 +13,19 @@ config ENABLE_VFX
     help
         Select this to enable visual effects output.
 
+config ENABLE_BLE_CONTROL_IF
+    bool "Enable BLE Control Interface"
+    default y
+    depends on ENABLE_VFX
+    help
+        Select this to enable BLE control interface.
+
 config BLE_ADV_NAME
     string "BLE Advertising Name"
 	default "Bluetooth Speaker Control"
-    depends on ENABLE_VFX
+    depends on ENABLE_BLE_CONTROL_IF
 	help
-		BLE Advertising name for the control interface.
+		Advertising name for BLE control interface.
 
 choice VFX_OUTPUT
     prompt "VFX Output Device"

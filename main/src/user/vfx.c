@@ -193,6 +193,8 @@ static void vfx_task_handle(void *pvParameter)
     ESP_LOGI(TAG, "Start LCD FFT Output");
 #endif
 
+    fifo_init();
+
     while (1) {
 #if defined(CONFIG_SCREEN_PANEL_OUTPUT_FFT)
         // LCD FFT Output
