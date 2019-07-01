@@ -32,6 +32,7 @@
 #define BT_A2D_TAG   "bt_a2d"
 #define BT_RC_CT_TAG "bt_rc_ct"
 #define BT_RC_TG_TAG "bt_rc_tg"
+#define BT_RC_RN_TAG "bt_rc_rn"
 
 // AVRCP used transaction label
 #define APP_RC_CT_TL_GET_CAPS            (0)
@@ -213,9 +214,11 @@ static void bt_av_notify_evt_handler(uint8_t event_id, esp_avrc_rn_param_t *even
         bt_av_new_track();
         break;
     case ESP_AVRC_RN_PLAY_STATUS_CHANGE:
+        ESP_LOGI(BT_RC_RN_TAG, "Playback status changed: 0x%x", event_parameter->playback);
         bt_av_play_status_changed();
         break;
     case ESP_AVRC_RN_PLAY_POS_CHANGED:
+        ESP_LOGI(BT_RC_RN_TAG, "Play position changed: %d-ms", event_parameter->play_pos);
         bt_av_play_pos_changed();
         break;
     }
