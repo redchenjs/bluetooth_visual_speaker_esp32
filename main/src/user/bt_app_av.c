@@ -101,7 +101,7 @@ void bt_app_avrc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t *par
         break;
     }
     default:
-        ESP_LOGE(BT_RC_CT_TAG, "invalid AVRC event: %d", event);
+        ESP_LOGE(BT_RC_CT_TAG, "invalid AVRC CT event: %d", event);
         break;
     }
 }
@@ -117,7 +117,7 @@ void bt_app_avrc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t *par
         bt_app_work_dispatch(bt_av_hdl_avrc_tg_evt, event, param, sizeof(esp_avrc_tg_cb_param_t), NULL);
         break;
     default:
-        ESP_LOGE(BT_RC_TG_TAG, "invalid AVRC event: %d", event);
+        ESP_LOGE(BT_RC_TG_TAG, "invalid AVRC TG event: %d", event);
         break;
     }
 }
