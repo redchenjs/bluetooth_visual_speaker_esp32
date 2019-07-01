@@ -51,8 +51,6 @@ static const char *s_a2d_conn_state_str[] = {"disconnected", "connecting", "conn
 static const char *s_a2d_audio_state_str[] = {"suspended", "stopped", "started"};
 
 static esp_avrc_rn_evt_cap_mask_t s_avrc_peer_rn_cap;
-static uint8_t s_volume = 0;
-static bool s_volume_notify;
 
 /* callback for A2DP sink */
 void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
@@ -294,12 +292,6 @@ static void bt_av_hdl_avrc_tg_evt(uint16_t event, void *p_param)
     }
     case ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT: {
         ESP_LOGI(BT_RC_TG_TAG, "AVRC register event notification: %d, param: 0x%x", rc->reg_ntf.event_id, rc->reg_ntf.event_parameter);
-        if (rc->reg_ntf.event_id == ESP_AVRC_RN_VOLUME_CHANGE) {
-            s_volume_notify = true;
-            esp_avrc_rn_param_t rn_param;
-            rn_param.volume = s_volume;
-            esp_avrc_tg_send_rn_rsp(ESP_AVRC_RN_VOLUME_CHANGE, ESP_AVRC_RN_RSP_INTERIM, &rn_param);
-        }
         break;
     }
     case ESP_AVRC_TG_REMOTE_FEATURES_EVT: {

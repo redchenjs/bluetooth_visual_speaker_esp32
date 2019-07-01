@@ -17,7 +17,7 @@
 
 #include "user/bt_app_core.h"
 
-#define TAG "bt_app_core"
+#define BT_APP_CORE_TAG "bt_app_core"
 
 static void bt_app_task_handler(void *arg);
 static bool bt_app_send_msg(bt_app_msg_t *msg);
@@ -28,8 +28,6 @@ static xTaskHandle s_bt_app_task_handle = NULL;
 
 bool bt_app_work_dispatch(bt_app_cb_t p_cback, uint16_t event, void *p_params, int param_len, bt_app_copy_cb_t p_copy_cback)
 {
-    ESP_LOGD(TAG, "%s event 0x%x, param len %d", __func__, event, param_len);
-
     bt_app_msg_t msg;
     memset(&msg, 0, sizeof(bt_app_msg_t));
 
@@ -60,7 +58,7 @@ static bool bt_app_send_msg(bt_app_msg_t *msg)
     }
 
     if (xQueueSend(s_bt_app_task_queue, msg, 10 / portTICK_RATE_MS) != pdTRUE) {
-        ESP_LOGE(TAG, "%s xQueue send failed", __func__);
+        ESP_LOGE(BT_APP_CORE_TAG, "%s xQueue send failed", __func__);
         return false;
     }
 
@@ -79,13 +77,13 @@ static void bt_app_task_handler(void *arg)
     bt_app_msg_t msg;
     for (;;) {
         if (pdTRUE == xQueueReceive(s_bt_app_task_queue, &msg, (portTickType)portMAX_DELAY)) {
-            ESP_LOGD(TAG, "%s, sig 0x%x, 0x%x", __func__, msg.sig, msg.event);
+            ESP_LOGD(BT_APP_CORE_TAG, "%s, sig 0x%x, 0x%x", __func__, msg.sig, msg.event);
             switch (msg.sig) {
             case BT_APP_SIG_WORK_DISPATCH:
                 bt_app_work_dispatched(&msg);
                 break;
             default:
-                ESP_LOGW(TAG, "%s, unhandled sig: %d", __func__, msg.sig);
+                ESP_LOGW(BT_APP_CORE_TAG, "%s, unhandled sig: %d", __func__, msg.sig);
                 break;
             } // switch (msg.sig)
 
