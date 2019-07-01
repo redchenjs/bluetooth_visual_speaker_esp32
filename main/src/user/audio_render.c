@@ -51,7 +51,7 @@ void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num
     for (int i = 0; i < num_samples; i++) {
         /* low - high / low - high */
         const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]}; // ESP32 CPU is Little Endian
-        i2s_write_wrapper(0, (const char *)&samp32, sizeof(samp32), &bytes_written, max_wait);
+        i2s_write(0, (const char *)&samp32, sizeof(samp32), &bytes_written, max_wait);
 
         // DMA buffer full - retry
         if (bytes_written == 0) {
