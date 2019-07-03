@@ -59,5 +59,7 @@ void core_init(void)
 
     user_event_group = xEventGroupCreate();
 
+#ifdef CONFIG_ENABLE_WAKEUP_KEY
     audio_play_file(2);
+#endif
 }
