@@ -19,6 +19,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "os/core.h"
 #include "os/firmware.h"
 
 #define BT_SPP_TAG "bt_spp"
@@ -32,13 +33,11 @@ static long data_num = 0;
 static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
 static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
 
-static uint8_t first_time  = 1;
 static uint8_t ota_running = 0;
 static long image_length = 0;
 
 static const esp_partition_t *update_partition = NULL;
 static esp_ota_handle_t update_handle = 0;
-static long binary_file_length = 0;
 
 static void bt_spp_print_speed(void)
 {
@@ -64,6 +63,12 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         break;
     case ESP_SPP_CLOSE_EVT:
         ESP_LOGI(BT_SPP_TAG, "SPP connection state: disconnected");
+        if (ota_running == 1) {
+            esp_ota_end(update_handle);
+            xEventGroupSetBits(user_event_group, KEY_SCAN_BIT);
+            ota_running  = 0;
+            image_length = 0;
+        }
         break;
     case ESP_SPP_START_EVT:
         break;
@@ -90,20 +95,10 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+UPD:%ld", image_length);
 
                 if (image_length != 0) {
-                    ota_running = 1;
-                    gettimeofday(&time_old, NULL);
-
                     uint8_t rsp_str[] = "OK\r\n";
                     esp_spp_write(param->write.handle, sizeof(rsp_str), rsp_str);
-                } else {
-                    uint8_t rsp_str[] = "ERROR\r\n";
-                    esp_spp_write(param->write.handle, sizeof(rsp_str), rsp_str);
-                }
-            }
-        } else {
-            if (binary_file_length != image_length) {
-                if (first_time) {
-                    first_time = 0;
+
+                    xEventGroupClearBits(user_event_group, KEY_SCAN_BIT);
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
                     ESP_LOGI(BT_OTA_TAG, "writing to partition subtype %d at offset 0x%x",
@@ -116,18 +111,25 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                         goto exit;
                     }
 
-                    binary_file_length = 0;
-                }
-                esp_err_t err = esp_ota_write(update_handle, (const void *)param->data_ind.data, param->data_ind.len);
-                if (err != ESP_OK) {
-                    ESP_LOGE(BT_OTA_TAG, "esp_ota_write failed (%s)", esp_err_to_name(err));
-                    goto exit;
-                }
-                binary_file_length += param->data_ind.len;
-                ESP_LOGI(BT_OTA_TAG, "have written image length %ld", binary_file_length);
-            } else {
-                data_num = binary_file_length;
+                    ota_running = 1;
+                    data_num = 0;
 
+                    gettimeofday(&time_old, NULL);
+                } else {
+                    uint8_t rsp_str[] = "ERROR\r\n";
+                    esp_spp_write(param->write.handle, sizeof(rsp_str), rsp_str);
+                }
+            }
+        } else {
+            esp_err_t err = esp_ota_write(update_handle, (const void *)param->data_ind.data, param->data_ind.len);
+            if (err != ESP_OK) {
+                ESP_LOGE(BT_OTA_TAG, "esp_ota_write failed (%s)", esp_err_to_name(err));
+                goto exit;
+            }
+            data_num += param->data_ind.len;
+            ESP_LOGD(BT_OTA_TAG, "have written image length %ld", data_num);
+
+            if (data_num == image_length) {
                 if (esp_ota_end(update_handle) != ESP_OK) {
                     ESP_LOGE(BT_OTA_TAG, "esp_ota_end failed");
                     goto exit;
@@ -139,8 +141,10 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 }
                 gettimeofday(&time_new, NULL);
                 bt_spp_print_speed();
+                uint8_t rsp_str[] = "DONE\r\n";
+                esp_spp_write(param->write.handle, sizeof(rsp_str), rsp_str);
+                xEventGroupSetBits(user_event_group, KEY_SCAN_BIT);
 exit:
-                first_time   = 1;
                 ota_running  = 0;
                 image_length = 0;
             }
