@@ -22,11 +22,13 @@
 #define TAG "audio"
 
 static const char *mp3_file_ptr[][2] = {
-    {snd0_mp3_ptr, snd0_mp3_end}, // "蓝牙已连接"
-    {snd1_mp3_ptr, snd1_mp3_end}  // "蓝牙已断开"
+    {snd0_mp3_ptr, snd0_mp3_end}, // "音頻連接"
+    {snd1_mp3_ptr, snd1_mp3_end}, // "音頻斷開"
+    {snd2_mp3_ptr, snd2_mp3_end}, // "系統甦醒"
+    {snd3_mp3_ptr, snd3_mp3_end}  // "系統睡眠"
 };
-static uint8_t mp3_file_index = 0;
-static uint8_t playback_delay = 0;
+static uint8_t mp3_file_index   = 0;
+static uint8_t playback_pending = 0;
 
 static void audio_task_handle(void *pvParameters)
 {
@@ -40,7 +42,13 @@ static void audio_task_handle(void *pvParameters)
     if (synth  == NULL) { ESP_LOGE(TAG, "malloc(synth) failed");  goto err; }
 
     while (1) {
-        xEventGroupWaitBits(user_event_group, AUDIO_RUN_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+        xEventGroupWaitBits(
+            user_event_group,
+            AUDIO_RUN_BIT,
+            pdFALSE,
+            pdFALSE,
+            portMAX_DELAY
+        );
 
         // Initialize mp3 parts
         mad_stream_init(stream);
@@ -67,9 +75,10 @@ static void audio_task_handle(void *pvParameters)
         mad_frame_finish(frame);
         mad_stream_finish(stream);
 
-        if (playback_delay) {
-            playback_delay = 0;
+        if (playback_pending) {
+            playback_pending = 0;
         } else {
+            xEventGroupSetBits(user_event_group, AUDIO_IDLE_BIT);
             xEventGroupClearBits(user_event_group, AUDIO_RUN_BIT);
         }
     }
@@ -92,8 +101,9 @@ void audio_play_file(uint8_t filename_index)
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
     if (uxBits & AUDIO_RUN_BIT) {
         // Previous playback is still not complete
-        playback_delay = 1;
+        playback_pending = 1;
     } else {
+        xEventGroupClearBits(user_event_group, AUDIO_IDLE_BIT);
         xEventGroupSetBits(user_event_group, AUDIO_RUN_BIT);
     }
 #endif

@@ -14,7 +14,8 @@
 typedef enum user_event_group_bits {
     KEY_SCAN_BIT   = BIT0,
     AUDIO_RUN_BIT  = BIT1,
-    VFX_RELOAD_BIT = BIT2
+    AUDIO_IDLE_BIT = BIT2,
+    VFX_RELOAD_BIT = BIT3
 } user_event_group_bits_t;
 
 extern EventGroupHandle_t user_event_group;

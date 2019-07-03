@@ -12,6 +12,8 @@
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
 
+#include "user/audio.h"
+
 #define TAG "os_core"
 
 EventGroupHandle_t user_event_group;
@@ -20,16 +22,20 @@ EventGroupHandle_t user_event_group;
 void os_enter_sleep_mode(void)
 {
     ESP_LOGI(TAG, "entering sleep mode");
+
 #ifdef CONFIG_WAKEUP_KEY_MODE_LOW
     esp_sleep_enable_ext1_wakeup(1ULL << CONFIG_WAKEUP_KEY_PIN, ESP_EXT1_WAKEUP_ALL_LOW);
 #else
     esp_sleep_enable_ext1_wakeup(1ULL << CONFIG_WAKEUP_KEY_PIN, ESP_EXT1_WAKEUP_ANY_HIGH);
 #endif
+
     esp_deep_sleep_start();
 }
+#endif // CONFIG_ENABLE_WAKEUP_KEY
 
-static void os_get_wakeup_cause(void)
+void core_init(void)
 {
+#ifdef CONFIG_ENABLE_WAKEUP_KEY
     portTickType xLastWakeTime = xTaskGetTickCount();
 
     if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED) {
@@ -41,8 +47,6 @@ static void os_get_wakeup_cause(void)
         if (gpio_get_level(CONFIG_WAKEUP_KEY_PIN) == 1) {
 #endif
             ESP_LOGI(TAG, "wakeup from sleep mode");
-
-            return;
         } else {
             ESP_LOGI(TAG, "wakeup aborted");
 
@@ -51,13 +55,9 @@ static void os_get_wakeup_cause(void)
     } else {
         os_enter_sleep_mode();
     }
-}
 #endif // CONFIG_ENABLE_WAKEUP_KEY
 
-void core_init(void)
-{
-#ifdef CONFIG_ENABLE_WAKEUP_KEY
-    os_get_wakeup_cause();
-#endif
     user_event_group = xEventGroupCreate();
+
+    audio_play_file(2);
 }

@@ -13,6 +13,7 @@
 #include "driver/gpio.h"
 
 #include "os/core.h"
+#include "user/audio.h"
 
 #define TAG "key"
 
@@ -20,6 +21,15 @@
 static void key_sleep_handle(void)
 {
     xEventGroupClearBits(user_event_group, KEY_SCAN_BIT);
+
+    audio_play_file(3);
+    xEventGroupWaitBits(
+        user_event_group,
+        AUDIO_IDLE_BIT,
+        pdFALSE,
+        pdFALSE,
+        portMAX_DELAY
+    );
 
     os_enter_sleep_mode();
 }
