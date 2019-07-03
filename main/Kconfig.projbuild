@@ -11,28 +11,28 @@ config ENABLE_VFX
     bool "Enable Visual Effects"
     default y
     help
-        Select this to enable visual effects output.
+        Select this to enable Visual Effects Output.
 
 config ENABLE_BLE_CONTROL_IF
     bool "Enable BLE Control Interface"
     default y
     depends on ENABLE_VFX
     help
-        Select this to enable BLE control interface.
+        Select this to enable BLE Control Interface.
 
 config BLE_ADV_NAME
     string "BLE Advertising Name"
 	default "Bluetooth Speaker Control"
     depends on ENABLE_BLE_CONTROL_IF
 	help
-		Advertising name for BLE control interface.
+		Advertising name for BLE Control Interface.
 
 choice VFX_OUTPUT
     prompt "VFX Output Device"
     default VFX_OUTPUT_ST7789
     depends on ENABLE_VFX
     help
-        Select which device to output vfx.
+        Select which device to output VFX.
 
 config VFX_OUTPUT_CUBE0414
     bool "CUBE0414 RGB Light Cube"
@@ -47,7 +47,7 @@ choice SCREEN_PANEL_OUTPUT
     default SCREEN_PANEL_OUTPUT_FFT
     depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
     help
-        Select screen panel output mode.
+        Select Screen Panel Output Mode.
 
 config SCREEN_PANEL_OUTPUT_FFT
     bool "Display Music FFT"
@@ -91,7 +91,7 @@ config ENABLE_LED
     bool "Enable LED"
     default y
     help
-        Select this to enable led.
+        Select this to enable LED.
 
 choice LED_MODE
     prompt "LED Mode"
@@ -117,7 +117,7 @@ config ENABLE_AUDIO_PROMPT
     bool "Enable Audio Prompt"
     default y
     help
-        Select this to enable audio prompt.
+        Select this to enable Audio Prompt.
 
 config I2S_BCLK_PIN
     int "I2S BCLK Pin"
@@ -136,6 +136,6 @@ config FIRMWARE_VERSION
     string "Firmware Version"
     default "v3.0.0"
     help
-        Set firmware version.
+        Set Firmware Version.
 
 endmenu
