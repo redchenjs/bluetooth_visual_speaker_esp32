@@ -22,10 +22,10 @@
 #define TAG "audio"
 
 static const char *mp3_file_ptr[][2] = {
-    {snd0_mp3_ptr, snd0_mp3_end}, // "音頻連接"
-    {snd1_mp3_ptr, snd1_mp3_end}, // "音頻斷開"
-    {snd2_mp3_ptr, snd2_mp3_end}, // "系統甦醒"
-    {snd3_mp3_ptr, snd3_mp3_end}  // "系統睡眠"
+    {snd0_mp3_ptr, snd0_mp3_end}, // "Connected"
+    {snd1_mp3_ptr, snd1_mp3_end}, // "Disconnected"
+    {snd2_mp3_ptr, snd2_mp3_end}, // "Resume"
+    {snd3_mp3_ptr, snd3_mp3_end}  // "Sleep"
 };
 static uint8_t mp3_file_index   = 0;
 static uint8_t playback_pending = 0;
