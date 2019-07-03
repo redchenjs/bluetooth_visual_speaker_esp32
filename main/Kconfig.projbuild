@@ -2,9 +2,15 @@ menu "Bluetooth Speaker"
 
 config BT_NAME
     string "Bluetooth Name"
-	default "Bluetooth Speaker"
-	help
-		Bluetooth name exposed by the device.
+    default "Bluetooth Speaker"
+    help
+        Bluetooth name exposed by the device.
+
+config ENABLE_OTA_OVER_SPP
+    bool "Enable OTA over SPP"
+    default y
+    help
+        Enable OTA feature, you can use the SPP profile to upload the new firmware.
 
 menu "VFX Configuration"
 config ENABLE_VFX
@@ -22,10 +28,10 @@ config ENABLE_BLE_CONTROL_IF
 
 config BLE_ADV_NAME
     string "BLE Advertising Name"
-	default "Bluetooth Speaker Control"
+    default "Bluetooth Speaker Control"
     depends on ENABLE_BLE_CONTROL_IF
-	help
-		Advertising name for BLE Control Interface.
+    help
+        Advertising name for BLE Control Interface.
 
 choice VFX_OUTPUT
     prompt "VFX Output Device"

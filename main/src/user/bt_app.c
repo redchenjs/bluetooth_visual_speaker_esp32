@@ -17,6 +17,7 @@
 
 #include "user/bt_app.h"
 #include "user/bt_app_av.h"
+#include "user/bt_app_spp.h"
 #include "user/bt_app_core.h"
 
 #define BT_APP_TAG "bt_app"
@@ -35,6 +36,22 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
             ESP_LOGI(BT_GAP_TAG, "authentication success: %s", param->auth_cmpl.device_name);
         } else {
             ESP_LOGE(BT_GAP_TAG, "authentication failed, status: %d", param->auth_cmpl.stat);
+        }
+        break;
+    }
+    case ESP_BT_GAP_PIN_REQ_EVT:{
+        if (param->pin_req.min_16_digit) {
+            ESP_LOGI(BT_GAP_TAG, "pin code: 0000 0000 0000 0000");
+            esp_bt_pin_code_t pin_code = {0};
+            esp_bt_gap_pin_reply(param->pin_req.bda, true, 16, pin_code);
+        } else {
+            ESP_LOGI(BT_GAP_TAG, "pin code: 1234");
+            esp_bt_pin_code_t pin_code;
+            pin_code[0] = '1';
+            pin_code[1] = '2';
+            pin_code[2] = '3';
+            pin_code[3] = '4';
+            esp_bt_gap_pin_reply(param->pin_req.bda, true, 4, pin_code);
         }
         break;
     }
@@ -64,6 +81,11 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
 
         /* register GAP callback */
         esp_bt_gap_register_callback(bt_app_gap_cb);
+
+#ifdef CONFIG_ENABLE_OTA_OVER_SPP
+        esp_spp_register_callback(bt_app_spp_cb);
+        esp_spp_init(ESP_SPP_MODE_CB);
+#endif
 
         /* initialize AVRCP controller */
         esp_avrc_ct_init();
@@ -106,13 +128,9 @@ void bt_app_init(void)
 
     /*
      * Set default parameters for Legacy Pairing
-     * Use fixed pin code
+     * Use variable pin, input pin code when pairing
      */
-    esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_FIXED;
+    esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_VARIABLE;
     esp_bt_pin_code_t pin_code;
-    pin_code[0] = '1';
-    pin_code[1] = '2';
-    pin_code[2] = '3';
-    pin_code[3] = '4';
-    esp_bt_gap_set_pin(pin_type, 4, pin_code);
+    esp_bt_gap_set_pin(pin_type, 0, pin_code);
 }
