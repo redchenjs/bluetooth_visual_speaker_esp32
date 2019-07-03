@@ -10,6 +10,8 @@
 
 #include <stdint.h>
 
+extern uint16_t vfx_ctr;
+
 extern void vfx_set_mode(uint8_t mode);
 extern uint8_t vfx_get_mode(void);
 

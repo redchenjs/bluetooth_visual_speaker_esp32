@@ -12,7 +12,7 @@
 
 #include "os/core.h"
 #include "chip/i2s.h"
-#include "user/fifo.h"
+#include "user/vfx_core.h"
 
 esp_err_t i2s_write_wrapper(i2s_port_t i2s_num, const void *src, size_t size, size_t *bytes_written, TickType_t ticks_to_wait)
 {
@@ -25,7 +25,7 @@ esp_err_t i2s_write_wrapper(i2s_port_t i2s_num, const void *src, size_t size, si
         while (size > 0) {
             int16_t data_l = data[idx+3] << 8 | data[idx+2];
             int16_t data_r = data[idx+1] << 8 | data[idx];
-            fifo_write((data_l + data_r) / 2);
+            vfx_fifo_write((data_l + data_r) / 2);
             idx  += 4;
             size -= 4;
         }
