@@ -21,7 +21,7 @@
 #include "freertos/task.h"
 #include "driver/i2s.h"
 
-#include "os/event.h"
+#include "os/core.h"
 #include "chip/i2s.h"
 #include "user/led.h"
 #include "user/audio.h"

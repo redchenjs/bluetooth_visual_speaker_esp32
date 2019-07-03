@@ -5,7 +5,7 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include "os/event.h"
+#include "os/core.h"
 
 #include "chip/bt.h"
 #include "chip/nvs.h"
@@ -13,6 +13,7 @@
 #include "chip/i2s.h"
 
 #include "user/led.h"
+#include "user/key.h"
 #include "user/vfx.h"
 #include "user/audio.h"
 #include "user/bt_app.h"
@@ -20,7 +21,7 @@
 
 void os_init(void)
 {
-    event_init();
+    core_init();
 }
 
 void chip_init(void)
@@ -52,6 +53,10 @@ void user_init(void)
 
 #ifdef CONFIG_ENABLE_LED
     led_init();
+#endif
+
+#ifdef CONFIG_USE_WAKEUP_KEY_FOR_SLEEP
+    key_init();
 #endif
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT

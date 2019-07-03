@@ -112,6 +112,44 @@ config LED_PIN
     depends on ENABLE_LED
 endmenu
 
+menu "Key Configuration"
+config ENABLE_WAKEUP_KEY
+    bool "Enable WakeUp Key"
+    default n
+    help
+        Select this to enable WakeUp Key.
+
+config USE_WAKEUP_KEY_FOR_SLEEP
+    bool "Use WakeUp Key for Sleep"
+    default n
+    depends on ENABLE_WAKEUP_KEY
+    help
+        Select whether to use WakeUp Key for Sleep.
+
+config WAKEUP_KEY_HOLD_TIME
+    int "WakeUp Key Hold Time (ms)"
+    default 2000
+    depends on ENABLE_WAKEUP_KEY
+
+choice WAKEUP_KEY_MODE
+    prompt "WakeUp Key Mode"
+    default WAKEUP_KEY_MODE_LOW
+    depends on ENABLE_WAKEUP_KEY
+    help
+        Select WakeUp Key Mode.
+
+config WAKEUP_KEY_MODE_HIGH
+    bool "High level is pressed"
+config WAKEUP_KEY_MODE_LOW
+    bool "Low level is pressed"
+endchoice
+
+config WAKEUP_KEY_PIN
+    int "WakeUp Key Pin"
+    default 0
+    depends on ENABLE_WAKEUP_KEY
+endmenu
+
 menu "Audio Configuration"
 config ENABLE_AUDIO_PROMPT
     bool "Enable Audio Prompt"

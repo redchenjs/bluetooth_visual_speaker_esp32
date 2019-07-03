@@ -12,7 +12,7 @@
 #include "fft.h"
 #include "gfx.h"
 
-#include "os/event.h"
+#include "os/core.h"
 #include "user/color_table.h"
 #include "user/bitmap.h"
 #include "user/fifo.h"
