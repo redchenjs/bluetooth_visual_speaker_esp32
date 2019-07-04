@@ -4,13 +4,24 @@ ESP32 Bluetooth Speaker
 Bluetooth Speaker based on ESP32 chip with optional visual effects output.
 
 ## Main Features
-* A2DP Music Streaming
-* I2S Output (External DAC needed)
+* A2DP Audio Streaming
+* Internel DAC / External I2S Codec Output
 * VFX Output (Audio FFT / Rainbow / Stars / ...)
 * BLE Control Interface (for VFX Output)
 * Audio Prompt (Connected / Disconnected / Resume / Sleep)
-* Sleep/Resume (External Key needed)
+* Sleep/Resume (with External Key)
 * OTA Firmware Update (via SPP Profile)
+
+## Configure
+```
+./esp-idf/tools/idf.py menuconfig
+```
+* All project configurations are under the `Bluetooth Speaker` menu.
+
+## Build & Flash & Monitor
+```
+./esp-idf/tools/idf.py flash monitor
+```
 
 ## Music VFX on ST7735 80x160 LCD Panel (Realtime FFT)
 <img src="docs/lcd.png">
