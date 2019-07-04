@@ -97,19 +97,19 @@ config ENABLE_LED
     bool "Enable LED"
     default y
     help
-        Select this to enable LED.
+        Select this to enable LED Output.
 
-choice LED_MODE
-    prompt "LED Mode"
-    default LED_MODE_HIGH
+choice LED_ACTIVE_LEVEL
+    prompt "LED Active Level"
+    default LED_ACTIVE_HIGH
     depends on ENABLE_LED
     help
-        Select LED Mode.
+        Select LED Active Level.
 
-config LED_MODE_HIGH
-    bool "High level is on"
-config LED_MODE_LOW
-    bool "Low level is on"
+config LED_ACTIVE_HIGH
+    bool "Active High"
+config LED_ACTIVE_LOW
+    bool "Active Low"
 endchoice
 
 config LED_PIN

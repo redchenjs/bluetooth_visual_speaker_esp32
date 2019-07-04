@@ -40,15 +40,15 @@ static void led_task_handle(void *pvParameter)
         xLastWakeTime = xTaskGetTickCount();
 
         if (i++ % led_mode_table[led_mode_index][1]) {
-#ifdef CONFIG_LED_MODE_HIGH
-            gpio_set_level(CONFIG_LED_PIN, 0);
-        } else {
+#ifdef CONFIG_LED_ACTIVE_LOW
             gpio_set_level(CONFIG_LED_PIN, 1);
+        } else {
+            gpio_set_level(CONFIG_LED_PIN, 0);
         }
 #else
-            gpio_set_level(CONFIG_LED_PIN, 1);
-        } else {
             gpio_set_level(CONFIG_LED_PIN, 0);
+        } else {
+            gpio_set_level(CONFIG_LED_PIN, 1);
         }
 #endif
 
