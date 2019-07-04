@@ -179,23 +179,53 @@ config SLEEP_KEY_PIN
 endmenu
 
 menu "Audio Configuration"
+choice AUDIO_OUTPUT
+    prompt "Audio Output"
+    default AUDIO_OUTPUT_EXTERNAL_I2S
+    help
+        Select to use Internal DAC or External I2S CODEC.
+
+    config AUDIO_OUTPUT_INTERNAL_DAC
+        bool "Internal DAC"
+    config AUDIO_OUTPUT_EXTERNAL_I2S
+        bool "External I2S CODEC"
+endchoice
+
+choice INTERNAL_DAC_MODE
+    prompt "Internal DAC Mode"
+    default INTERNAL_DAC_MODE_BOTH
+    depends on AUDIO_OUTPUT_INTERNAL_DAC
+    help
+        Select the Internal DAC Output Mode.
+
+    config INTERNAL_DAC_MODE_LEFT
+        bool "Left Channel Only (GPIO26)"
+    config INTERNAL_DAC_MODE_RIGHT
+        bool "Right Channel Only (GPIO25)"
+    config INTERNAL_DAC_MODE_BOTH
+        bool "Both Channel Enabled"
+endchoice
+
+config I2S_BCLK_PIN
+    int "I2S BCLK Pin"
+    default 22
+    depends on AUDIO_OUTPUT_EXTERNAL_I2S
+
+config I2S_LRCK_PIN
+    int "I2S LRCK Pin"
+    default 21
+    depends on AUDIO_OUTPUT_EXTERNAL_I2S
+
+config I2S_DOUT_PIN
+    int "I2S DOUT Pin"
+    default 19
+    depends on AUDIO_OUTPUT_EXTERNAL_I2S
+
 config ENABLE_AUDIO_PROMPT
     bool "Enable Audio Prompt"
     default y
     help
         Select this to enable Audio Prompt.
-
-config I2S_BCLK_PIN
-    int "I2S BCLK Pin"
-    default 22
-
-config I2S_LRCK_PIN
-    int "I2S LRCK Pin"
-    default 21
-
-config I2S_DOUT_PIN
-    int "I2S DOUT Pin"
-    default 19
 endmenu
 
 config FIRMWARE_VERSION

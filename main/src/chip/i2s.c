@@ -22,7 +22,11 @@ void i2s0_init(void)
 {
     esp_chip_info(&chip_info);
     i2s_config_t i2s_config = {
+#ifdef CONFIG_AUDIO_OUTPUT_INTERNAL_DAC
+        .mode = I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN,          // Only TX
+#else
         .mode = I2S_MODE_MASTER | I2S_MODE_TX,                                  // Only TX
+#endif
         .communication_format = I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB,
         .use_apll = chip_info.revision,                                         // Don't use apll on rev0 chips
         .sample_rate = i2s0_sample_rate,
@@ -32,14 +36,27 @@ void i2s0_init(void)
         .dma_buf_len = 60,
         .tx_desc_auto_clear = true                                              // Auto clear tx descriptor on underflow
     };
+    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL));
+#ifdef CONFIG_AUDIO_OUTPUT_INTERNAL_DAC
+
+#ifdef CONFIG_INTERNAL_DAC_MODE_LEFT
+    ESP_ERROR_CHECK(i2s_set_dac_mode(I2S_DAC_CHANNEL_LEFT_EN));
+#elif defined(CONFIG_INTERNAL_DAC_MODE_RIGHT)
+    ESP_ERROR_CHECK(i2s_set_dac_mode(I2S_DAC_CHANNEL_RIGHT_EN));
+#else
+    ESP_ERROR_CHECK(i2s_set_dac_mode(I2S_DAC_CHANNEL_BOTH_EN));
+#endif
+    ESP_ERROR_CHECK(i2s_set_pin(0, NULL));
+
+#else
     i2s_pin_config_t pin_config = {
         .bck_io_num   = CONFIG_I2S_BCLK_PIN,
         .ws_io_num    = CONFIG_I2S_LRCK_PIN,
         .data_out_num = CONFIG_I2S_DOUT_PIN,
         .data_in_num  = -1                                                     // Not used
     };
-    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL));
     ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_0, &pin_config));
+#endif // CONFIG_AUDIO_OUTPUT_INTERNAL_DAC
     ESP_LOGI(TAG, "i2s-0 initialized.");
 }
 
