@@ -8,8 +8,10 @@
 #include <string.h>
 
 #include "esp_log.h"
+#include "esp_gatts_api.h"
 #include "esp_gap_bt_api.h"
 #include "esp_gap_ble_api.h"
+#include "esp_gatt_common_api.h"
 
 #include "user/ble_app_gatts.h"
 
@@ -105,5 +107,8 @@ void ble_app_init(void)
 {
     ESP_ERROR_CHECK(esp_ble_gatts_register_callback(ble_gatts_event_handler));
     ESP_ERROR_CHECK(esp_ble_gap_register_callback(ble_gap_event_handler));
+
     ESP_ERROR_CHECK(esp_ble_gatts_app_register(0));
+
+    ESP_ERROR_CHECK(esp_ble_gatt_set_local_mtu(500));
 }
