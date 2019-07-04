@@ -13,9 +13,9 @@
 #include "gfx.h"
 
 #include "user/vfx.h"
-#include "user/bitmap.h"
 #include "user/vfx_core.h"
-#include "user/color_table.h"
+#include "user/vfx_bitmap.h"
+#include "user/vfx_color_table.h"
 
 #define FIFO_SIZE 128
 
@@ -28,7 +28,7 @@ uint32_t vfx_read_color_from_table(uint16_t color_idx, uint16_t color_ctr)
 {
     uint16_t table_x = color_idx;
     uint16_t table_y = color_ctr;
-    uint8_t *pixel_addr = (uint8_t *)color_table_512 + (table_x + table_y * 512) * 3;
+    uint8_t *pixel_addr = (uint8_t *)vfx_color_table_512 + (table_x + table_y * 512) * 3;
     uint32_t pixel_color = *(pixel_addr + 0) << 16 | *(pixel_addr + 1) << 8 | *(pixel_addr + 2);
     return pixel_color;
 }
@@ -149,7 +149,7 @@ void vfx_write_layer_number(uint8_t num, uint8_t layer, uint16_t color_idx, uint
     uint8_t y = layer;
     uint8_t z = 0;
     for (uint8_t i=0; i<8; i++) {
-        unsigned char temp = bitmap_number[num][i];
+        unsigned char temp = vfx_bitmap_number[num][i];
         for (uint8_t j=0; j<8; j++) {
             if (temp & 0x80) {
                 vfx_write_pixel(x, y, z, color_idx, color_ctr);

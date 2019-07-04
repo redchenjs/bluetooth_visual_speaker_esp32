@@ -13,8 +13,8 @@
 #include "gfx.h"
 
 #include "os/core.h"
+#include "user/vfx_bitmap.h"
 #include "user/vfx_core.h"
-#include "user/bitmap.h"
 #include "user/vfx.h"
 
 #define TAG "vfx"
@@ -536,7 +536,7 @@ static void vfx_task_handle(void *pvParameter)
                     vfx_clear_cube();
                     break;
                 }
-                vfx_write_cube_bitmap(bitmap_wave[frame_idx]);
+                vfx_write_cube_bitmap(vfx_bitmap_wave[frame_idx]);
                 if (frame_idx++ == 44) {
                     frame_idx = 8;
                 }
@@ -555,7 +555,7 @@ static void vfx_task_handle(void *pvParameter)
                 }
                 frame_pre = frame_idx;
                 for (uint8_t i=0; i<8; i++) {
-                    vfx_write_layer_bitmap(i, bitmap_line[frame_idx]);
+                    vfx_write_layer_bitmap(i, vfx_bitmap_line[frame_idx]);
                     if (frame_idx++ == 27) {
                         frame_idx = 0;
                     }
@@ -580,7 +580,7 @@ static void vfx_task_handle(void *pvParameter)
                 }
                 frame_pre = frame_idx;
                 for (uint8_t i=0; i<8; i++) {
-                    vfx_write_layer_bitmap(i, bitmap_line[frame_idx]);
+                    vfx_write_layer_bitmap(i, vfx_bitmap_line[frame_idx]);
                     if (frame_idx-- == 0) {
                         frame_idx = 27;
                     }
