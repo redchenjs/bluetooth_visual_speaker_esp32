@@ -125,35 +125,57 @@ config ENABLE_WAKEUP_KEY
     help
         Select this to enable WakeUp Key.
 
-config USE_WAKEUP_KEY_FOR_SLEEP
-    bool "Use WakeUp Key for Sleep"
-    default n
-    depends on ENABLE_WAKEUP_KEY
-    help
-        Select whether to use WakeUp Key for Sleep.
-
 config WAKEUP_KEY_HOLD_TIME
     int "WakeUp Key Hold Time (ms)"
-    default 2000
+    default 1000
     depends on ENABLE_WAKEUP_KEY
 
-choice WAKEUP_KEY_MODE
-    prompt "WakeUp Key Mode"
-    default WAKEUP_KEY_MODE_LOW
+choice WAKEUP_KEY_ACTIVE_LEVEL
+    prompt "WakeUp Key Active Level"
+    default WAKEUP_KEY_ACTIVE_LOW
     depends on ENABLE_WAKEUP_KEY
     help
-        Select WakeUp Key Mode.
+        Select WakeUp Key Active Level.
 
-config WAKEUP_KEY_MODE_HIGH
-    bool "High level is pressed"
-config WAKEUP_KEY_MODE_LOW
-    bool "Low level is pressed"
+config WAKEUP_KEY_ACTIVE_HIGH
+    bool "Active High"
+config WAKEUP_KEY_ACTIVE_LOW
+    bool "Active Low"
 endchoice
 
 config WAKEUP_KEY_PIN
     int "WakeUp Key Pin"
     default 0
     depends on ENABLE_WAKEUP_KEY
+
+config ENABLE_SLEEP_KEY
+    bool "Enable Sleep Key"
+    default n
+    help
+        Select this to enable Sleep Key.
+
+config SLEEP_KEY_HOLD_TIME
+    int "Sleep Key Hold Time (ms)"
+    default 1000
+    depends on ENABLE_SLEEP_KEY
+
+choice SLEEP_KEY_ACTIVE_LEVEL
+    prompt "Sleep Key Active Level"
+    default SLEEP_KEY_ACTIVE_LOW
+    depends on ENABLE_SLEEP_KEY
+    help
+        Select Sleep Key Active Level.
+
+config SLEEP_KEY_ACTIVE_HIGH
+    bool "Active High"
+config SLEEP_KEY_ACTIVE_LOW
+    bool "Active Low"
+endchoice
+
+config SLEEP_KEY_PIN
+    int "Sleep Key Pin"
+    default 0
+    depends on ENABLE_SLEEP_KEY
 endmenu
 
 menu "Audio Configuration"

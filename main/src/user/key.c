@@ -17,7 +17,7 @@
 
 #define TAG "key"
 
-#ifdef CONFIG_USE_WAKEUP_KEY_FOR_SLEEP
+#ifdef CONFIG_ENABLE_SLEEP_KEY
 static void key_sleep_handle(void)
 {
     xEventGroupClearBits(user_event_group, KEY_SCAN_BIT);
@@ -33,21 +33,21 @@ static void key_sleep_handle(void)
 
     os_enter_sleep_mode();
 }
-#endif // CONFIG_USE_WAKEUP_KEY_FOR_SLEEP
+#endif // CONFIG_ENABLE_SLEEP_KEY
 
 static void key_task_handle(void *pvParameter)
 {
-#ifdef CONFIG_USE_WAKEUP_KEY_FOR_SLEEP
+#ifdef CONFIG_ENABLE_SLEEP_KEY
     uint16_t count[] = {0};
-    uint8_t gpio_pin[] = {CONFIG_WAKEUP_KEY_PIN};
+    uint8_t gpio_pin[] = {CONFIG_SLEEP_KEY_PIN};
     uint8_t gpio_val[] = {
-#ifdef CONFIG_WAKEUP_KEY_MODE_LOW
+#ifdef CONFIG_SLEEP_KEY_ACTIVE_LOW
         0
 #else
         1
 #endif
     };
-    uint16_t gpio_hold[] = {CONFIG_WAKEUP_KEY_HOLD_TIME};
+    uint16_t gpio_hold[] = {CONFIG_SLEEP_KEY_HOLD_TIME};
     void (*key_handle[])(void) = {key_sleep_handle};
 
     portTickType xLastWakeTime;
@@ -89,7 +89,7 @@ static void key_task_handle(void *pvParameter)
 
         vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_RATE_MS);
     }
-#endif // CONFIG_USE_WAKEUP_KEY_FOR_SLEEP
+#endif // CONFIG_ENABLE_SLEEP_KEY
 }
 
 void key_init(void)

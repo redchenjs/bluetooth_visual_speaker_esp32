@@ -55,7 +55,7 @@ void user_init(void)
     led_init();
 #endif
 
-#ifdef CONFIG_USE_WAKEUP_KEY_FOR_SLEEP
+#ifdef CONFIG_ENABLE_SLEEP_KEY
     key_init();
 #endif
 

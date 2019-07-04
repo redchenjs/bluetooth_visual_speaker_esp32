@@ -23,7 +23,7 @@ void os_enter_sleep_mode(void)
 {
     ESP_LOGI(TAG, "entering sleep mode");
 
-#ifdef CONFIG_WAKEUP_KEY_MODE_LOW
+#ifdef CONFIG_WAKEUP_KEY_ACTIVE_LOW
     esp_sleep_enable_ext1_wakeup(1ULL << CONFIG_WAKEUP_KEY_PIN, ESP_EXT1_WAKEUP_ALL_LOW);
 #else
     esp_sleep_enable_ext1_wakeup(1ULL << CONFIG_WAKEUP_KEY_PIN, ESP_EXT1_WAKEUP_ANY_HIGH);
@@ -41,7 +41,7 @@ void core_init(void)
     if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED) {
         vTaskDelayUntil(&xLastWakeTime, CONFIG_WAKEUP_KEY_HOLD_TIME / portTICK_RATE_MS);
 
-#ifdef CONFIG_WAKEUP_KEY_MODE_LOW
+#ifdef CONFIG_WAKEUP_KEY_ACTIVE_LOW
         if (gpio_get_level(CONFIG_WAKEUP_KEY_PIN) == 0) {
 #else
         if (gpio_get_level(CONFIG_WAKEUP_KEY_PIN) == 1) {
