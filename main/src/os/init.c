@@ -17,7 +17,7 @@
 #include "user/vfx.h"
 #include "user/audio.h"
 #include "user/bt_app.h"
-#include "user/ble_gatts.h"
+#include "user/ble_app.h"
 
 void os_init(void)
 {
@@ -44,7 +44,7 @@ void user_init(void)
     bt_app_init();
 
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-    ble_gatts_init();
+    ble_app_init();
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
