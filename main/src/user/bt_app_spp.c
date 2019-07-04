@@ -49,6 +49,7 @@ static const char rsp_str[][24] = {
     "OK\r\n",           // OK
     "DONE\r\n",         // Done
     "ERROR\r\n",        // Error
+    "VER:%s\r\n",       // Version String
     "RECV:%ld/%ld\r\n"  // Receive Progress
 };
 
@@ -96,13 +97,9 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             } else if (strncmp(fw_cmd[1], (const char *)param->data_ind.data, strlen(fw_cmd[1])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+VER?");
 
-                uint8_t str_len = strlen(firmware_get_version()) + 2;
-                char *str_buf = malloc(str_len * sizeof(char));
-                strncpy(str_buf, firmware_get_version(), str_len - 2);
-                str_buf[str_len - 2] = '\r';
-                str_buf[str_len - 1] = '\n';
-
-                esp_spp_write(param->write.handle, str_len, (uint8_t *)str_buf);
+                char str_buf[24] = {0};
+                snprintf(str_buf, sizeof(str_buf), rsp_str[3], firmware_get_version());
+                esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
             } else if (strncmp(fw_cmd[2], (const char *)param->data_ind.data, 7) == 0) {
                 sscanf((const char *)param->data_ind.data, fw_cmd[2], &image_length);
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+UPD:%ld", image_length);
@@ -141,7 +138,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             ESP_LOGD(BT_OTA_TAG, "have written image length %ld", data_num);
 
             char str_buf[24] = {0};
-            snprintf(str_buf, sizeof(str_buf), rsp_str[3], data_num, image_length);
+            snprintf(str_buf, sizeof(str_buf), rsp_str[4], data_num, image_length);
             esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
 
             if (data_num == image_length) {
