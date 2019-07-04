@@ -36,19 +36,18 @@ void os_enter_sleep_mode(void)
 void core_init(void)
 {
 #ifdef CONFIG_ENABLE_WAKEUP_KEY
-    portTickType xLastWakeTime = xTaskGetTickCount();
-
+    ESP_LOGI(TAG, "checking wakeup cause");
     if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED) {
-        vTaskDelayUntil(&xLastWakeTime, CONFIG_WAKEUP_KEY_HOLD_TIME / portTICK_RATE_MS);
+        vTaskDelay(CONFIG_WAKEUP_KEY_EXTRA_HOLD_TIME / portTICK_RATE_MS);
 
 #ifdef CONFIG_WAKEUP_KEY_ACTIVE_LOW
         if (gpio_get_level(CONFIG_WAKEUP_KEY_PIN) == 0) {
 #else
         if (gpio_get_level(CONFIG_WAKEUP_KEY_PIN) == 1) {
 #endif
-            ESP_LOGI(TAG, "wakeup from sleep mode");
+            ESP_LOGI(TAG, "resuming from sleep mode");
         } else {
-            ESP_LOGI(TAG, "wakeup aborted");
+            ESP_LOGI(TAG, "resume aborted");
 
             os_enter_sleep_mode();
         }
