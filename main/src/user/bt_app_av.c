@@ -96,7 +96,8 @@ void bt_app_avrc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t *par
     case ESP_AVRC_CT_CONNECTION_STATE_EVT:
     case ESP_AVRC_CT_PASSTHROUGH_RSP_EVT:
     case ESP_AVRC_CT_CHANGE_NOTIFY_EVT:
-    case ESP_AVRC_CT_REMOTE_FEATURES_EVT: {
+    case ESP_AVRC_CT_REMOTE_FEATURES_EVT:
+    case ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT: {
         bt_app_work_dispatch(bt_av_hdl_avrc_ct_evt, event, param, sizeof(esp_avrc_ct_cb_param_t), NULL);
         break;
     }
