@@ -39,6 +39,19 @@ static long image_length = 0;
 static const esp_partition_t *update_partition = NULL;
 static esp_ota_handle_t update_handle = 0;
 
+static const char fw_cmd[][24] = {
+    "FW+RST\r\n",       // Reset Device
+    "FW+VER?\r\n",      // Get Firmware Version
+    "FW+UPD:%ld\r\n"    // Update Device Firmware
+};
+
+static const char rsp_str[][24] = {
+    "OK\r\n",           // OK
+    "DONE\r\n",         // Done
+    "ERROR\r\n",        // Error
+    "RECV:%ld/%ld\r\n"  // Receive Progress
+};
+
 static void bt_spp_print_speed(void)
 {
     float time_old_s = time_old.tv_sec + time_old.tv_usec / 1000000.0;
@@ -76,27 +89,26 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         break;
     case ESP_SPP_DATA_IND_EVT:
         if (ota_running == 0) {
-            if (strncmp("FW+RST\r\n", (const char *)param->data_ind.data, param->data_ind.len) == 0) {
+            if (strncmp(fw_cmd[0], (const char *)param->data_ind.data, strlen(fw_cmd[0])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+RST");
 
                 esp_restart();
-            } else if (strncmp("FW+VER?\r\n", (const char *)param->data_ind.data, param->data_ind.len) == 0) {
+            } else if (strncmp(fw_cmd[1], (const char *)param->data_ind.data, strlen(fw_cmd[1])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+VER?");
 
-                uint8_t rsp_len = strlen(firmware_get_version()) + 2;
-                uint8_t *rsp_str = malloc(rsp_len * sizeof(uint8_t));
-                strncpy((char *)rsp_str, firmware_get_version(), rsp_len - 2);
-                rsp_str[rsp_len - 2] = '\r';
-                rsp_str[rsp_len - 1] = '\n';
+                uint8_t str_len = strlen(firmware_get_version()) + 2;
+                char *str_buf = malloc(str_len * sizeof(char));
+                strncpy(str_buf, firmware_get_version(), str_len - 2);
+                str_buf[str_len - 2] = '\r';
+                str_buf[str_len - 1] = '\n';
 
-                esp_spp_write(param->write.handle, rsp_len, rsp_str);
-            } else if (strncmp("FW+UPD:", (const char *)param->data_ind.data, 7) == 0) {
-                sscanf((const char *)param->data_ind.data, "FW+UPD:%ld\r\n", &image_length);
+                esp_spp_write(param->write.handle, str_len, (uint8_t *)str_buf);
+            } else if (strncmp(fw_cmd[2], (const char *)param->data_ind.data, 7) == 0) {
+                sscanf((const char *)param->data_ind.data, fw_cmd[2], &image_length);
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+UPD:%ld", image_length);
 
                 if (image_length != 0) {
-                    uint8_t rsp_str[] = "OK\r\n";
-                    esp_spp_write(param->write.handle, sizeof(rsp_str), rsp_str);
+                    esp_spp_write(param->write.handle, strlen(rsp_str[0]), (uint8_t *)rsp_str[0]);
 
                     xEventGroupClearBits(user_event_group, KEY_SCAN_BIT);
 
@@ -116,8 +128,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
                     gettimeofday(&time_old, NULL);
                 } else {
-                    uint8_t rsp_str[] = "ERROR\r\n";
-                    esp_spp_write(param->write.handle, sizeof(rsp_str), rsp_str);
+                    esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
                 }
             }
         } else {
@@ -128,6 +139,10 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             }
             data_num += param->data_ind.len;
             ESP_LOGD(BT_OTA_TAG, "have written image length %ld", data_num);
+
+            char str_buf[24] = {0};
+            snprintf(str_buf, sizeof(str_buf), rsp_str[3], data_num, image_length);
+            esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
 
             if (data_num == image_length) {
                 if (esp_ota_end(update_handle) != ESP_OK) {
@@ -141,8 +156,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 }
                 gettimeofday(&time_new, NULL);
                 bt_spp_print_speed();
-                uint8_t rsp_str[] = "DONE\r\n";
-                esp_spp_write(param->write.handle, sizeof(rsp_str), rsp_str);
+                esp_spp_write(param->write.handle, strlen(rsp_str[1]), (uint8_t *)rsp_str[1]);
                 xEventGroupSetBits(user_event_group, KEY_SCAN_BIT);
 exit:
                 ota_running  = 0;
