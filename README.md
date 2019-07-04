@@ -12,6 +12,12 @@ Bluetooth Speaker based on ESP32 chip with optional visual effects output.
 * Sleep/Resume (with External Key)
 * OTA Firmware Update (via SPP Profile)
 
+## Obtaining
+```
+git clone --recursive https://github.com/redchenjs/bluetooth_speaker_esp32.git
+```
+* Set up the Toolchain: <https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html>
+
 ## Configure
 ```
 ./esp-idf/tools/idf.py menuconfig
