@@ -16,7 +16,7 @@
 #include "user/vfx.h"
 #include "user/ble_gatts.h"
 
-#define TAG "ble_gatts"
+#define BLE_GATTS_TAG "ble_gatts"
 
 #define PROFILE_NUM      1
 #define PROFILE_A_APP_ID 0
@@ -44,6 +44,11 @@ static esp_attr_value_t gatts_char1_val = {
     .attr_value   = ble_char_value_str,
 };
 
+static uint8_t adv_config_done = 0;
+
+#define adv_config_flag      (1 << 0)
+#define scan_rsp_config_flag (1 << 1)
+
 static esp_ble_adv_params_t adv_params = {
     .adv_int_min       = 0x20,
     .adv_int_max       = 0x40,
@@ -68,6 +73,8 @@ typedef struct gatts_profile_inst {
     esp_bt_uuid_t descr_uuid;
 } gatts_profile_inst_t;
 
+static const char *s_gatts_conn_state_str[] = {"disconnected", "connected"};
+
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
 static void ble_init_adv_data(const char *name)
 {
@@ -86,12 +93,14 @@ static void ble_init_adv_data(const char *name)
     // the length of adv data must be less than 31 bytes
     esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
     if (raw_adv_ret) {
-        ESP_LOGE(TAG, "config raw adv data failed, error code = 0x%x ", raw_adv_ret);
+        ESP_LOGE(BLE_GATTS_TAG, "config raw adv data failed, error code = 0x%x ", raw_adv_ret);
     }
+    adv_config_done |= adv_config_flag;
     esp_err_t raw_scan_ret = esp_ble_gap_config_scan_rsp_data_raw(raw_adv_data, sizeof(raw_adv_data));
     if (raw_scan_ret) {
-        ESP_LOGE(TAG, "config raw scan rsp data failed, error code = 0x%x", raw_scan_ret);
+        ESP_LOGE(BLE_GATTS_TAG, "config raw scan rsp data failed, error code = 0x%x", raw_scan_ret);
     }
+    adv_config_done |= scan_rsp_config_flag;
 }
 #endif
 
@@ -99,24 +108,33 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
 {
     switch (event) {
     case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
+        adv_config_done &= (~adv_config_flag);
+        if (adv_config_done == 0) {
+            esp_ble_gap_start_advertising(&adv_params);
+        }
         break;
     case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
-        esp_ble_gap_start_advertising(&adv_params);
+        adv_config_done &= (~scan_rsp_config_flag);
+        if (adv_config_done == 0) {
+            esp_ble_gap_start_advertising(&adv_params);
+        }
         break;
     case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
         // advertising start complete event to indicate advertising start successfully or failed
         if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-            ESP_LOGE(TAG, "advertising start failed");
+            ESP_LOGE(BLE_GATTS_TAG, "advertising start failed");
         }
         break;
     case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
         if (param->adv_stop_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-            ESP_LOGE(TAG, "advertising stop failed");
+            ESP_LOGE(BLE_GATTS_TAG, "advertising stop failed");
         }
+        break;
+    case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
         break;
     case ESP_GAP_BLE_SET_LOCAL_PRIVACY_COMPLETE_EVT:
         if (param->local_privacy_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-            ESP_LOGE(TAG, "config local privacy failed, error status = %x", param->local_privacy_cmpl.status);
+            ESP_LOGE(BLE_GATTS_TAG, "config local privacy failed, error status = %x", param->local_privacy_cmpl.status);
             break;
         }
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
@@ -138,7 +156,7 @@ static void gatts_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *pr
                 prepare_write_env->prepare_buf = (uint8_t *)malloc(PREPARE_BUF_MAX_SIZE * sizeof(uint8_t));
                 prepare_write_env->prepare_len = 0;
                 if (prepare_write_env->prepare_buf == NULL) {
-                    ESP_LOGE(TAG, "gatt prep no mem");
+                    ESP_LOGE(BLE_GATTS_TAG, "malloc write buffer failed");
                     status = ESP_GATT_NO_RESOURCES;
                 }
             } else {
@@ -156,7 +174,7 @@ static void gatts_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *pr
             memcpy(gatt_rsp->attr_value.value, param->write.value, param->write.len);
             esp_err_t response_err = esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, status, gatt_rsp);
             if (response_err != ESP_OK) {
-               ESP_LOGE(TAG, "send response error");
+               ESP_LOGE(BLE_GATTS_TAG, "send response error");
             }
             free(gatt_rsp);
             if (status != ESP_GATT_OK) {
@@ -174,11 +192,6 @@ static void gatts_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *pr
 
 static void gatts_exec_write_event_env(prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param)
 {
-    if (param->exec_write.exec_write_flag == ESP_GATT_PREP_WRITE_EXEC) {
-        esp_log_buffer_hex(TAG, prepare_write_env->prepare_buf, prepare_write_env->prepare_len);
-    } else {
-        ESP_LOGI(TAG,"gatt prep write cancel");
-    }
     if (prepare_write_env->prepare_buf) {
         free(prepare_write_env->prepare_buf);
         prepare_write_env->prepare_buf = NULL;
@@ -227,18 +240,18 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         if (!param->write.is_prep) {
             if (param->write.value[0] == 0x03 && param->write.len == 3) {
                 uint16_t fft_scale = (param->write.value[1] << 8 | param->write.value[2]);
-                ESP_LOGI(TAG, "set fft scale %u", fft_scale);
+                ESP_LOGI(BLE_GATTS_TAG, "set fft scale %u", fft_scale);
                 vfx_set_fft_scale(fft_scale);
             } else if (param->write.value[0] == 0x02 && param->write.len == 3) {
                 uint16_t ctr = (param->write.value[1] << 8 | param->write.value[2]) % 0x0200;
-                ESP_LOGI(TAG, "set vfx ctr 0x%04X", ctr);
+                ESP_LOGI(BLE_GATTS_TAG, "set vfx ctr 0x%04X", ctr);
                 vfx_set_ctr(ctr);
             } else if (param->write.value[0] == 0x01 && param->write.len == 2) {
                 uint8_t mode = param->write.value[1] % 0x10;
-                ESP_LOGI(TAG, "set vfx mode 0x%02X", mode);
+                ESP_LOGI(BLE_GATTS_TAG, "set vfx mode 0x%02X", mode);
                 vfx_set_mode(mode);
             } else {
-                ESP_LOGW(TAG, "unknown command");
+                ESP_LOGW(BLE_GATTS_TAG, "unknown command");
             }
         }
         gatts_write_event_env(gatts_if, &a_prepare_write_env, param);
@@ -264,7 +277,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                                                         &gatts_char1_val,
                                                         NULL);
         if (add_char_ret) {
-            ESP_LOGE(TAG, "add char failed, error code =%x",add_char_ret);
+            ESP_LOGE(BLE_GATTS_TAG, "add char failed, error code =%x", add_char_ret);
         }
         break;
     case ESP_GATTS_ADD_INCL_SRVC_EVT:
@@ -279,7 +292,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                                                                NULL,
                                                                NULL);
         if (add_descr_ret) {
-            ESP_LOGE(TAG, "add char descr failed, error code =%x", add_descr_ret);
+            ESP_LOGE(BLE_GATTS_TAG, "add char descr failed, error code =%x", add_descr_ret);
         }
         break;
     }
@@ -293,19 +306,32 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_STOP_EVT:
         break;
     case ESP_GATTS_CONNECT_EVT: {
+        esp_ble_gap_stop_advertising();
+
+        uint8_t *bda = param->connect.remote_bda;
+        ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+                 s_gatts_conn_state_str[1], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+
         esp_ble_conn_update_params_t conn_params = {0};
         memcpy(conn_params.bda, param->connect.remote_bda, sizeof(esp_bd_addr_t));
-        uint8_t *bda = param->connect.remote_bda;
-        ESP_LOGI(TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
-                "connected", bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+        /* For the IOS system, please reference the apple official documents about the ble connection parameters restrictions. */
+        conn_params.latency = 0;
+        conn_params.max_int = 0x20;    // max_int = 0x20*1.25ms = 40ms
+        conn_params.min_int = 0x10;    // min_int = 0x10*1.25ms = 20ms
+        conn_params.timeout = 400;     // timeout = 400*10ms = 4000ms
+        gl_profile_tab[PROFILE_A_APP_ID].conn_id = param->connect.conn_id;
+        // start sending the update connection parameters to the peer device
+        esp_ble_gap_update_conn_params(&conn_params);
         break;
     }
-    case ESP_GATTS_DISCONNECT_EVT:
+    case ESP_GATTS_DISCONNECT_EVT: {
         esp_ble_gap_start_advertising(&adv_params);
+
         uint8_t *bda = param->connect.remote_bda;
-        ESP_LOGI(TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
-                "disconnected", bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+        ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+                 s_gatts_conn_state_str[0], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         break;
+    }
     case ESP_GATTS_CONF_EVT:
     case ESP_GATTS_OPEN_EVT:
     case ESP_GATTS_CANCEL_OPEN_EVT:
@@ -324,7 +350,7 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
         if (param->reg.status == ESP_GATT_OK) {
             gl_profile_tab[param->reg.app_id].gatts_if = gatts_if;
         } else {
-            ESP_LOGI(TAG, "reg app failed, app_id %04x, status %d",
+            ESP_LOGI(BLE_GATTS_TAG, "reg app failed, app_id %04x, status %d",
                      param->reg.app_id,
                      param->reg.status);
             return;

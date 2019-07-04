@@ -53,6 +53,8 @@ static const char rsp_str[][24] = {
     "RECV:%ld/%ld\r\n"  // Receive Progress
 };
 
+static const char *s_spp_conn_state_str[] = {"disconnected", "connected"};
+
 static void bt_spp_print_speed(void)
 {
     float time_old_s = time_old.tv_sec + time_old.tv_usec / 1000000.0;
@@ -67,6 +69,7 @@ static void bt_spp_print_speed(void)
 
 void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
+    static esp_bd_addr_t bda = {0};
     switch (event) {
     case ESP_SPP_INIT_EVT:
         esp_spp_start_srv(sec_mask, role_slave, 0, SPP_SERVER_NAME);
@@ -75,8 +78,9 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         break;
     case ESP_SPP_OPEN_EVT:
         break;
-    case ESP_SPP_CLOSE_EVT:
-        ESP_LOGI(BT_SPP_TAG, "SPP connection state: disconnected");
+    case ESP_SPP_CLOSE_EVT: {
+        ESP_LOGI(BT_SPP_TAG, "SPP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+                 s_spp_conn_state_str[0], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         if (ota_running == 1) {
             esp_ota_end(update_handle);
             xEventGroupSetBits(user_event_group, KEY_SCAN_BIT);
@@ -84,6 +88,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             image_length = 0;
         }
         break;
+    }
     case ESP_SPP_START_EVT:
         break;
     case ESP_SPP_CL_INIT_EVT:
@@ -167,9 +172,12 @@ exit:
         break;
     case ESP_SPP_WRITE_EVT:
         break;
-    case ESP_SPP_SRV_OPEN_EVT:
-        ESP_LOGI(BT_SPP_TAG, "SPP connection state: connected");
+    case ESP_SPP_SRV_OPEN_EVT: {
+        memcpy(&bda, param->srv_open.rem_bda, sizeof(esp_bd_addr_t));
+        ESP_LOGI(BT_SPP_TAG, "SPP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+                 s_spp_conn_state_str[1], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         break;
+    }
     default:
         break;
     }

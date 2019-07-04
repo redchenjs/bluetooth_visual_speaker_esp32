@@ -66,7 +66,6 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
         ESP_LOGI(BT_GAP_TAG, "please enter passkey");
         break;
     default:
-        ESP_LOGE(BT_GAP_TAG, "invalid GAP event: %d", event);
         break;
     }
     return;
