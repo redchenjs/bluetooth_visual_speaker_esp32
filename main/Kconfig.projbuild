@@ -183,12 +183,12 @@ choice AUDIO_OUTPUT
     prompt "Audio Output"
     default AUDIO_OUTPUT_EXTERNAL_I2S
     help
-        Select to use Internal DAC or External I2S CODEC.
+        Select to use Internal DAC or External I2S Codec.
 
     config AUDIO_OUTPUT_INTERNAL_DAC
         bool "Internal DAC"
     config AUDIO_OUTPUT_EXTERNAL_I2S
-        bool "External I2S CODEC"
+        bool "External I2S Codec"
 endchoice
 
 choice INTERNAL_DAC_MODE
