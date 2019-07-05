@@ -138,20 +138,24 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
             audio_play_file(0);
-            led_set_mode(1);
+            led_set_mode(2);
         }
         break;
     }
     case ESP_A2D_AUDIO_STATE_EVT: {
         a2d = (esp_a2d_cb_param_t *)(p_param);
         ESP_LOGI(BT_A2D_TAG, "A2DP audio state: %s", s_a2d_audio_state_str[a2d->audio_stat.state]);
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
         if (a2d->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
             esp_ble_gap_stop_advertising();
-        } else {
-            esp_ble_gap_start_advertising(&adv_params);
-        }
 #endif
+            led_set_mode(1);
+        } else {
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+            esp_ble_gap_start_advertising(&adv_params);
+#endif
+            led_set_mode(2);
+        }
         break;
     }
     case ESP_A2D_AUDIO_CFG_EVT: {
