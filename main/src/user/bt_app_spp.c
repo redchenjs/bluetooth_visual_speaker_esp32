@@ -65,7 +65,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         break;
     case ESP_SPP_OPEN_EVT:
         break;
-    case ESP_SPP_CLOSE_EVT: {
+    case ESP_SPP_CLOSE_EVT:
         esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
         esp_ble_gap_start_advertising(&adv_params);
@@ -81,7 +81,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         }
         led_set_mode(3);
         break;
-    }
     case ESP_SPP_START_EVT:
         break;
     case ESP_SPP_CL_INIT_EVT:
@@ -177,7 +176,7 @@ err0:
         break;
     case ESP_SPP_WRITE_EVT:
         break;
-    case ESP_SPP_SRV_OPEN_EVT: {
+    case ESP_SPP_SRV_OPEN_EVT:
         esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
         esp_ble_gap_stop_advertising();
@@ -187,7 +186,6 @@ err0:
                  s_spp_conn_state_str[1], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         led_set_mode(7);
         break;
-    }
     default:
         break;
     }
