@@ -105,10 +105,16 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 if (image_length != 0) {
                     xEventGroupClearBits(user_event_group, KEY_SCAN_BIT);
 
+                    ota_running = 1;
+
                     update_partition = esp_ota_get_next_update_partition(NULL);
-                    ESP_LOGI(BT_OTA_TAG, "writing to partition subtype %d at offset 0x%x",
-                             update_partition->subtype, update_partition->address);
-                    assert(update_partition != NULL);
+                    if (update_partition != NULL) {
+                        ESP_LOGI(BT_OTA_TAG, "writing to partition subtype %d at offset 0x%x",
+                                 update_partition->subtype, update_partition->address);
+                    } else {
+                        ESP_LOGE(BT_OTA_TAG, "no ota partition to write");
+                        goto err0;
+                    }
 
                     esp_err_t err = esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle);
                     if (err != ESP_OK) {
@@ -116,7 +122,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                         goto err0;
                     }
 
-                    ota_running = 1;
                     data_recv = 0;
 
                     esp_spp_write(param->write.handle, strlen(rsp_str[0]), (uint8_t *)rsp_str[0]);
