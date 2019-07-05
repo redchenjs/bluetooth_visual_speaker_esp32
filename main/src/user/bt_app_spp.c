@@ -91,6 +91,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         if (ota_running == 1) {
             esp_ota_end(update_handle);
             xEventGroupSetBits(user_event_group, KEY_SCAN_BIT);
+
             ota_running  = 0;
             image_length = 0;
         }
@@ -171,6 +172,13 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 esp_spp_write(param->write.handle, strlen(rsp_str[1]), (uint8_t *)rsp_str[1]);
                 xEventGroupSetBits(user_event_group, KEY_SCAN_BIT);
 exit:
+                ota_running  = 0;
+                image_length = 0;
+            } else if (data_num > image_length) {
+                esp_ota_end(update_handle);
+                esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
+                xEventGroupSetBits(user_event_group, KEY_SCAN_BIT);
+
                 ota_running  = 0;
                 image_length = 0;
             }
