@@ -41,11 +41,12 @@ void i2s0_init(void)
                                 | I2S_COMM_FORMAT_I2S
 #endif
         ,
-        .use_apll = 1,                                                          // Use APLL
 #ifdef CONFIG_AUDIO_OUTPUT_I2S0
+        .use_apll = 1,                                                          // Use APLL
         .sample_rate = i2s_output_sample_rate,
         .bits_per_sample = i2s_output_bits_per_sample,
 #else
+        .use_apll = 0,                                                          // Use PLL_D2
         .sample_rate = i2s_input_sample_rate,
         .bits_per_sample = i2s_input_bits_per_sample,
 #endif
@@ -100,11 +101,12 @@ void i2s1_init(void)
 #endif
         ,
         .communication_format = I2S_COMM_FORMAT_I2S_MSB | I2S_COMM_FORMAT_I2S,
-        .use_apll = 0,                                                          // Use PLL_D2
 #ifdef CONFIG_AUDIO_OUTPUT_I2S1
+        .use_apll = 1,                                                          // Use APLL
         .sample_rate = i2s_output_sample_rate,
         .bits_per_sample = i2s_output_bits_per_sample,
 #else
+        .use_apll = 0,                                                          // Use PLL_D2
         .sample_rate = i2s_input_sample_rate,
         .bits_per_sample = i2s_input_bits_per_sample,
 #endif
