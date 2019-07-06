@@ -181,7 +181,7 @@ endmenu
 menu "Audio Configuration"
 choice AUDIO_OUTPUT
     prompt "Audio Output"
-    default AUDIO_OUTPUT_I2S_INTERFACE
+    default AUDIO_OUTPUT_I2S
     help
         Select Audio Output Type.
 
