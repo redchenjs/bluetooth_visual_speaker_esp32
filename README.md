@@ -5,7 +5,7 @@ Bluetooth Speaker based on ESP32 chip with optional visual effects output.
 
 ## Main Features
 * A2DP Audio Streaming
-* Internel DAC / External I2S Codec Output
+* I2S/PDM Input / I2S Output
 * VFX Output (Audio FFT / Rainbow / Stars / ...)
 * BLE Control Interface (for VFX Output)
 * Audio Prompt (Connected / Disconnected / Resume / Sleep)
