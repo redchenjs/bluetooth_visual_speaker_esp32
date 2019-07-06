@@ -187,8 +187,10 @@ choice AUDIO_OUTPUT
 
     config AUDIO_OUTPUT_INTERNAL_DAC
         bool "Internal DAC"
-    config AUDIO_OUTPUT_I2S_INTERFACE
-        bool "I2S Interface"
+    config AUDIO_OUTPUT_PDM
+        bool "PDM Mode"
+    config AUDIO_OUTPUT_I2S
+        bool "I2S Mode"
 endchoice
 
 choice AUDIO_INPUT
@@ -201,8 +203,10 @@ choice AUDIO_INPUT
         bool "None"
     config AUDIO_INPUT_INTERNAL_ADC
         bool "Internal ADC"
-    config AUDIO_INPUT_I2S_INTERFACE
-        bool "I2S Interface"
+    config AUDIO_INPUT_PDM
+        bool "PDM Mode"
+    config AUDIO_INPUT_I2S
+        bool "I2S Mode"
 endchoice
 
 choice INTERNAL_DAC_MODE
@@ -233,22 +237,37 @@ config INTERNAL_ADC_CHANNEL
 config I2S_BCLK_PIN
     int "I2S BCLK Pin"
     default 22
-    depends on AUDIO_OUTPUT_I2S_INTERFACE || AUDIO_INPUT_I2S_INTERFACE
+    depends on AUDIO_OUTPUT_I2S || AUDIO_INPUT_I2S
 
 config I2S_LRCK_PIN
     int "I2S LRCK Pin"
     default 21
-    depends on AUDIO_OUTPUT_I2S_INTERFACE || AUDIO_INPUT_I2S_INTERFACE
+    depends on AUDIO_OUTPUT_I2S || AUDIO_INPUT_I2S
 
 config I2S_DOUT_PIN
     int "I2S DOUT Pin"
     default 19
-    depends on AUDIO_OUTPUT_I2S_INTERFACE
+    depends on AUDIO_OUTPUT_I2S
 
 config I2S_DIN_PIN
     int "I2S DIN Pin"
     default 13
-    depends on AUDIO_INPUT_I2S_INTERFACE
+    depends on AUDIO_INPUT_I2S
+
+config PDM_CLK_PIN
+    int "PDM CLK Pin"
+    default 22
+    depends on AUDIO_OUTPUT_PDM || AUDIO_INPUT_PDM
+
+config PDM_DOUT_PIN
+    int "PDM DOUT Pin"
+    default 19
+    depends on AUDIO_OUTPUT_PDM
+
+config PDM_DIN_PIN
+    int "PDM DIN Pin"
+    default 13
+    depends on AUDIO_INPUT_PDM
 
 config ENABLE_AUDIO_PROMPT
     bool "Enable Audio Prompt"

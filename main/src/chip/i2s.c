@@ -32,9 +32,12 @@ void i2s0_init(void)
 #ifdef CONFIG_AUDIO_INPUT_INTERNAL_ADC
                 | I2S_MODE_ADC_BUILT_IN
 #endif
+#if defined(CONFIG_AUDIO_OUTPUT_PDM) || defined(CONFIG_AUDIO_INPUT_PDM)
+                | I2S_MODE_PDM
+#endif
         ,
         .communication_format = I2S_COMM_FORMAT_I2S_MSB
-#if !defined(CONFIG_AUDIO_OUTPUT_INTERNAL_DAC) && !defined(CONFIG_AUDIO_INPUT_INTERNAL_ADC)
+#if defined(CONFIG_AUDIO_OUTPUT_I2S) && !defined(CONFIG_AUDIO_INPUT_I2S)
                                 | I2S_COMM_FORMAT_I2S
 #endif
         ,
@@ -47,7 +50,7 @@ void i2s0_init(void)
         .tx_desc_auto_clear = true                                              // Auto clear tx descriptor on underflow
     };
     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL));
-#ifdef CONFIG_AUDIO_OUTPUT_INTERNAL_DAC
+#if defined(CONFIG_AUDIO_OUTPUT_INTERNAL_DAC) || defined(CONFIG_AUDIO_INPUT_INTERNAL_ADC)
 
 #ifdef CONFIG_INTERNAL_DAC_MODE_LEFT
     ESP_ERROR_CHECK(i2s_set_dac_mode(I2S_DAC_CHANNEL_LEFT_EN));
@@ -57,19 +60,49 @@ void i2s0_init(void)
     ESP_ERROR_CHECK(i2s_set_dac_mode(I2S_DAC_CHANNEL_BOTH_EN));
 #endif
 
-#else
+#ifdef CONFIG_AUDIO_INPUT_INTERNAL_ADC
+    ESP_ERROR_CHECK(i2s_set_adc_mode(CONFIG_INTERNAL_ADC_UNIT, CONFIG_INTERNAL_ADC_CHANNEL));
+#endif
+
+#else // defined(CONFIG_AUDIO_OUTPUT_INTERNAL_DAC) || defined(CONFIG_AUDIO_INPUT_INTERNAL_ADC)
     i2s_pin_config_t pin_config = {
+#if defined(CONFIG_AUDIO_OUTPUT_I2S) || defined(CONFIG_AUDIO_INPUT_I2S)
         .bck_io_num   = CONFIG_I2S_BCLK_PIN,
         .ws_io_num    = CONFIG_I2S_LRCK_PIN,
+
+#ifdef CONFIG_AUDIO_OUTPUT_I2S
         .data_out_num = CONFIG_I2S_DOUT_PIN,
-#ifdef CONFIG_AUDIO_INPUT_I2S_INTERFACE
+#else
+        .data_out_num = -1,
+#endif
+
+#ifdef CONFIG_AUDIO_INPUT_I2S
         .data_in_num  = CONFIG_I2S_DIN_PIN
 #else
-        .data_in_num  = -1                                                      // Not used
+        .data_in_num  = -1
 #endif
+
+#else // defined(CONFIG_AUDIO_OUTPUT_I2S) || defined(CONFIG_AUDIO_INPUT_I2S)
+        .bck_io_num   = -1,
+        .ws_io_num    = CONFIG_PDM_CLK_PIN,
+
+#ifdef CONFIG_AUDIO_OUTPUT_PDM
+        .data_out_num = CONFIG_PDM_DOUT_PIN,
+#else
+        .data_out_num = -1.
+#endif
+
+#ifdef CONFIG_AUDIO_INPUT_PDM
+        .data_in_num  = CONFIG_PDM_DIN_PIN
+#else
+        .data_in_num  = -1
+#endif
+
+#endif // defined(CONFIG_AUDIO_OUTPUT_I2S) || defined(CONFIG_AUDIO_INPUT_I2S)
     };
     ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_0, &pin_config));
-#endif // CONFIG_AUDIO_OUTPUT_INTERNAL_DAC
+#endif // defined(CONFIG_AUDIO_OUTPUT_INTERNAL_DAC) || defined(CONFIG_AUDIO_INPUT_INTERNAL_ADC)
+
     ESP_LOGI(TAG, "i2s-0 initialized.");
 }
 
