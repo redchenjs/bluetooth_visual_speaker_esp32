@@ -25,5 +25,11 @@ void bt_init(void)
     ESP_ERROR_CHECK(esp_bluedroid_init());
     ESP_ERROR_CHECK(esp_bluedroid_enable());
 
-    ESP_LOGI(TAG, "bt initialized.");
+    ESP_LOGI(TAG, "initialized, bt: enabled, ble: %s",
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+             "enabled"
+#else
+             "disabled"
+#endif
+    );
 }

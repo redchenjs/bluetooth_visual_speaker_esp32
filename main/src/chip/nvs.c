@@ -20,5 +20,5 @@ void nvs_init(void)
     }
     ESP_ERROR_CHECK(ret);
 
-    ESP_LOGI(TAG, "nvs initialized.");
+    ESP_LOGI(TAG, "initialized.");
 }

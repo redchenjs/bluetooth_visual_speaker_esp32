@@ -56,7 +56,7 @@ choice SCREEN_PANEL_OUTPUT
         Select Screen Panel Output Mode.
 
 config SCREEN_PANEL_OUTPUT_FFT
-    bool "Display Music FFT"
+    bool "Display Audio FFT"
 config SCREEN_PANEL_OUTPUT_MMAP
     bool "Display CUBE0414's Memory Mapping"
 endchoice
@@ -181,88 +181,87 @@ endmenu
 menu "Audio Configuration"
 choice AUDIO_OUTPUT
     prompt "Audio Output"
-    default AUDIO_OUTPUT_I2S
+    default AUDIO_OUTPUT_I2S0
     help
-        Select Audio Output Type.
+        Select Audio Output Interface.
 
-    config AUDIO_OUTPUT_INTERNAL_DAC
-        bool "Internal DAC"
-    config AUDIO_OUTPUT_PDM
-        bool "PDM Mode"
-    config AUDIO_OUTPUT_I2S
-        bool "I2S Mode"
+    config AUDIO_OUTPUT_I2S0
+        bool "I2S-0"
+        depends on !AUDIO_INPUT_PDM
+    config AUDIO_OUTPUT_I2S1
+        bool "I2S-1"
 endchoice
+
+config AUDIO_OUTPUT_I2S_NUM
+    int
+    default 0 if AUDIO_OUTPUT_I2S0
+    default 1 if AUDIO_OUTPUT_I2S1
 
 choice AUDIO_INPUT
     prompt "Audio Input"
     default AUDIO_INPUT_NONE
     help
-        Select Audio Input Type.
+        Select Audio Input Interface.
 
     config AUDIO_INPUT_NONE
         bool "None"
-    config AUDIO_INPUT_INTERNAL_ADC
-        bool "Internal ADC"
     config AUDIO_INPUT_PDM
-        bool "PDM Mode"
-    config AUDIO_INPUT_I2S
-        bool "I2S Mode"
+        bool "PDM"
+    config AUDIO_INPUT_I2S0
+        bool "I2S-0"
+    config AUDIO_INPUT_I2S1
+        bool "I2S-1"
 endchoice
 
-choice INTERNAL_DAC_MODE
-    prompt "Internal DAC Mode"
-    default INTERNAL_DAC_MODE_BOTH
-    depends on AUDIO_OUTPUT_INTERNAL_DAC
-    help
-        Select the Internal DAC Output Mode.
+config AUDIO_INPUT_I2S_NUM
+    int
+    default 0 if AUDIO_INPUT_I2S0 || AUDIO_INPUT_PDM
+    default 1 if AUDIO_INPUT_I2S1
 
-    config INTERNAL_DAC_MODE_LEFT
-        bool "Left Channel Only (GPIO26)"
-    config INTERNAL_DAC_MODE_RIGHT
-        bool "Right Channel Only (GPIO25)"
-    config INTERNAL_DAC_MODE_BOTH
-        bool "Both Channel Enabled"
-endchoice
-
-config INTERNAL_ADC_UNIT
-    int "Internal ADC Unit"
-    default 1
-    depends on AUDIO_INPUT_INTERNAL_ADC
-
-config INTERNAL_ADC_CHANNEL
-    int "Internal ADC Channel"
-    default 1
-    depends on AUDIO_INPUT_INTERNAL_ADC
-
-config I2S_BCLK_PIN
-    int "I2S BCLK Pin"
+config I2S0_BCLK_PIN
+    int "I2S-0 BCLK Pin"
     default 22
-    depends on AUDIO_OUTPUT_I2S || AUDIO_INPUT_I2S
+    depends on AUDIO_OUTPUT_I2S0 || AUDIO_INPUT_I2S0
 
-config I2S_LRCK_PIN
-    int "I2S LRCK Pin"
+config I2S0_LRCK_PIN
+    int "I2S-0 LRCK Pin"
     default 21
-    depends on AUDIO_OUTPUT_I2S || AUDIO_INPUT_I2S
+    depends on AUDIO_OUTPUT_I2S0 || AUDIO_INPUT_I2S0
 
-config I2S_DOUT_PIN
-    int "I2S DOUT Pin"
+config I2S0_DOUT_PIN
+    int "I2S-0 DOUT Pin"
     default 19
-    depends on AUDIO_OUTPUT_I2S
+    depends on AUDIO_OUTPUT_I2S0
 
-config I2S_DIN_PIN
-    int "I2S DIN Pin"
+config I2S0_DIN_PIN
+    int "I2S-0 DIN Pin"
     default 13
-    depends on AUDIO_INPUT_I2S
+    depends on AUDIO_INPUT_I2S0
+
+config I2S1_BCLK_PIN
+    int "I2S-1 BCLK Pin"
+    default 12
+    depends on AUDIO_OUTPUT_I2S1 || AUDIO_INPUT_I2S1
+
+config I2S1_LRCK_PIN
+    int "I2S-1 LRCK Pin"
+    default 15
+    depends on AUDIO_OUTPUT_I2S1 || AUDIO_INPUT_I2S1
+
+config I2S1_DOUT_PIN
+    int "I2S-1 DOUT Pin"
+    default 19
+    depends on AUDIO_OUTPUT_I2S1
+
+config I2S1_DIN_PIN
+    int "I2S-1 DIN Pin"
+    default 13
+    depends on AUDIO_INPUT_I2S1
 
 config PDM_CLK_PIN
     int "PDM CLK Pin"
     default 22
-    depends on AUDIO_OUTPUT_PDM || AUDIO_INPUT_PDM
-
-config PDM_DOUT_PIN
-    int "PDM DOUT Pin"
-    default 19
-    depends on AUDIO_OUTPUT_PDM
+    depends on AUDIO_INPUT_PDM
 
 config PDM_DIN_PIN
     int "PDM DIN Pin"

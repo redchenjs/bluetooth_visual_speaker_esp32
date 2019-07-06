@@ -7,6 +7,8 @@
 
 #include <string.h>
 
+#include "esp_log.h"
+
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 
@@ -15,22 +17,24 @@
 
 #ifdef CONFIG_VFX_OUTPUT_CUBE0414
 
-#define CUBE0414_GPIO_PIN_DC CONFIG_LIGHT_CUBE_DC_PIN
+#define TAG "cube0414"
 
 spi_transaction_t spi1_trans[2];
 
 void cube0414_init_board(void)
 {
-    gpio_set_direction(CUBE0414_GPIO_PIN_DC, GPIO_MODE_OUTPUT);
-    gpio_set_level(CUBE0414_GPIO_PIN_DC, 0);
+    gpio_set_direction(CONFIG_LIGHT_CUBE_DC_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(CONFIG_LIGHT_CUBE_DC_PIN, 0);
 
     memset(spi1_trans, 0, sizeof(spi1_trans));
+
+    ESP_LOGI(TAG, "initialized, dc: %d", CONFIG_LIGHT_CUBE_DC_PIN);
 }
 
 void cube0414_setpin_dc(spi_transaction_t *t)
 {
     int dc = (int)t->user;
-    gpio_set_level(CUBE0414_GPIO_PIN_DC, dc);
+    gpio_set_level(CONFIG_LIGHT_CUBE_DC_PIN, dc);
 }
 
 void cube0414_write_cmd(uint8_t cmd)

@@ -71,11 +71,7 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
-    EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-    if (uxBits & AUDIO_MP3_IDLE_BIT) {
-        size_t bytes_written;
-        i2s_write_wrapper(0, data, len, &bytes_written, portMAX_DELAY);
-    }
+    i2s_write_wrapper(data, len, 16, 1);
 }
 
 static void bt_app_alloc_meta_buffer(esp_avrc_ct_cb_param_t *param)
@@ -172,7 +168,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             } else if (oct0 & (0x01 << 4)) {
                 sample_rate = 48000;
             }
-            i2s0_set_sample_rate(sample_rate);
+            i2s_set_output_sample_rate(sample_rate);
 
             ESP_LOGI(BT_A2D_TAG, "configure audio player %x-%x-%x-%x",
                      a2d->audio_cfg.mcc.cie.sbc[0],

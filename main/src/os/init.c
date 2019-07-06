@@ -31,7 +31,13 @@ void chip_init(void)
 
     bt_init();
 
+#if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0) || (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
     i2s0_init();
+#endif
+
+#if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 1) || (CONFIG_AUDIO_INPUT_I2S_NUM == 1)
+    i2s1_init();
+#endif
 
 #ifdef CONFIG_ENABLE_VFX
     spi1_init();

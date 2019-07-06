@@ -14,24 +14,28 @@
 #include "chip/i2s.h"
 #include "user/vfx_core.h"
 
-esp_err_t i2s_write_wrapper(i2s_port_t i2s_num, const void *src, size_t size, size_t *bytes_written, TickType_t ticks_to_wait)
+void i2s_write_wrapper(const void *src, size_t size, int bits, int flag)
 {
-    esp_err_t err = i2s_write(i2s_num, src, size, bytes_written, ticks_to_wait);
+    EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+    if ( !(uxBits & AUDIO_INPUT_RUN_BIT) ) {
+        size_t bytes_written;
+        i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, src, size, &bytes_written, portMAX_DELAY);
+    }
 
 #ifdef CONFIG_ENABLE_VFX
+    if (flag) {
         // Copy data to FIFO
         uint32_t idx = 0;
         const uint8_t *data = (const uint8_t *)src;
         while (size > 0) {
-            int16_t data_l = data[idx+3] << 8 | data[idx+2];
-            int16_t data_r = data[idx+1] << 8 | data[idx];
+            int16_t data_l = data[idx+1] << 8 | data[idx];
+            int16_t data_r = data[idx+3] << 8 | data[idx+2];
             vfx_fifo_write((data_l + data_r) / 2);
             idx  += 4;
             size -= 4;
         }
+    }
 #endif
-
-    return err;
 }
 
 /* render callback for the libmad synth */
@@ -47,11 +51,10 @@ void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num
     }
 
     size_t bytes_written = 0;
-    TickType_t max_wait = 20 / portTICK_PERIOD_MS; // portMAX_DELAY = bad idea
     for (int i = 0; i < num_samples; i++) {
         /* low - high / low - high */
         const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]}; // ESP32 CPU is Little Endian
-        i2s_write(0, (const char *)&samp32, sizeof(samp32), &bytes_written, max_wait);
+        i2s_write_wrapper((const char *)&samp32, sizeof(samp32), 16, 0);
 
         // DMA buffer full - retry
         if (bytes_written == 0) {
@@ -66,5 +69,5 @@ void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num
 /* Called by the NXP modifications of libmad. Sets the needed output sample rate. */
 void set_dac_sample_rate(int rate)
 {
-    i2s0_set_sample_rate(rate);
+    i2s_set_output_sample_rate(rate);
 }
