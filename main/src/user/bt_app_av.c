@@ -24,7 +24,7 @@
 #include "os/core.h"
 #include "chip/i2s.h"
 #include "user/led.h"
-#include "user/audio.h"
+#include "user/audio_mp3.h"
 #include "user/audio_render.h"
 #include "user/ble_app.h"
 #include "user/bt_app_av.h"
@@ -72,7 +72,7 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-    if (!(uxBits & AUDIO_RUN_BIT)) {
+    if (uxBits & AUDIO_MP3_IDLE_BIT) {
         size_t bytes_written;
         i2s_write_wrapper(0, data, len, &bytes_written, portMAX_DELAY);
     }
@@ -133,11 +133,11 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                  s_a2d_conn_state_str[a2d->conn_stat.state], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
-            audio_play_file(1);
+            audio_mp3_play(1);
             led_set_mode(3);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
-            audio_play_file(0);
+            audio_mp3_play(0);
             led_set_mode(2);
         }
         break;

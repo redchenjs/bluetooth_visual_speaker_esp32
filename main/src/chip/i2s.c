@@ -22,20 +22,20 @@ void i2s0_init(void)
 {
     esp_chip_info(&chip_info);
     i2s_config_t i2s_config = {
-        .mode = I2S_MODE_MASTER | I2S_MODE_TX \
+        .mode = I2S_MODE_MASTER | I2S_MODE_TX
 #ifdef CONFIG_AUDIO_OUTPUT_INTERNAL_DAC
-                | I2S_MODE_DAC_BUILT_IN \
+                | I2S_MODE_DAC_BUILT_IN
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-                | I2S_MODE_RX \
+                | I2S_MODE_RX
 #endif
 #ifdef CONFIG_AUDIO_INPUT_INTERNAL_ADC
-                | I2S_MODE_ADC_BUILT_IN \
+                | I2S_MODE_ADC_BUILT_IN
 #endif
         ,
-        .communication_format = I2S_COMM_FORMAT_I2S_MSB \
+        .communication_format = I2S_COMM_FORMAT_I2S_MSB
 #if !defined(CONFIG_AUDIO_OUTPUT_INTERNAL_DAC) && !defined(CONFIG_AUDIO_INPUT_INTERNAL_ADC)
-                                | I2S_COMM_FORMAT_I2S \
+                                | I2S_COMM_FORMAT_I2S
 #endif
         ,
         .use_apll = chip_info.revision,                                         // Don't use apll on rev0 chips

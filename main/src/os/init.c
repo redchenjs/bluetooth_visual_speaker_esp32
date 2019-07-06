@@ -13,11 +13,11 @@
 #include "chip/i2s.h"
 
 #include "user/led.h"
-#include "user/key.h"
 #include "user/vfx.h"
-#include "user/audio.h"
 #include "user/bt_app.h"
 #include "user/ble_app.h"
+#include "user/key_scan.h"
+#include "user/audio_mp3.h"
 #include "user/audio_input.h"
 
 void os_init(void)
@@ -57,11 +57,11 @@ void user_init(void)
 #endif
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
-    key_init();
+    key_scan_init();
 #endif
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    audio_init();
+    audio_mp3_init();
 #endif
 
 #ifndef CONFIG_AUDIO_INPUT_NONE

@@ -1,5 +1,5 @@
 /*
- * key.c
+ * key_scan.c
  *
  *  Created on: 2018-05-31 14:07
  *      Author: Jack Chen <redchenjs@live.com>
@@ -13,29 +13,11 @@
 #include "driver/gpio.h"
 
 #include "os/core.h"
-#include "user/audio.h"
+#include "user/key_handle.h"
 
-#define TAG "key"
+#define TAG "key_scan"
 
-#ifdef CONFIG_ENABLE_SLEEP_KEY
-static void key_sleep_handle(void)
-{
-    xEventGroupClearBits(user_event_group, KEY_SCAN_BIT);
-
-    audio_play_file(3);
-    xEventGroupWaitBits(
-        user_event_group,
-        AUDIO_IDLE_BIT,
-        pdFALSE,
-        pdFALSE,
-        portMAX_DELAY
-    );
-
-    os_enter_sleep_mode();
-}
-#endif // CONFIG_ENABLE_SLEEP_KEY
-
-static void key_task_handle(void *pvParameter)
+static void key_scan_task_handle(void *pvParameter)
 {
 #ifdef CONFIG_ENABLE_SLEEP_KEY
     uint16_t count[] = {0};
@@ -63,12 +45,12 @@ static void key_task_handle(void *pvParameter)
         }
     }
 
-    xEventGroupSetBits(user_event_group, KEY_SCAN_BIT);
+    xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
 
     while (1) {
         xEventGroupWaitBits(
             user_event_group,
-            KEY_SCAN_BIT,
+            KEY_SCAN_RUN_BIT,
             pdFALSE,
             pdFALSE,
             portMAX_DELAY
@@ -92,7 +74,7 @@ static void key_task_handle(void *pvParameter)
 #endif // CONFIG_ENABLE_SLEEP_KEY
 }
 
-void key_init(void)
+void key_scan_init(void)
 {
-   xTaskCreate(key_task_handle, "keyT", 2048, NULL, 5, NULL);
+   xTaskCreate(key_scan_task_handle, "keyScanT", 2048, NULL, 5, NULL);
 }

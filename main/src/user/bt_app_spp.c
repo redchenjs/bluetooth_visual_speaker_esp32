@@ -90,7 +90,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                  s_spp_conn_state_str[0], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         if (ota_running == 1) {
             esp_ota_end(update_handle);
-            xEventGroupSetBits(user_event_group, KEY_SCAN_BIT);
+            xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
             ota_running  = 0;
             image_length = 0;
         }
@@ -120,7 +120,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 if (image_length != 0) {
                     esp_spp_write(param->write.handle, strlen(rsp_str[0]), (uint8_t *)rsp_str[0]);
 
-                    xEventGroupClearBits(user_event_group, KEY_SCAN_BIT);
+                    xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
                     ESP_LOGI(BT_OTA_TAG, "writing to partition subtype %d at offset 0x%x",
@@ -169,7 +169,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 gettimeofday(&time_new, NULL);
                 bt_spp_print_speed();
                 esp_spp_write(param->write.handle, strlen(rsp_str[1]), (uint8_t *)rsp_str[1]);
-                xEventGroupSetBits(user_event_group, KEY_SCAN_BIT);
+                xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
 exit:
                 ota_running  = 0;
                 image_length = 0;
