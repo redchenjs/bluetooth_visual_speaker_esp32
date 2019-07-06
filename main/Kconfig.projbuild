@@ -8,14 +8,14 @@ config BT_NAME
 
 config ENABLE_OTA_OVER_SPP
     bool "Enable OTA over SPP"
-    default y
+    default n
     help
         Enable OTA feature, you can use the SPP profile to upload the new firmware.
 
 menu "VFX Configuration"
 config ENABLE_VFX
-    bool "Enable Visual Effects"
-    default y
+    bool "Enable Visual Effects Output"
+    default n
     help
         Select this to enable Visual Effects Output.
 
@@ -95,7 +95,7 @@ endmenu
 menu "LED Configuration"
 config ENABLE_LED
     bool "Enable LED"
-    default y
+    default n
     help
         Select this to enable LED Output.
 
@@ -181,14 +181,28 @@ endmenu
 menu "Audio Configuration"
 choice AUDIO_OUTPUT
     prompt "Audio Output"
-    default AUDIO_OUTPUT_EXTERNAL_I2S
+    default AUDIO_OUTPUT_I2S_INTERFACE
     help
-        Select to use Internal DAC or External I2S Codec.
+        Select Audio Output Type.
 
     config AUDIO_OUTPUT_INTERNAL_DAC
         bool "Internal DAC"
-    config AUDIO_OUTPUT_EXTERNAL_I2S
-        bool "External I2S Codec"
+    config AUDIO_OUTPUT_I2S_INTERFACE
+        bool "I2S Interface"
+endchoice
+
+choice AUDIO_INPUT
+    prompt "Audio Input"
+    default AUDIO_INPUT_NONE
+    help
+        Select Audio Input Type.
+
+    config AUDIO_INPUT_NONE
+        bool "None"
+    config AUDIO_INPUT_INTERNAL_ADC
+        bool "Internal ADC"
+    config AUDIO_INPUT_I2S_INTERFACE
+        bool "I2S Interface"
 endchoice
 
 choice INTERNAL_DAC_MODE
@@ -206,20 +220,35 @@ choice INTERNAL_DAC_MODE
         bool "Both Channel Enabled"
 endchoice
 
+config INTERNAL_ADC_UNIT
+    int "Internal ADC Unit"
+    default 1
+    depends on AUDIO_INPUT_INTERNAL_ADC
+
+config INTERNAL_ADC_CHANNEL
+    int "Internal ADC Channel"
+    default 1
+    depends on AUDIO_INPUT_INTERNAL_ADC
+
 config I2S_BCLK_PIN
     int "I2S BCLK Pin"
     default 22
-    depends on AUDIO_OUTPUT_EXTERNAL_I2S
+    depends on AUDIO_OUTPUT_I2S_INTERFACE || AUDIO_INPUT_I2S_INTERFACE
 
 config I2S_LRCK_PIN
     int "I2S LRCK Pin"
     default 21
-    depends on AUDIO_OUTPUT_EXTERNAL_I2S
+    depends on AUDIO_OUTPUT_I2S_INTERFACE || AUDIO_INPUT_I2S_INTERFACE
 
 config I2S_DOUT_PIN
     int "I2S DOUT Pin"
     default 19
-    depends on AUDIO_OUTPUT_EXTERNAL_I2S
+    depends on AUDIO_OUTPUT_I2S_INTERFACE
+
+config I2S_DIN_PIN
+    int "I2S DIN Pin"
+    default 13
+    depends on AUDIO_INPUT_I2S_INTERFACE
 
 config ENABLE_AUDIO_PROMPT
     bool "Enable Audio Prompt"

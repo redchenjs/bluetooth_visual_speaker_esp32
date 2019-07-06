@@ -18,6 +18,7 @@
 #include "user/audio.h"
 #include "user/bt_app.h"
 #include "user/ble_app.h"
+#include "user/audio_input.h"
 
 void os_init(void)
 {
@@ -61,5 +62,9 @@ void user_init(void)
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
     audio_init();
+#endif
+
+#ifndef CONFIG_AUDIO_INPUT_NONE
+    audio_input_init();
 #endif
 }
