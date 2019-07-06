@@ -11,8 +11,6 @@
 #include "freertos/FreeRTOS.h"
 #include "driver/i2s.h"
 
-extern void i2s_write_wrapper(const void *src, size_t size, int bits, int flag);
-
 extern void render_sample_block_mono(short *short_sample_buff, int no_samples);
 extern void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels);
 extern void set_dac_sample_rate(int rate);

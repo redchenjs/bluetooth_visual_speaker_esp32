@@ -24,8 +24,8 @@
 #include "os/core.h"
 #include "chip/i2s.h"
 #include "user/led.h"
+#include "user/vfx_core.h"
 #include "user/audio_mp3.h"
-#include "user/audio_render.h"
 #include "user/ble_app.h"
 #include "user/bt_app_av.h"
 #include "user/bt_app_core.h"
@@ -71,7 +71,27 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
-    i2s_write_wrapper(data, len, 16, 1);
+    size_t bytes_written = 0;
+    EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+
+    if ( !(uxBits & AUDIO_MP3_RUN_BIT) ) {
+        i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, data, len, &bytes_written, portMAX_DELAY);
+    }
+
+#ifdef CONFIG_ENABLE_VFX
+    if ( !(uxBits & AUDIO_INPUT_RUN_BIT) ) {
+        // Copy data to FIFO
+        uint32_t idx = 0;
+        int32_t size = len;
+        while (size > 0) {
+            int16_t data_l = data[idx+1] << 8 | data[idx];
+            int16_t data_r = data[idx+3] << 8 | data[idx+2];
+            vfx_fifo_write((data_l + data_r) / 2);
+            idx  += 4;
+            size -= 4;
+        }
+    }
+#endif
 }
 
 static void bt_app_alloc_meta_buffer(esp_avrc_ct_cb_param_t *param)

@@ -13,7 +13,6 @@
 #include "os/core.h"
 #include "chip/i2s.h"
 #include "user/vfx_core.h"
-#include "user/audio_render.h"
 
 #define BUFF_SIZE 128
 
@@ -22,8 +21,8 @@ static uint8_t audio_input_mode = 0;
 static void audio_input_task_handle(void *pvParameters)
 {
 #ifndef CONFIG_AUDIO_INPUT_NONE
-    char *read_buff = (char *)malloc(BUFF_SIZE * 8 * sizeof(char));
-    size_t read_bytes;
+    size_t bytes_read = 0;
+    char *read_buff = (char *)calloc(BUFF_SIZE * 8, sizeof(char));
 
     while (1) {
         xEventGroupWaitBits(
@@ -34,11 +33,12 @@ static void audio_input_task_handle(void *pvParameters)
             portMAX_DELAY
         );
 
-        i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, read_buff, BUFF_SIZE, &read_bytes, portMAX_DELAY);
+        i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, read_buff, BUFF_SIZE, &bytes_read, portMAX_DELAY);
 
+#ifdef CONFIG_ENABLE_VFX
         // Copy data to FIFO
         uint32_t idx = 0;
-        int32_t size = read_bytes;
+        int32_t size = bytes_read;
         const uint8_t *data = (const uint8_t *)read_buff;
         while (size > 0) {
             int16_t data_l = data[idx+3] << 8 | data[idx+2];
@@ -48,7 +48,8 @@ static void audio_input_task_handle(void *pvParameters)
             size -= 8;
         }
     }
-#endif
+#endif // CONFIG_ENABLE_VFX
+#endif // CONFIG_AUDIO_INPUT_NONE
 }
 
 void audio_input_set_mode(uint8_t mode)
