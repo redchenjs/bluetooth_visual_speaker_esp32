@@ -5,9 +5,7 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include <time.h>
 #include <string.h>
-#include <sys/time.h>
 
 #include "esp_log.h"
 #include "esp_system.h"
@@ -30,14 +28,12 @@
 
 #define SPP_SERVER_NAME "OTA"
 
-static struct timeval time_new, time_old;
-static long data_num = 0;
-
 static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
 static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
 
 static uint8_t ota_running = 0;
 static long image_length = 0;
+static long data_recv = 0;
 
 static const esp_partition_t *update_partition = NULL;
 static esp_ota_handle_t update_handle = 0;
@@ -58,18 +54,6 @@ static const char rsp_str[][24] = {
 
 static const char *s_spp_conn_state_str[] = {"disconnected", "connected"};
 
-static void bt_spp_print_speed(void)
-{
-    float time_old_s = time_old.tv_sec + time_old.tv_usec / 1000000.0;
-    float time_new_s = time_new.tv_sec + time_new.tv_usec / 1000000.0;
-    float time_interval = time_new_s - time_old_s;
-    float speed = data_num * 8 / time_interval / 1000.0;
-    ESP_LOGI(BT_SPP_TAG, "speed(%fs ~ %fs): %f kbit/s" , time_old_s, time_new_s, speed);
-    data_num = 0;
-    time_old.tv_sec = time_new.tv_sec;
-    time_old.tv_usec = time_new.tv_usec;
-}
-
 void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
     static esp_bd_addr_t bda = {0};
@@ -81,7 +65,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         break;
     case ESP_SPP_OPEN_EVT:
         break;
-    case ESP_SPP_CLOSE_EVT: {
+    case ESP_SPP_CLOSE_EVT:
         esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
         esp_ble_gap_start_advertising(&adv_params);
@@ -96,7 +80,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         }
         led_set_mode(3);
         break;
-    }
     case ESP_SPP_START_EVT:
         break;
     case ESP_SPP_CL_INIT_EVT:
@@ -118,25 +101,28 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+UPD:%ld", image_length);
 
                 if (image_length != 0) {
-                    esp_spp_write(param->write.handle, strlen(rsp_str[0]), (uint8_t *)rsp_str[0]);
-
                     xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
 
+                    ota_running = 1;
+
                     update_partition = esp_ota_get_next_update_partition(NULL);
-                    ESP_LOGI(BT_OTA_TAG, "writing to partition subtype %d at offset 0x%x",
-                                update_partition->subtype, update_partition->address);
-                    assert(update_partition != NULL);
+                    if (update_partition != NULL) {
+                        ESP_LOGI(BT_OTA_TAG, "writing to partition subtype %d at offset 0x%x",
+                                 update_partition->subtype, update_partition->address);
+                    } else {
+                        ESP_LOGE(BT_OTA_TAG, "no ota partition to write");
+                        goto err0;
+                    }
 
                     esp_err_t err = esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle);
                     if (err != ESP_OK) {
                         ESP_LOGE(BT_OTA_TAG, "esp_ota_begin failed (%s)", esp_err_to_name(err));
-                        goto exit;
+                        goto err0;
                     }
 
-                    ota_running = 1;
-                    data_num = 0;
+                    data_recv = 0;
 
-                    gettimeofday(&time_old, NULL);
+                    esp_spp_write(param->write.handle, strlen(rsp_str[0]), (uint8_t *)rsp_str[0]);
                 } else {
                     esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
                 }
@@ -147,30 +133,39 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             esp_err_t err = esp_ota_write(update_handle, (const void *)param->data_ind.data, param->data_ind.len);
             if (err != ESP_OK) {
                 ESP_LOGE(BT_OTA_TAG, "esp_ota_write failed (%s)", esp_err_to_name(err));
-                goto exit;
+                goto err1;
             }
-            data_num += param->data_ind.len;
-            ESP_LOGD(BT_OTA_TAG, "have written image length %ld", data_num);
+            data_recv += param->data_ind.len;
+            ESP_LOGD(BT_OTA_TAG, "have written image length %ld", data_recv);
 
             char str_buf[24] = {0};
-            snprintf(str_buf, sizeof(str_buf), rsp_str[4], data_num, image_length);
+            snprintf(str_buf, sizeof(str_buf), rsp_str[4], data_recv, image_length);
             esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
 
-            if (data_num == image_length) {
-                if (esp_ota_end(update_handle) != ESP_OK) {
-                    ESP_LOGE(BT_OTA_TAG, "esp_ota_end failed");
-                    goto exit;
+            if (data_recv == image_length) {
+                esp_err_t err = esp_ota_end(update_handle);
+                if (err != ESP_OK) {
+                    ESP_LOGE(BT_OTA_TAG, "esp_ota_end failed (%s)", esp_err_to_name(err));
+                    goto err0;
                 }
-                esp_err_t err = esp_ota_set_boot_partition(update_partition);
+                err = esp_ota_set_boot_partition(update_partition);
                 if (err != ESP_OK) {
                     ESP_LOGE(BT_OTA_TAG, "esp_ota_set_boot_partition failed (%s)", esp_err_to_name(err));
-                    goto exit;
+                    goto err0;
                 }
-                gettimeofday(&time_new, NULL);
-                bt_spp_print_speed();
+
                 esp_spp_write(param->write.handle, strlen(rsp_str[1]), (uint8_t *)rsp_str[1]);
                 xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
-exit:
+
+                ota_running  = 0;
+                image_length = 0;
+            } else if (data_recv > image_length) {
+err1:
+                esp_ota_end(update_handle);
+err0:
+                esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
+                xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
+
                 ota_running  = 0;
                 image_length = 0;
             }
@@ -180,7 +175,7 @@ exit:
         break;
     case ESP_SPP_WRITE_EVT:
         break;
-    case ESP_SPP_SRV_OPEN_EVT: {
+    case ESP_SPP_SRV_OPEN_EVT:
         esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
         esp_ble_gap_stop_advertising();
@@ -190,7 +185,6 @@ exit:
                  s_spp_conn_state_str[1], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         led_set_mode(7);
         break;
-    }
     default:
         break;
     }
