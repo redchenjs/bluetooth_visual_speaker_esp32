@@ -10,8 +10,8 @@
 
 #include "driver/spi_master.h"
 
-extern spi_device_handle_t spi1;
+extern spi_device_handle_t hspi;
 
-extern void spi1_init(void);
+extern void hspi_init(void);
 
 #endif /* INC_DEVICE_SPI_H_ */

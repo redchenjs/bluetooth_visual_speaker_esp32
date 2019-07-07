@@ -40,7 +40,7 @@ void chip_init(void)
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-    spi1_init();
+    hspi_init();
 #endif
 }
 
