@@ -36,19 +36,52 @@ static void audio_input_task_handle(void *pvParameters)
         i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, read_buff, BUFF_SIZE, &bytes_read, portMAX_DELAY);
 
 #ifdef CONFIG_ENABLE_VFX
-        // Copy data to FIFO
-        uint32_t idx = 0;
-        int32_t size = bytes_read;
-        const uint8_t *data = (const uint8_t *)read_buff;
-        while (size > 0) {
-            int16_t data_l = data[idx+3] << 8 | data[idx+2];
-            int16_t data_r = data[idx+7] << 8 | data[idx+6];
-            vfx_fifo_write((data_l + data_r) / 2);
-            idx  += 8;
-            size -= 8;
+        switch (i2s_get_input_bits_per_sample()) {
+            case 16: {
+                // Copy data to FIFO
+                uint32_t idx = 0;
+                int32_t size = bytes_read;
+                const uint8_t *data = (const uint8_t *)read_buff;
+                while (size > 0) {
+                    int16_t data_l = data[idx+1] << 8 | data[idx];
+                    int16_t data_r = data[idx+3] << 8 | data[idx+2];
+                    vfx_fifo_write((data_l + data_r) / 2);
+                    idx  += 4;
+                    size -= 4;
+                }
+                break;
+            }
+            case 24: {
+                // Copy data to FIFO
+                uint32_t idx = 0;
+                int32_t size = bytes_read;
+                const uint8_t *data = (const uint8_t *)read_buff;
+                while (size > 0) {
+                    int16_t data_l = data[idx+2] << 8 | data[idx+1];
+                    int16_t data_r = data[idx+5] << 8 | data[idx+4];
+                    vfx_fifo_write((data_l + data_r) / 2);
+                    idx  += 6;
+                    size -= 6;
+                }
+                break;
+            }
+            case 32: {
+                // Copy data to FIFO
+                uint32_t idx = 0;
+                int32_t size = bytes_read;
+                const uint8_t *data = (const uint8_t *)read_buff;
+                while (size > 0) {
+                    int16_t data_l = data[idx+3] << 8 | data[idx+2];
+                    int16_t data_r = data[idx+7] << 8 | data[idx+6];
+                    vfx_fifo_write((data_l + data_r) / 2);
+                    idx  += 8;
+                    size -= 8;
+                }
+                break;
+            }
         }
-    }
 #endif // CONFIG_ENABLE_VFX
+    }
 #endif // CONFIG_AUDIO_INPUT_NONE
 }
 

@@ -18,7 +18,7 @@ static int i2s_output_bits_per_sample = 16;
 
 #if !defined(CONFIG_AUDIO_INPUT_NONE) && (CONFIG_AUDIO_OUTPUT_I2S_NUM != CONFIG_AUDIO_INPUT_I2S_NUM)
 static int i2s_input_sample_rate = 44100;
-static int i2s_input_bits_per_sample = 32;
+static int i2s_input_bits_per_sample = 16;
 #endif
 
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0) || (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
@@ -36,11 +36,11 @@ void i2s0_init(void)
                 | I2S_MODE_PDM
 #endif
         ,
-        .communication_format = I2S_COMM_FORMAT_I2S_MSB
-#if defined(CONFIG_AUDIO_OUTPUT_I2S0) || defined(CONFIG_AUDIO_INPUT_I2S0)
-                                | I2S_COMM_FORMAT_I2S
+#ifdef CONFIG_AUDIO_INPUT_PDM
+        .communication_format = I2S_COMM_FORMAT_PCM,
+#else
+        .communication_format = I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB,
 #endif
-        ,
 #ifdef CONFIG_AUDIO_OUTPUT_I2S0
         .use_apll = 1,                                                          // Use APLL
         .sample_rate = i2s_output_sample_rate,
@@ -156,5 +156,17 @@ void i2s_set_input_sample_rate(int rate)
         i2s_set_sample_rates(CONFIG_AUDIO_INPUT_I2S_NUM, rate);
         i2s_input_sample_rate = rate;
     }
+#endif
+}
+
+int i2s_get_output_bits_per_sample(void)
+{
+    return i2s_output_bits_per_sample;
+}
+
+int i2s_get_input_bits_per_sample(void)
+{
+#if !defined(CONFIG_AUDIO_INPUT_NONE) && (CONFIG_AUDIO_OUTPUT_I2S_NUM != CONFIG_AUDIO_INPUT_I2S_NUM)
+    return i2s_input_bits_per_sample;
 #endif
 }

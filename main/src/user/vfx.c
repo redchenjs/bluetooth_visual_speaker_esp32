@@ -13,6 +13,7 @@
 #include "gfx.h"
 
 #include "os/core.h"
+#include "user/audio_input.h"
 #include "user/vfx_bitmap.h"
 #include "user/vfx_core.h"
 #include "user/vfx.h"
@@ -39,6 +40,10 @@ static void vfx_task_handle(void *pvParameter)
 #endif
 
     vfx_fifo_init();
+
+#ifndef CONFIG_AUDIO_INPUT_NONE
+    audio_input_set_mode(1);
+#endif
 
     while (1) {
 #if defined(CONFIG_SCREEN_PANEL_OUTPUT_FFT)

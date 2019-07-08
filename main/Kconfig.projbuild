@@ -181,7 +181,7 @@ endmenu
 menu "Audio Configuration"
 choice AUDIO_OUTPUT
     prompt "Audio Output"
-    default AUDIO_OUTPUT_I2S0
+    default AUDIO_OUTPUT_I2S1
     help
         Select Audio Output Interface.
 
@@ -217,15 +217,16 @@ config AUDIO_INPUT_I2S_NUM
     int
     default 0 if AUDIO_INPUT_I2S0 || AUDIO_INPUT_PDM
     default 1 if AUDIO_INPUT_I2S1
+    default 2 if AUDIO_INPUT_NONE
 
 config I2S0_BCLK_PIN
     int "I2S-0 BCLK Pin"
-    default 22
+    default 12
     depends on AUDIO_OUTPUT_I2S0 || AUDIO_INPUT_I2S0
 
 config I2S0_LRCK_PIN
     int "I2S-0 LRCK Pin"
-    default 21
+    default 15
     depends on AUDIO_OUTPUT_I2S0 || AUDIO_INPUT_I2S0
 
 config I2S0_DOUT_PIN
@@ -240,12 +241,12 @@ config I2S0_DIN_PIN
 
 config I2S1_BCLK_PIN
     int "I2S-1 BCLK Pin"
-    default 12
+    default 22
     depends on AUDIO_OUTPUT_I2S1 || AUDIO_INPUT_I2S1
 
 config I2S1_LRCK_PIN
     int "I2S-1 LRCK Pin"
-    default 15
+    default 21
     depends on AUDIO_OUTPUT_I2S1 || AUDIO_INPUT_I2S1
 
 config I2S1_DOUT_PIN
@@ -260,12 +261,12 @@ config I2S1_DIN_PIN
 
 config PDM_CLK_PIN
     int "PDM CLK Pin"
-    default 22
+    default 13
     depends on AUDIO_INPUT_PDM
 
 config PDM_DIN_PIN
     int "PDM DIN Pin"
-    default 13
+    default 15
     depends on AUDIO_INPUT_PDM
 
 config ENABLE_AUDIO_PROMPT
