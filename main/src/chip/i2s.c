@@ -16,7 +16,7 @@
 static int i2s_output_sample_rate = 44100;
 static int i2s_output_bits_per_sample = 16;
 
-#ifndef CONFIG_AUDIO_INPUT_NONE
+#if !defined(CONFIG_AUDIO_INPUT_NONE) && (CONFIG_AUDIO_OUTPUT_I2S_NUM != CONFIG_AUDIO_INPUT_I2S_NUM)
 static int i2s_input_sample_rate = 44100;
 static int i2s_input_bits_per_sample = 32;
 #endif
@@ -73,7 +73,7 @@ void i2s0_init(void)
 #else
         .bck_io_num   = -1,
         .ws_io_num    = CONFIG_PDM_CLK_PIN,
-        .data_out_num = -1.
+        .data_out_num = -1,
         .data_in_num  = CONFIG_PDM_DIN_PIN
 #endif
     };
@@ -151,7 +151,7 @@ void i2s_set_output_sample_rate(int rate)
 
 void i2s_set_input_sample_rate(int rate)
 {
-#ifndef CONFIG_AUDIO_INPUT_NONE
+#if !defined(CONFIG_AUDIO_INPUT_NONE) && (CONFIG_AUDIO_OUTPUT_I2S_NUM != CONFIG_AUDIO_INPUT_I2S_NUM)
     if (rate != i2s_input_sample_rate) {
         i2s_set_sample_rates(CONFIG_AUDIO_INPUT_I2S_NUM, rate);
         i2s_input_sample_rate = rate;
