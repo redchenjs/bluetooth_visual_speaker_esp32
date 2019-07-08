@@ -19,10 +19,10 @@
 
 #define FIFO_SIZE 128
 
-uint16_t fifo_buf_num = 0;
-fifo_element_t fifo_buf[FIFO_SIZE] = {0};
-fifo_element_t *fifo_next_write = NULL;
-fifo_element_t *fifo_next_read  = NULL;
+static uint16_t fifo_buf_num = 0;
+static fifo_element_t fifo_buf[FIFO_SIZE] = {0};
+static fifo_element_t *fifo_next_write = NULL;
+static fifo_element_t *fifo_next_read  = NULL;
 
 uint32_t vfx_read_color_from_table(uint16_t color_idx, uint16_t color_ctr)
 {
@@ -33,7 +33,7 @@ uint32_t vfx_read_color_from_table(uint16_t color_idx, uint16_t color_ctr)
     return pixel_color;
 }
 
-#if !defined(CONFIG_SCREEN_PANEL_OUTPUT_FFT)
+#ifndef CONFIG_SCREEN_PANEL_OUTPUT_FFT
 void vfx_write_pixel(uint8_t x, uint8_t y, uint8_t z, uint16_t color_idx, uint16_t color_ctr)
 {
     uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
@@ -166,7 +166,7 @@ void vfx_write_layer_number(uint8_t num, uint8_t layer, uint16_t color_idx, uint
         }
     }
 }
-#endif // defined(VFX_OUTPUT_CUBE0414) || defined(SCREEN_PANEL_OUTPUT_MMAP)
+#endif // CONFIG_SCREEN_PANEL_OUTPUT_FFT
 
 void vfx_clear_cube(void)
 {

@@ -122,7 +122,7 @@ static void vfx_task_handle(void *pvParameter)
                 color_idx = 0;
             }
 
-            gfxSleepMilliseconds(16);
+            gfxSleepMilliseconds(8);
         }
         fft_destroy(fft_plan);
 #else
@@ -673,7 +673,7 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
 
-                gfxSleepMilliseconds(16);
+                gfxSleepMilliseconds(8);
             }
             fft_destroy(fft_plan);
             break;
@@ -754,14 +754,14 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
 
-                if (++color_cnt % 8 == 0) {
+                if (++color_cnt % 16 == 0) {
                     color_tmp += 8;
                     if (color_tmp > 511) {
                         color_tmp = 0;
                     }
                 }
 
-                gfxSleepMilliseconds(16);
+                gfxSleepMilliseconds(8);
             }
             fft_destroy(fft_plan);
             break;
@@ -857,13 +857,13 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
 
-                if (++color_cnt % 2 == 0) {
+                if (++color_cnt % 4 == 0) {
                     color_flg = 1;
                 } else {
                     color_flg = 0;
                 }
 
-                gfxSleepMilliseconds(16);
+                gfxSleepMilliseconds(8);
             }
             fft_destroy(fft_plan);
             break;
