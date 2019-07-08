@@ -16,10 +16,8 @@
 static int i2s_output_sample_rate = 44100;
 static int i2s_output_bits_per_sample = 16;
 
-#if !defined(CONFIG_AUDIO_INPUT_NONE) && (CONFIG_AUDIO_OUTPUT_I2S_NUM != CONFIG_AUDIO_INPUT_I2S_NUM)
 static int i2s_input_sample_rate = 44100;
 static int i2s_input_bits_per_sample = 16;
-#endif
 
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0) || (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
 void i2s0_init(void)
@@ -159,6 +157,16 @@ void i2s_set_input_sample_rate(int rate)
 #endif
 }
 
+int i2s_get_output_sample_rate(void)
+{
+    return i2s_output_sample_rate;
+}
+
+int i2s_get_input_sample_rate(void)
+{
+    return i2s_input_sample_rate;
+}
+
 int i2s_get_output_bits_per_sample(void)
 {
     return i2s_output_bits_per_sample;
@@ -166,7 +174,5 @@ int i2s_get_output_bits_per_sample(void)
 
 int i2s_get_input_bits_per_sample(void)
 {
-#if !defined(CONFIG_AUDIO_INPUT_NONE) && (CONFIG_AUDIO_OUTPUT_I2S_NUM != CONFIG_AUDIO_INPUT_I2S_NUM)
     return i2s_input_bits_per_sample;
-#endif
 }
