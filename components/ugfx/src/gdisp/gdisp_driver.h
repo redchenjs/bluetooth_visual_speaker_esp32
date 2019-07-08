@@ -732,7 +732,7 @@ typedef struct GDISPVMT {
 	#endif
 
 	// Build the VMT
-	const GDISPVMT const GDISP_DRIVER_VMT[1] = {{
+	const GDISPVMT GDISP_DRIVER_VMT[1] = {{
 		{ GDRIVER_TYPE_DISPLAY, 0, sizeof(GDisplay), _gdispInitDriver, _gdispPostInitDriver, _gdispDeInitDriver },
 		gdisp_lld_init,
 		#if GDISP_HARDWARE_DEINIT

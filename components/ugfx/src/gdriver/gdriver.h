@@ -87,7 +87,7 @@ typedef struct GDriverVMT {
  * 				</code>
  *
  */
-typedef const struct GDriverVMT const	GDriverVMTList[1];
+typedef const struct GDriverVMT GDriverVMTList[1];
 
 /*===========================================================================*/
 /* External declarations.                                                    */

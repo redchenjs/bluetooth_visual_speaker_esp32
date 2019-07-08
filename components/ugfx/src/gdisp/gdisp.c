@@ -561,7 +561,7 @@ void _gdispInit(void)
 	#if defined(GDISP_DRIVER_LIST)
 		{
 			unsigned	i;
-			typedef const GDISPVMT const GDISPVMTLIST[1];
+			typedef const GDISPVMT GDISPVMTLIST[1];
 
 			extern GDISPVMTLIST						  GDISP_DRIVER_LIST;
 			static const GDISPVMT * const dclist[] = {GDISP_DRIVER_LIST};
