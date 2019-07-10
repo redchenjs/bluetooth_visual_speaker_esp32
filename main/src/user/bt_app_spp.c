@@ -159,7 +159,9 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
                 esp_spp_write(param->write.handle, strlen(rsp_str[1]), (uint8_t *)rsp_str[1]);
                 xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
-
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+                esp_ble_gap_start_advertising(&adv_params);
+#endif
                 ota_running  = 0;
                 image_length = 0;
             } else if (data_recv > image_length) {
@@ -168,7 +170,9 @@ err1:
 err0:
                 esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
                 xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
-
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+                esp_ble_gap_start_advertising(&adv_params);
+#endif
                 ota_running  = 0;
                 image_length = 0;
             }
