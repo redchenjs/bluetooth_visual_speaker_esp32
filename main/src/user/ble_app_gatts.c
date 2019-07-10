@@ -154,7 +154,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_WRITE_EVT: {
         if (!param->write.is_prep) {
             if (param->write.value[0] == 0x04 && param->write.len == 2) {
-                uint8_t audio_input_mode = param->write.value[1] % 2;
+                uint8_t audio_input_mode = param->write.value[1] % 3;
                 ESP_LOGI(BLE_GATTS_TAG, "set audio input mode %u", audio_input_mode);
                 audio_input_set_mode(audio_input_mode);
             } else if (param->write.value[0] == 0x03 && param->write.len == 3) {

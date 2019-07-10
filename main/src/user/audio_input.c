@@ -21,8 +21,8 @@ static uint8_t audio_input_mode = 0;
 static void audio_input_task_handle(void *pvParameters)
 {
 #ifndef CONFIG_AUDIO_INPUT_NONE
-    size_t bytes_read = 0;
-    char *read_buff = (char *)calloc(BUFF_SIZE * 8, sizeof(char));
+    size_t bytes_read = 0, bytes_written = 0;
+    char *read_buff = (char *)calloc(BUFF_SIZE * 4, sizeof(char));
 
     while (1) {
         xEventGroupWaitBits(
@@ -35,50 +35,22 @@ static void audio_input_task_handle(void *pvParameters)
 
         i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, read_buff, BUFF_SIZE, &bytes_read, portMAX_DELAY);
 
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+        if (uxBits & AUDIO_INPUT_LOOP_BIT) {
+            i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, read_buff, BUFF_SIZE, &bytes_written, portMAX_DELAY);
+        }
+
 #ifdef CONFIG_ENABLE_VFX
-        switch (i2s_get_input_bits_per_sample()) {
-            case 16: {
-                // Copy data to FIFO
-                uint32_t idx = 0;
-                int32_t size = bytes_read;
-                const uint8_t *data = (const uint8_t *)read_buff;
-                while (size > 0) {
-                    int16_t data_l = data[idx+1] << 8 | data[idx];
-                    int16_t data_r = data[idx+3] << 8 | data[idx+2];
-                    vfx_fifo_write((data_l + data_r) / 2);
-                    idx  += 4;
-                    size -= 4;
-                }
-                break;
-            }
-            case 24: {
-                // Copy data to FIFO
-                uint32_t idx = 0;
-                int32_t size = bytes_read;
-                const uint8_t *data = (const uint8_t *)read_buff;
-                while (size > 0) {
-                    int16_t data_l = data[idx+2] << 8 | data[idx+1];
-                    int16_t data_r = data[idx+5] << 8 | data[idx+4];
-                    vfx_fifo_write((data_l + data_r) / 2);
-                    idx  += 6;
-                    size -= 6;
-                }
-                break;
-            }
-            case 32: {
-                // Copy data to FIFO
-                uint32_t idx = 0;
-                int32_t size = bytes_read;
-                const uint8_t *data = (const uint8_t *)read_buff;
-                while (size > 0) {
-                    int16_t data_l = data[idx+3] << 8 | data[idx+2];
-                    int16_t data_r = data[idx+7] << 8 | data[idx+6];
-                    vfx_fifo_write((data_l + data_r) / 2);
-                    idx  += 8;
-                    size -= 8;
-                }
-                break;
-            }
+        // Copy data to FIFO
+        uint32_t idx = 0;
+        int32_t size = bytes_read;
+        const uint8_t *data = (const uint8_t *)read_buff;
+        while (size > 0) {
+            int16_t data_l = data[idx+1] << 8 | data[idx];
+            int16_t data_r = data[idx+3] << 8 | data[idx+2];
+            vfx_fifo_write((data_l + data_r) / 2);
+            idx  += 4;
+            size -= 4;
         }
 #endif // CONFIG_ENABLE_VFX
     }
@@ -88,10 +60,15 @@ static void audio_input_task_handle(void *pvParameters)
 void audio_input_set_mode(uint8_t mode)
 {
     audio_input_mode = mode;
-    if (audio_input_mode == 0) {
-        xEventGroupClearBits(user_event_group, AUDIO_INPUT_RUN_BIT);
-    } else {
+    if (audio_input_mode == 1) {
         xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
+        xEventGroupClearBits(user_event_group, AUDIO_INPUT_LOOP_BIT);
+    } else if (audio_input_mode == 2) {
+        xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
+        xEventGroupSetBits(user_event_group, AUDIO_INPUT_LOOP_BIT);
+    } else {
+        xEventGroupClearBits(user_event_group, AUDIO_INPUT_RUN_BIT);
+        xEventGroupClearBits(user_event_group, AUDIO_INPUT_LOOP_BIT);
     }
 }
 
