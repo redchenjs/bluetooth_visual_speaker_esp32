@@ -20,6 +20,8 @@
 
 #define TAG "vfx"
 
+#define FFT_PERIOD GDISP_NEED_TIMERFLUSH
+
 uint16_t vfx_ctr = 0x0190;
 
 static uint8_t vfx_mode = 0x0F;
@@ -673,7 +675,7 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
 
-                gfxSleepMilliseconds(16);
+                gfxSleepMilliseconds(FFT_PERIOD);
             }
             fft_destroy(fft_plan);
             break;
@@ -754,14 +756,14 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
 
-                if (++color_cnt % 8 == 0) {
+                if (++color_cnt % (128 / FFT_PERIOD) == 0) {
                     color_tmp += 8;
                     if (color_tmp > 511) {
                         color_tmp = 0;
                     }
                 }
 
-                gfxSleepMilliseconds(16);
+                gfxSleepMilliseconds(FFT_PERIOD);
             }
             fft_destroy(fft_plan);
             break;
@@ -857,13 +859,13 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
 
-                if (++color_cnt % 2 == 0) {
+                if (++color_cnt % (32 / FFT_PERIOD) == 0) {
                     color_flg = 1;
                 } else {
                     color_flg = 0;
                 }
 
-                gfxSleepMilliseconds(16);
+                gfxSleepMilliseconds(FFT_PERIOD);
             }
             fft_destroy(fft_plan);
             break;
