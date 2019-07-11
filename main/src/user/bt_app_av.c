@@ -71,10 +71,12 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
+#if !defined(CONFIG_AUDIO_INPUT_NONE) || defined(CONFIG_ENABLE_AUDIO_PROMPT)
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
     if ( (uxBits & AUDIO_INPUT_LOOP_BIT) || (uxBits & AUDIO_MP3_RUN_BIT) ) {
         return;
     }
+#endif
 
     size_t bytes_written = 0;
     i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, data, len, &bytes_written, portMAX_DELAY);
