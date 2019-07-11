@@ -71,6 +71,6 @@ void led_set_mode(uint8_t mode_index)
 void led_init(void)
 {
 #ifdef CONFIG_ENABLE_LED
-    xTaskCreate(led_task_handle, "ledT", 1024, NULL, 5, NULL);
+    xTaskCreate(led_task_handle, "LedT", 1024, NULL, 5, NULL);
 #endif
 }
