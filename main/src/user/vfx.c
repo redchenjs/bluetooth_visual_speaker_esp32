@@ -608,9 +608,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_ctr = vfx_ctr;
             float fft_amp[64] = {0};
             const uint16_t fft_n = 128;
-            GDisplay *g = gdispGetDisplay(0);
-            coord_t disp_width = gdispGGetWidth(g);
-            coord_t disp_height = gdispGGetHeight(g);
+            coord_t disp_width = 64;
+            coord_t disp_height = 8;
 
             fft_config_t *fft_plan = fft_init(fft_n, FFT_REAL, FFT_FORWARD, NULL, NULL);
             while (1) {
@@ -683,15 +682,14 @@ static void vfx_task_handle(void *pvParameter)
         case 0x0E: {   // 音频FFT 横排彩虹(流动)
             uint8_t x = 0;
             uint8_t y = 0;
-            uint8_t color_cnt = 0;
+            uint8_t  color_cnt = 0;
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
             float fft_amp[64] = {0};
             const uint16_t fft_n = 128;
-            GDisplay *g = gdispGetDisplay(0);
-            coord_t disp_width = gdispGGetWidth(g);
-            coord_t disp_height = gdispGGetHeight(g);
+            coord_t disp_width = 64;
+            coord_t disp_height = 8;
 
             fft_config_t *fft_plan = fft_init(fft_n, FFT_REAL, FFT_FORWARD, NULL, NULL);
             while (1) {
@@ -791,9 +789,8 @@ static void vfx_task_handle(void *pvParameter)
                     0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7,
                 }
             };
-            GDisplay *g = gdispGetDisplay(0);
-            coord_t disp_width = gdispGGetWidth(g);
-            coord_t disp_height = gdispGGetHeight(g);
+            coord_t disp_width = 64;
+            coord_t disp_height = 8;
 
             for (uint16_t i=0; i<64; i++) {
                 color_idx[i] = i * 8;

@@ -24,7 +24,7 @@ static fifo_element_t fifo_buf[FIFO_SIZE] = {0};
 static fifo_element_t *fifo_next_write = NULL;
 static fifo_element_t *fifo_next_read  = NULL;
 
-uint32_t vfx_read_color_from_table(uint16_t color_idx, uint16_t color_ctr)
+inline uint32_t vfx_read_color_from_table(uint16_t color_idx, uint16_t color_ctr)
 {
     uint16_t table_x = color_idx;
     uint16_t table_y = color_ctr;
