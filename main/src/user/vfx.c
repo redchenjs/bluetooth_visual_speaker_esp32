@@ -50,6 +50,7 @@ static void vfx_task_handle(void *pvParameter)
     while (1) {
 #if defined(CONFIG_SCREEN_PANEL_OUTPUT_FFT)
         // LCD FFT Output
+        uint8_t  color_cnt = 0;
         uint16_t color_tmp = 0;
         uint16_t color_idx = 0;
         uint16_t color_ctr = vfx_ctr;
@@ -119,12 +120,17 @@ static void vfx_task_handle(void *pvParameter)
                 }
             }
 
-            color_idx = ++color_tmp;
+            if (++color_cnt % (16 / FFT_PERIOD) == 0) {
+                color_idx = ++color_tmp;
+            } else {
+                color_idx = color_tmp;
+            }
+
             if (color_idx > 511) {
                 color_idx = 0;
             }
 
-            gfxSleepMilliseconds(16);
+            gfxSleepMilliseconds(FFT_PERIOD);
         }
         fft_destroy(fft_plan);
 #else
