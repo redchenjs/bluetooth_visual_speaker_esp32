@@ -278,7 +278,7 @@ endmenu
 
 config FIRMWARE_VERSION
     string "Firmware Version"
-    default "v3.1.1"
+    default "v3.2.0"
     help
         Set Firmware Version.
 
