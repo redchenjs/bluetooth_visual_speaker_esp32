@@ -917,5 +917,5 @@ uint16_t vfx_get_fft_scale(void)
 
 void vfx_init(void)
 {
-    xTaskCreate(vfx_task_handle, "VfxT", 4096, NULL, 5, NULL);
+    xTaskCreate(vfx_task_handle, "VfxT", 5120, NULL, 5, NULL);
 }
