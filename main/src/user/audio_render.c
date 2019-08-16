@@ -10,7 +10,6 @@
 #include "freertos/FreeRTOS.h"
 #include "driver/i2s.h"
 
-#include "os/core.h"
 #include "chip/i2s.h"
 
 /* render callback for the libmad synth */

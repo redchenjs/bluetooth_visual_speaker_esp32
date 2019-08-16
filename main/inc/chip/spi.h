@@ -5,8 +5,8 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#ifndef INC_DEVICE_SPI_H_
-#define INC_DEVICE_SPI_H_
+#ifndef INC_CHIP_SPI_H_
+#define INC_CHIP_SPI_H_
 
 #include "driver/spi_master.h"
 
@@ -14,4 +14,4 @@ extern spi_device_handle_t hspi;
 
 extern void hspi_init(void);
 
-#endif /* INC_DEVICE_SPI_H_ */
+#endif /* INC_CHIP_SPI_H_ */
