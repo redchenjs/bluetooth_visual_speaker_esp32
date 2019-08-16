@@ -9,11 +9,11 @@
 
 #include "esp_log.h"
 
-#define TAG "firmware"
+#define TAG "os_firmware"
 
 const char *version = CONFIG_FIRMWARE_VERSION;
 
-const char *firmware_get_version(void)
+const char *os_firmware_get_version(void)
 {
     return version;
 }

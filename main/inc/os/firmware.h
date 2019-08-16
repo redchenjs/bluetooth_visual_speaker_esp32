@@ -8,6 +8,6 @@
 #ifndef INC_OS_FIRMWARE_H_
 #define INC_OS_FIRMWARE_H_
 
-extern const char *firmware_get_version(void);
+extern const char *os_firmware_get_version(void);
 
 #endif /* INC_OS_FIRMWARE_H_ */

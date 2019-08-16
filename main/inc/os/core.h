@@ -26,6 +26,6 @@ extern EventGroupHandle_t user_event_group;
 extern void os_enter_sleep_mode(void);
 #endif
 
-extern void core_init(void);
+extern void os_core_init(void);
 
 #endif /* INC_OS_CORE_H_ */

@@ -36,9 +36,9 @@ void os_enter_sleep_mode(void)
 }
 #endif // CONFIG_ENABLE_WAKEUP_KEY
 
-void core_init(void)
+void os_core_init(void)
 {
-    ESP_LOGW(OS_CORE_TAG, "current firmware version is %s", firmware_get_version());
+    ESP_LOGW(OS_CORE_TAG, "current firmware version is %s", os_firmware_get_version());
 
 #ifdef CONFIG_ENABLE_WAKEUP_KEY
     ESP_LOGI(OS_POWER_TAG, "checking wakeup cause");

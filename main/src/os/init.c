@@ -22,7 +22,7 @@
 
 void os_init(void)
 {
-    core_init();
+    os_core_init();
 }
 
 void chip_init(void)
