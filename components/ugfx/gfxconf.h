@@ -178,7 +178,7 @@
       // #define GDISP_HARDWARE_CONTROL               FALSE
       // #define GDISP_HARDWARE_QUERY                 FALSE
       // #define GDISP_HARDWARE_CLIP                  FALSE
-      // #ifdef CONFIG_VFX_OUTPUT_CUBE0414
+
       #define GDISP_PIXELFORMAT                     GDISP_PIXELFORMAT_RGB888
    #endif
 
