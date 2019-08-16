@@ -12,16 +12,19 @@
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
 
+#include "os/core.h"
+#include "os/firmware.h"
 #include "user/audio_mp3.h"
 
-#define TAG "os_core"
+#define OS_CORE_TAG  "os_core"
+#define OS_POWER_TAG "os_power"
 
 EventGroupHandle_t user_event_group;
 
 #ifdef CONFIG_ENABLE_WAKEUP_KEY
 void os_enter_sleep_mode(void)
 {
-    ESP_LOGI(TAG, "entering sleep mode");
+    ESP_LOGI(OS_POWER_TAG, "entering sleep mode");
 
 #ifdef CONFIG_WAKEUP_KEY_ACTIVE_LOW
     esp_sleep_enable_ext1_wakeup(1ULL << CONFIG_WAKEUP_KEY_PIN, ESP_EXT1_WAKEUP_ALL_LOW);
@@ -35,8 +38,10 @@ void os_enter_sleep_mode(void)
 
 void core_init(void)
 {
+    ESP_LOGW(OS_CORE_TAG, "current firmware version is %s", firmware_get_version());
+
 #ifdef CONFIG_ENABLE_WAKEUP_KEY
-    ESP_LOGI(TAG, "checking wakeup cause");
+    ESP_LOGI(OS_POWER_TAG, "checking wakeup cause");
     if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED) {
         vTaskDelay(CONFIG_WAKEUP_KEY_EXTRA_HOLD_TIME / portTICK_RATE_MS);
 
@@ -45,9 +50,9 @@ void core_init(void)
 #else
         if (gpio_get_level(CONFIG_WAKEUP_KEY_PIN) == 1) {
 #endif
-            ESP_LOGI(TAG, "resuming from sleep mode");
+            ESP_LOGI(OS_POWER_TAG, "resuming from sleep mode");
         } else {
-            ESP_LOGI(TAG, "resume aborted");
+            ESP_LOGI(OS_POWER_TAG, "resume aborted");
 
             os_enter_sleep_mode();
         }
