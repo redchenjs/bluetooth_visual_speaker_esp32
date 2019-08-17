@@ -1,5 +1,5 @@
-ESP32 Bluetooth Speaker
-=======================
+Bluetooth Speaker
+=================
 
 Bluetooth Speaker based on ESP32 chip with optional visual effects output.
 
