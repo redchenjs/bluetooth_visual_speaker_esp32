@@ -42,3 +42,7 @@ git clone --recursive https://github.com/redchenjs/bluetooth_speaker_esp32.git
 ## Music VFX on CUBE0414 RGB Light Cube
 
 <img src="docs/cube.png">
+
+## Videos Links
+
+* [音乐全彩光立方演示](https://www.bilibili.com/video/av25188707)
