@@ -22,6 +22,7 @@
 #include "os/core.h"
 #include "os/firmware.h"
 #include "user/led.h"
+#include "user/vfx.h"
 #include "user/ble_app.h"
 
 #define BT_SPP_TAG "bt_spp"
