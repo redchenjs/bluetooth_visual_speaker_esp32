@@ -157,7 +157,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             audio_mp3_play(1);
             led_set_mode(3);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
-            xEventGroupSetBits(user_event_group, BT_A2D_INIT_BIT);
+            xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
 
             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 

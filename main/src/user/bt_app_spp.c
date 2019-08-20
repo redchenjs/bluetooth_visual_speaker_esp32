@@ -49,6 +49,7 @@ static const char rsp_str[][24] = {
     "OK\r\n",           // OK
     "DONE\r\n",         // Done
     "ERROR\r\n",        // Error
+    "LOCKED\r\n",       // Locked
     "VER:%s\r\n",       // Version
 };
 
@@ -99,14 +100,14 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+VER?");
 
                 char str_buf[24] = {0};
-                snprintf(str_buf, sizeof(str_buf), rsp_str[3], os_firmware_get_version());
+                snprintf(str_buf, sizeof(str_buf), rsp_str[4], os_firmware_get_version());
                 esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
             } else if (strncmp(fw_cmd[2], (const char *)param->data_ind.data, 7) == 0) {
                 sscanf((const char *)param->data_ind.data, fw_cmd[2], &image_length);
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+UPD:%ld", image_length);
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-                if (image_length != 0 && !(uxBits & BT_A2D_INIT_BIT)) {
+                if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT)) {
                     ota_running = 1;
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
@@ -127,6 +128,8 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                     data_recv = 0;
 
                     esp_spp_write(param->write.handle, strlen(rsp_str[0]), (uint8_t *)rsp_str[0]);
+                } else if (uxBits & BT_OTA_LOCKED_BIT) {
+                    esp_spp_write(param->write.handle, strlen(rsp_str[3]), (uint8_t *)rsp_str[3]);
                 } else {
                     esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
                 }

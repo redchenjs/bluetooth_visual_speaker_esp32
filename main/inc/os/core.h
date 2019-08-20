@@ -13,8 +13,8 @@
 
 typedef enum user_event_group_bits {
     VFX_RELOAD_BIT       = BIT0,
-    BT_A2D_INIT_BIT      = BIT1,
-    KEY_SCAN_RUN_BIT     = BIT2,
+    KEY_SCAN_RUN_BIT     = BIT1,
+    BT_OTA_LOCKED_BIT    = BIT2,
     AUDIO_MP3_RUN_BIT    = BIT3,
     AUDIO_MP3_IDLE_BIT   = BIT4,
     AUDIO_INPUT_RUN_BIT  = BIT5,
