@@ -49,8 +49,7 @@ static const char rsp_str[][24] = {
     "OK\r\n",           // OK
     "DONE\r\n",         // Done
     "ERROR\r\n",        // Error
-    "VER:%s\r\n",       // Version String
-    "RECV:%ld/%ld\r\n"  // Receive Progress
+    "VER:%s\r\n",       // Version
 };
 
 static const char *s_spp_conn_state_str[] = {"disconnected", "connected"};
@@ -142,10 +141,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             }
             data_recv += param->data_ind.len;
             ESP_LOGD(BT_OTA_TAG, "have written image length %ld", data_recv);
-
-            char str_buf[24] = {0};
-            snprintf(str_buf, sizeof(str_buf), rsp_str[4], data_recv, image_length);
-            esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
 
             if (data_recv == image_length) {
                 esp_err_t err = esp_ota_end(update_handle);
