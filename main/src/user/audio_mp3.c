@@ -114,5 +114,5 @@ void audio_mp3_play(uint8_t filename_index)
 
 void audio_mp3_init(void)
 {
-    xTaskCreate(audio_mp3_task_handle, "AudioMp3T", 8448, NULL, 5, NULL);
+    xTaskCreate(audio_mp3_task_handle, "AudioMp3T", 8448, NULL, 8, NULL);
 }
