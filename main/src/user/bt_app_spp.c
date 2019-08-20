@@ -13,6 +13,7 @@
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
 #include "esp_gap_bt_api.h"
+#include "esp_a2dp_api.h"
 #include "esp_spp_api.h"
 
 #include "freertos/FreeRTOS.h"
@@ -80,6 +81,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             image_length = 0;
         }
         led_set_mode(3);
+        xEventGroupClearBits(user_event_group, BT_SPP_RUN_BIT);
         break;
     case ESP_SPP_START_EVT:
         break;
@@ -183,7 +185,13 @@ err0:
     case ESP_SPP_WRITE_EVT:
         break;
     case ESP_SPP_SRV_OPEN_EVT:
+        xEventGroupSetBits(user_event_group, BT_SPP_RUN_BIT);
         esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+        if (uxBits & BT_A2D_RUN_BIT) {
+            esp_a2d_sink_disconnect(param->srv_open.rem_bda);
+        }
 
         memcpy(&bda, param->srv_open.rem_bda, sizeof(esp_bd_addr_t));
         ESP_LOGI(BT_SPP_TAG, "SPP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",

@@ -151,32 +151,42 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         uint8_t *bda = a2d->conn_stat.remote_bda;
         ESP_LOGI(BT_A2D_TAG, "A2DP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_a2d_conn_state_str[a2d->conn_stat.state], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
-            esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+            if (!(uxBits & BT_SPP_RUN_BIT)) {
+                esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 
-            audio_mp3_play(1);
-            led_set_mode(3);
+                audio_mp3_play(1);
+                led_set_mode(3);
+            }
+            xEventGroupClearBits(user_event_group, BT_A2D_RUN_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
-            esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+            xEventGroupSetBits(user_event_group, BT_A2D_RUN_BIT);
+            if (!(uxBits & BT_SPP_RUN_BIT)) {
+                esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
-            audio_mp3_play(0);
-            led_set_mode(2);
+                audio_mp3_play(0);
+                led_set_mode(2);
+            }
         }
         break;
     }
     case ESP_A2D_AUDIO_STATE_EVT: {
         a2d = (esp_a2d_cb_param_t *)(p_param);
         ESP_LOGI(BT_A2D_TAG, "A2DP audio state: %s", s_a2d_audio_state_str[a2d->audio_stat.state]);
-        if (a2d->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+        if (!(uxBits & BT_SPP_RUN_BIT)) {
+            if (a2d->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-            esp_ble_gap_stop_advertising();
+                esp_ble_gap_stop_advertising();
 #endif
-            led_set_mode(1);
-        } else {
+                led_set_mode(1);
+            } else {
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-            esp_ble_gap_start_advertising(&adv_params);
+                esp_ble_gap_start_advertising(&adv_params);
 #endif
-            led_set_mode(2);
+                led_set_mode(2);
+            }
         }
         break;
     }
