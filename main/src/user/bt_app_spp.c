@@ -84,7 +84,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         led_set_mode(3);
 
         xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
-        xEventGroupClearBits(user_event_group, BT_SPP_RUN_BIT);
         break;
     case ESP_SPP_START_EVT:
         break;
@@ -106,7 +105,8 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 sscanf((const char *)param->data_ind.data, fw_cmd[2], &image_length);
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+UPD:%ld", image_length);
 
-                if (image_length != 0) {
+                EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+                if (image_length != 0 && !(uxBits & BT_A2D_INIT_BIT)) {
                     ota_running = 1;
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
@@ -174,18 +174,12 @@ err0:
     case ESP_SPP_WRITE_EVT:
         break;
     case ESP_SPP_SRV_OPEN_EVT:
-        xEventGroupSetBits(user_event_group, BT_SPP_RUN_BIT);
         xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
 
         esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
         esp_ble_gap_stop_advertising();
 #endif
-
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (uxBits & BT_A2D_RUN_BIT) {
-            esp_a2d_sink_disconnect(param->srv_open.rem_bda);
-        }
 
         memcpy(&bda, param->srv_open.rem_bda, sizeof(esp_bd_addr_t));
         ESP_LOGI(BT_SPP_TAG, "SPP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
