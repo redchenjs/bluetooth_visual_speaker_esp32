@@ -50,89 +50,96 @@ static void vfx_task_handle(void *pvParameter)
     while (1) {
 #if defined(CONFIG_SCREEN_PANEL_OUTPUT_FFT)
         // LCD FFT Output
-        uint8_t  color_cnt = 0;
-        uint16_t color_tmp = 0;
-        uint16_t color_idx = 0;
-        uint16_t color_ctr = vfx_ctr;
-        float fft_amp[64] = {0};
-        const uint16_t fft_n = 128;
-        GDisplay *g = gdispGetDisplay(0);
-        coord_t disp_width = gdispGGetWidth(g);
-        coord_t disp_height = gdispGGetHeight(g);
+        switch (vfx_mode) {
+        case 0x00:
+            gfxSleepMilliseconds(1000);
+            break;
+        default: {
+            uint8_t  color_cnt = 0;
+            uint16_t color_tmp = 0;
+            uint16_t color_idx = 0;
+            uint16_t color_ctr = vfx_ctr;
+            float fft_amp[64] = {0};
+            const uint16_t fft_n = 128;
+            GDisplay *g = gdispGetDisplay(0);
+            coord_t disp_width = gdispGGetWidth(g);
+            coord_t disp_height = gdispGGetHeight(g);
 
-        fft_config_t *fft_plan = fft_init(fft_n, FFT_REAL, FFT_FORWARD, NULL, NULL);
-        while (1) {
-            if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                vfx_clear_cube();
-                break;
-            }
-
-            for (uint16_t k=0; k<fft_n; k++) {
-                fft_plan->input[k] = (float)vfx_fifo_read();
-            }
-
-            fft_execute(fft_plan);
-
-            fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-            for (uint16_t k=1; k<fft_n/2; k++) {
-                fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
-            }
-
-            color_tmp = color_idx;
-            for (uint16_t i=0; i<disp_width; i++) {
-                uint16_t temp = fft_amp[i] / (65536 / disp_height) * fft_scale;
-                uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
-
-                if (temp > disp_height) {
-                    temp = disp_height;
-                } else if (temp < 1) {
-                    temp = 1;
+            fft_config_t *fft_plan = fft_init(fft_n, FFT_REAL, FFT_FORWARD, NULL, NULL);
+            while (1) {
+                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                    vfx_clear_cube();
+                    break;
                 }
+
+                for (uint16_t k=0; k<fft_n; k++) {
+                    fft_plan->input[k] = (float)vfx_fifo_read();
+                }
+
+                fft_execute(fft_plan);
+
+                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
+                for (uint16_t k=1; k<fft_n/2; k++) {
+                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                }
+
+                color_tmp = color_idx;
+                for (uint16_t i=0; i<disp_width; i++) {
+                    uint16_t temp = fft_amp[i] / (65536 / disp_height) * fft_scale;
+                    uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
+
+                    if (temp > disp_height) {
+                        temp = disp_height;
+                    } else if (temp < 1) {
+                        temp = 1;
+                    }
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
-                uint16_t clear_x  = i * 3;
-                uint16_t clear_cx = 3;
-                uint16_t clear_y  = 0;
-                uint16_t clear_cy = disp_height - temp;
+                    uint16_t clear_x  = i * 3;
+                    uint16_t clear_cx = 3;
+                    uint16_t clear_y  = 0;
+                    uint16_t clear_cy = disp_height - temp;
 
-                uint16_t fill_x  = i * 3;
-                uint16_t fill_cx = 3;
-                uint16_t fill_y  = disp_height - temp;
-                uint16_t fill_cy = temp;
+                    uint16_t fill_x  = i * 3;
+                    uint16_t fill_cx = 3;
+                    uint16_t fill_y  = disp_height - temp;
+                    uint16_t fill_cy = temp;
 #else
-                uint16_t clear_x  = i * 4;
-                uint16_t clear_cx = 4;
-                uint16_t clear_y  = 0;
-                uint16_t clear_cy = disp_height - temp;
+                    uint16_t clear_x  = i * 4;
+                    uint16_t clear_cx = 4;
+                    uint16_t clear_y  = 0;
+                    uint16_t clear_cy = disp_height - temp;
 
-                uint16_t fill_x  = i * 4;
-                uint16_t fill_cx = 4;
-                uint16_t fill_y  = disp_height - temp;
-                uint16_t fill_cy = temp;
+                    uint16_t fill_x  = i * 4;
+                    uint16_t fill_cx = 4;
+                    uint16_t fill_y  = disp_height - temp;
+                    uint16_t fill_cy = temp;
 #endif
 
-                gdispGFillArea(g, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
-                gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
+                    gdispGFillArea(g, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
+                    gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                if (++color_idx > 511) {
+                    if (++color_idx > 511) {
+                        color_idx = 0;
+                    }
+                }
+
+                if (++color_cnt % (16 / FFT_PERIOD) == 0) {
+                    color_idx = ++color_tmp;
+                } else {
+                    color_idx = color_tmp;
+                }
+
+                if (color_idx > 511) {
                     color_idx = 0;
                 }
-            }
 
-            if (++color_cnt % (16 / FFT_PERIOD) == 0) {
-                color_idx = ++color_tmp;
-            } else {
-                color_idx = color_tmp;
+                gfxSleepMilliseconds(FFT_PERIOD);
             }
-
-            if (color_idx > 511) {
-                color_idx = 0;
-            }
-
-            gfxSleepMilliseconds(FFT_PERIOD);
+            fft_destroy(fft_plan);
+            break;
         }
-        fft_destroy(fft_plan);
 #else
         // Light Cube Output
         switch (vfx_mode) {
@@ -874,7 +881,6 @@ static void vfx_task_handle(void *pvParameter)
             break;
         }
         default:
-            vfx_clear_cube();
             gfxSleepMilliseconds(1000);
 exit:
             break;
