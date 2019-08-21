@@ -68,7 +68,6 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
     default:
         break;
     }
-    return;
 }
 
 static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
