@@ -50,11 +50,9 @@ static void vfx_task_handle(void *pvParameter)
     while (1) {
 #if defined(CONFIG_SCREEN_PANEL_OUTPUT_FFT)
         // LCD FFT Output
-        switch (vfx_mode) {
-        case 0x00:
+        if (vfx_mode == 0) {
             gfxSleepMilliseconds(1000);
-            break;
-        default: {
+        } else {
             uint8_t  color_cnt = 0;
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
@@ -138,7 +136,6 @@ static void vfx_task_handle(void *pvParameter)
                 gfxSleepMilliseconds(FFT_PERIOD);
             }
             fft_destroy(fft_plan);
-            break;
         }
 #else
         // Light Cube Output
