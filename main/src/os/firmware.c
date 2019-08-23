@@ -8,12 +8,13 @@
 #include <string.h>
 
 #include "esp_log.h"
+#include "esp_ota_ops.h"
 
 #define TAG "os_firmware"
 
-const char *version = CONFIG_FIRMWARE_VERSION;
-
 const char *os_firmware_get_version(void)
 {
-    return version;
+    const esp_app_desc_t *app_desc = esp_ota_get_app_description();
+
+    return (const char *)app_desc->version;
 }

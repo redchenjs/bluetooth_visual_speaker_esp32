@@ -276,10 +276,4 @@ config ENABLE_AUDIO_PROMPT
         Select this to enable Audio Prompt.
 endmenu
 
-config FIRMWARE_VERSION
-    string "Firmware Version"
-    default "v3.2.1"
-    help
-        Set Firmware Version.
-
 endmenu
