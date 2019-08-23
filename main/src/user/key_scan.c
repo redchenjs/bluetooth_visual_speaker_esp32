@@ -12,7 +12,7 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 
-#include "os/core.h"
+#include "core/os.h"
 #include "user/key_handle.h"
 
 #define TAG "key_scan"

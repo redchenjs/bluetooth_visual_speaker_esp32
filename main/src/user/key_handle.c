@@ -12,7 +12,7 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 
-#include "os/core.h"
+#include "core/os.h"
 #include "user/audio_mp3.h"
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY

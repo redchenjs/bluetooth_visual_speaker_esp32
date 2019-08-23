@@ -16,7 +16,7 @@
 #include "synth.h"
 #include "stream.h"
 
-#include "os/core.h"
+#include "core/os.h"
 #include "user/audio_mp3.h"
 
 #define TAG "audio_mp3"

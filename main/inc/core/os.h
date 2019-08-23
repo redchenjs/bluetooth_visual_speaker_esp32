@@ -1,12 +1,12 @@
 /*
- * core.h
+ * os.h
  *
  *  Created on: 2018-03-04 20:07
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#ifndef INC_OS_CORE_H_
-#define INC_OS_CORE_H_
+#ifndef INC_CORE_OS_H_
+#define INC_CORE_OS_H_
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
@@ -27,6 +27,6 @@ extern EventGroupHandle_t user_event_group;
 extern void os_enter_sleep_mode(void);
 #endif
 
-extern void os_core_init(void);
+extern void os_init(void);
 
-#endif /* INC_OS_CORE_H_ */
+#endif /* INC_CORE_OS_H_ */

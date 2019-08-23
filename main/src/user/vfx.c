@@ -12,7 +12,7 @@
 #include "fft.h"
 #include "gfx.h"
 
-#include "os/core.h"
+#include "core/os.h"
 #include "user/audio_input.h"
 #include "user/vfx_bitmap.h"
 #include "user/vfx_core.h"

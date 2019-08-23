@@ -19,8 +19,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include "os/core.h"
-#include "os/firmware.h"
+#include "core/os.h"
+#include "core/app.h"
 #include "user/led.h"
 #include "user/vfx.h"
 #include "user/ble_app.h"
@@ -104,7 +104,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+VER?");
 
                 char str_buf[24] = {0};
-                snprintf(str_buf, sizeof(str_buf), rsp_str[4], os_firmware_get_version());
+                snprintf(str_buf, sizeof(str_buf), rsp_str[4], app_get_version());
                 esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
             } else if (strncmp(fw_cmd[2], (const char *)param->data_ind.data, 7) == 0) {
                 sscanf((const char *)param->data_ind.data, fw_cmd[2], &image_length);
