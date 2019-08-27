@@ -86,14 +86,16 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
         return;
     }
     // Copy data to FIFO
-    uint32_t idx = 0;
-    int32_t size = len;
-    while (size > 0) {
-        int16_t data_l = data[idx+1] << 8 | data[idx];
-        int16_t data_r = data[idx+3] << 8 | data[idx+2];
-        vfx_fifo_write((data_l + data_r) / 2);
-        idx  += 4;
-        size -= 4;
+    if (vfx_buff_ready_write()) {
+        uint32_t idx = 0;
+        int32_t size = len;
+        while (size > 0) {
+            int16_t data_l = data[idx+1] << 8 | data[idx];
+            int16_t data_r = data[idx+3] << 8 | data[idx+2];
+            vfx_buff_write((data_l + data_r) / 2);
+            idx  += 4;
+            size -= 4;
+        }
     }
 #endif
 }

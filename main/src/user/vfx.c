@@ -41,8 +41,6 @@ static void vfx_task_handle(void *pvParameter)
     ESP_LOGI(TAG, "Start LCD FFT Output");
 #endif
 
-    vfx_fifo_init();
-
 #ifndef CONFIG_AUDIO_INPUT_NONE
     audio_input_set_mode(1);
 #endif
@@ -56,7 +54,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
-            float fft_amp[64] = {0};
+            float   fft_amp[64] = {0};
+            uint8_t fft_out[64] = {0};
             const uint16_t fft_n = 128;
             GDisplay *g = gdispGetDisplay(0);
             coord_t disp_width = gdispGGetWidth(g);
@@ -70,48 +69,55 @@ static void vfx_task_handle(void *pvParameter)
                     break;
                 }
 
-                for (uint16_t k=0; k<fft_n; k++) {
-                    fft_plan->input[k] = (float)vfx_fifo_read();
-                }
+                if (vfx_buff_ready_read()) {
+                    for (uint16_t k=0; k<fft_n; k++) {
+                        fft_plan->input[k] = (float)vfx_buff_read();
+                    }
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                for (uint16_t k=1; k<fft_n/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
+                    fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
+                    if (fft_out[0] > disp_height) {
+                        fft_out[0] = disp_height;
+                    } else if (fft_out[0] < 1) {
+                        fft_out[0] = 1;
+                    }
+                    for (uint16_t k=1; k<fft_n/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                        fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
+                        if (fft_out[k] > disp_height) {
+                            fft_out[k] = disp_height;
+                        } else if (fft_out[k] < 1) {
+                            fft_out[k] = 1;
+                        }
+                    }
                 }
 
                 color_tmp = color_idx;
                 for (uint16_t i=0; i<disp_width; i++) {
-                    uint16_t temp = fft_amp[i] / (65536 / disp_height) * fft_scale;
                     uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
-
-                    if (temp > disp_height) {
-                        temp = disp_height;
-                    } else if (temp < 1) {
-                        temp = 1;
-                    }
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
                     uint16_t clear_cx = 3;
                     uint16_t clear_y  = 0;
-                    uint16_t clear_cy = disp_height - temp;
+                    uint16_t clear_cy = disp_height - fft_out[i];
 
                     uint16_t fill_x  = i * 3;
                     uint16_t fill_cx = 3;
-                    uint16_t fill_y  = disp_height - temp;
-                    uint16_t fill_cy = temp;
+                    uint16_t fill_y  = disp_height - fft_out[i];
+                    uint16_t fill_cy = fft_out[i];
 #else
                     uint16_t clear_x  = i * 4;
                     uint16_t clear_cx = 4;
                     uint16_t clear_y  = 0;
-                    uint16_t clear_cy = disp_height - temp;
+                    uint16_t clear_cy = disp_height - fft_out[i];
 
                     uint16_t fill_x  = i * 4;
                     uint16_t fill_cx = 4;
-                    uint16_t fill_y  = disp_height - temp;
-                    uint16_t fill_cy = temp;
+                    uint16_t fill_y  = disp_height - fft_out[i];
+                    uint16_t fill_cy = fft_out[i];
 #endif
 
                     gdispGFillArea(g, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
@@ -140,7 +146,8 @@ static void vfx_task_handle(void *pvParameter)
         case 0x0D: {   // 音頻FFT 橫排彩虹(線性譜)
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
-            float fft_amp[64] = {0};
+            float   fft_amp[64] = {0};
+            uint8_t fft_out[64] = {0};
             const uint16_t fft_n = 128;
             GDisplay *g = gdispGetDisplay(0);
             coord_t disp_width = gdispGGetWidth(g);
@@ -154,48 +161,55 @@ static void vfx_task_handle(void *pvParameter)
                     break;
                 }
 
-                for (uint16_t k=0; k<fft_n; k++) {
-                    fft_plan->input[k] = (float)vfx_fifo_read();
-                }
+                if (vfx_buff_ready_read()) {
+                    for (uint16_t k=0; k<fft_n; k++) {
+                        fft_plan->input[k] = (float)vfx_buff_read();
+                    }
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                for (uint16_t k=1; k<fft_n/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
+                    fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
+                    if (fft_out[0] > disp_height) {
+                        fft_out[0] = disp_height;
+                    } else if (fft_out[0] < 1) {
+                        fft_out[0] = 1;
+                    }
+                    for (uint16_t k=1; k<fft_n/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                        fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
+                        if (fft_out[k] > disp_height) {
+                            fft_out[k] = disp_height;
+                        } else if (fft_out[k] < 1) {
+                            fft_out[k] = 1;
+                        }
+                    }
                 }
 
                 color_idx = 511;
                 for (uint16_t i=0; i<disp_width; i++) {
-                    uint16_t temp = fft_amp[i] / (65536 / disp_height) * fft_scale;
                     uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
-
-                    if (temp > disp_height) {
-                        temp = disp_height;
-                    } else if (temp < 1) {
-                        temp = 1;
-                    }
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
                     uint16_t clear_cx = 3;
                     uint16_t clear_y  = 0;
-                    uint16_t clear_cy = disp_height - temp;
+                    uint16_t clear_cy = disp_height - fft_out[i];
 
                     uint16_t fill_x  = i * 3;
                     uint16_t fill_cx = 3;
-                    uint16_t fill_y  = disp_height - temp;
-                    uint16_t fill_cy = temp;
+                    uint16_t fill_y  = disp_height - fft_out[i];
+                    uint16_t fill_cy = fft_out[i];
 #else
                     uint16_t clear_x  = i * 4;
                     uint16_t clear_cx = 4;
                     uint16_t clear_y  = 0;
-                    uint16_t clear_cy = disp_height - temp;
+                    uint16_t clear_cy = disp_height - fft_out[i];
 
                     uint16_t fill_x  = i * 4;
                     uint16_t fill_cx = 4;
-                    uint16_t fill_y  = disp_height - temp;
-                    uint16_t fill_cy = temp;
+                    uint16_t fill_y  = disp_height - fft_out[i];
+                    uint16_t fill_cy = fft_out[i];
 #endif
 
                     gdispGFillArea(g, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
@@ -216,11 +230,13 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
-            float fft_amp[64] = {0};
+            float  fft_amp[64] = {0};
+            int8_t fft_out[64] = {0};
             const uint16_t fft_n = 128;
             GDisplay *g = gdispGetDisplay(0);
             coord_t disp_width = gdispGGetWidth(g);
             coord_t disp_height = gdispGGetHeight(g);
+            uint16_t center_y = disp_height % 2 ? disp_height / 2 : disp_height / 2 - 1;
 
             fft_config_t *fft_plan = fft_init(fft_n, FFT_REAL, FFT_FORWARD, NULL, NULL);
             while (1) {
@@ -230,58 +246,57 @@ static void vfx_task_handle(void *pvParameter)
                     break;
                 }
 
-                for (uint16_t k=0; k<fft_n; k++) {
-                    fft_plan->input[k] = (float)vfx_fifo_read();
-                }
+                if (vfx_buff_ready_read()) {
+                    for (uint16_t k=0; k<fft_n; k++) {
+                        fft_plan->input[k] = (float)vfx_buff_read();
+                    }
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                for (uint16_t k=1; k<fft_n/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 192 / 2;
+                    if (fft_out[0] > center_y) {
+                        fft_out[0] = center_y;
+                    } else if (fft_out[0] < 0) {
+                        fft_out[0] = 0;
+                    }
+                    for (uint16_t k=1; k<fft_n/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 192 / 2;
+                        if (fft_out[k] > center_y) {
+                            fft_out[k] = center_y;
+                        } else if (fft_out[k] < 0) {
+                            fft_out[k] = 0;
+                        }
+                    }
                 }
 
                 color_tmp = color_idx;
                 for (uint16_t i=0; i<disp_width; i++) {
-                    int16_t temp = log10(fft_amp[i]) / (65536 / disp_height) * fft_scale * 192 / 2;
                     uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
-                    uint16_t center_y = 39;
-                    if (temp > center_y) {
-                        temp = center_y;
-                    } else if (temp < 0) {
-                        temp = 0;
-                    }
-
                     uint16_t clear_x  = i * 3;
                     uint16_t clear_cx = 3;
                     uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + temp + 2;
-                    uint16_t clear_cy  = center_y - temp;
+                    uint16_t clear_d_y = center_y + fft_out[i] + 2;
+                    uint16_t clear_cy  = center_y - fft_out[i];
 
                     uint16_t fill_x  = i * 3;
                     uint16_t fill_cx = 3;
-                    uint16_t fill_y  = center_y - temp;
-                    uint16_t fill_cy = temp * 2 + 2;
+                    uint16_t fill_y  = center_y - fft_out[i];
+                    uint16_t fill_cy = fft_out[i] * 2 + 2;
 #else
-                    uint16_t center_y = 67;
-                    if (temp > center_y) {
-                        temp = center_y;
-                    } else if (temp < 0) {
-                        temp = 0;
-                    }
-
                     uint16_t clear_x  = i * 4;
                     uint16_t clear_cx = 4;
                     uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + temp + 1;
-                    uint16_t clear_cy  = center_y - temp;
+                    uint16_t clear_d_y = center_y + fft_out[i] + 1;
+                    uint16_t clear_cy  = center_y - fft_out[i];
 
                     uint16_t fill_x  = i * 4;
                     uint16_t fill_cx = 4;
-                    uint16_t fill_y  = center_y - temp;
-                    uint16_t fill_cy = temp * 2 + 1;
+                    uint16_t fill_y  = center_y - fft_out[i];
+                    uint16_t fill_cy = fft_out[i] * 2 + 1;
 #endif
 
                     gdispGFillArea(g, clear_x, clear_u_y, clear_cx, clear_cy, 0x000000);
@@ -311,11 +326,13 @@ static void vfx_task_handle(void *pvParameter)
         case 0x0F: {   // 音頻FFT 居中彩虹(對數譜)
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
-            float fft_amp[64] = {0};
+            float  fft_amp[64] = {0};
+            int8_t fft_out[64] = {0};
             const uint16_t fft_n = 128;
             GDisplay *g = gdispGetDisplay(0);
             coord_t disp_width = gdispGGetWidth(g);
             coord_t disp_height = gdispGGetHeight(g);
+            uint16_t center_y = disp_height % 2 ? disp_height / 2 : disp_height / 2 - 1;
 
             fft_config_t *fft_plan = fft_init(fft_n, FFT_REAL, FFT_FORWARD, NULL, NULL);
             while (1) {
@@ -325,58 +342,57 @@ static void vfx_task_handle(void *pvParameter)
                     break;
                 }
 
-                for (uint16_t k=0; k<fft_n; k++) {
-                    fft_plan->input[k] = (float)vfx_fifo_read();
-                }
+                if (vfx_buff_ready_read()) {
+                    for (uint16_t k=0; k<fft_n; k++) {
+                        fft_plan->input[k] = (float)vfx_buff_read();
+                    }
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                for (uint16_t k=1; k<fft_n/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 192 / 2;
+                    if (fft_out[0] > center_y) {
+                        fft_out[0] = center_y;
+                    } else if (fft_out[0] < 0) {
+                        fft_out[0] = 0;
+                    }
+                    for (uint16_t k=1; k<fft_n/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 192 / 2;
+                        if (fft_out[k] > center_y) {
+                            fft_out[k] = center_y;
+                        } else if (fft_out[k] < 0) {
+                            fft_out[k] = 0;
+                        }
+                    }
                 }
 
                 color_idx = 511;
                 for (uint16_t i=0; i<disp_width; i++) {
-                    int16_t temp = log10(fft_amp[i]) / (65536 / disp_height) * fft_scale * 192 / 2;
                     uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
-                    uint16_t center_y = 39;
-                    if (temp > center_y) {
-                        temp = center_y;
-                    } else if (temp < 0) {
-                        temp = 0;
-                    }
-
                     uint16_t clear_x  = i * 3;
                     uint16_t clear_cx = 3;
                     uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + temp + 2;
-                    uint16_t clear_cy  = center_y - temp;
+                    uint16_t clear_d_y = center_y + fft_out[i] + 2;
+                    uint16_t clear_cy  = center_y - fft_out[i];
 
                     uint16_t fill_x  = i * 3;
                     uint16_t fill_cx = 3;
-                    uint16_t fill_y  = center_y - temp;
-                    uint16_t fill_cy = temp * 2 + 2;
+                    uint16_t fill_y  = center_y - fft_out[i];
+                    uint16_t fill_cy = fft_out[i] * 2 + 2;
 #else
-                    uint16_t center_y = 67;
-                    if (temp > center_y) {
-                        temp = center_y;
-                    } else if (temp < 0) {
-                        temp = 0;
-                    }
-
                     uint16_t clear_x  = i * 4;
                     uint16_t clear_cx = 4;
                     uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + temp + 1;
-                    uint16_t clear_cy  = center_y - temp;
+                    uint16_t clear_d_y = center_y + fft_out[i] + 1;
+                    uint16_t clear_cy  = center_y - fft_out[i];
 
                     uint16_t fill_x  = i * 4;
                     uint16_t fill_cx = 4;
-                    uint16_t fill_y  = center_y - temp;
-                    uint16_t fill_cy = temp * 2 + 1;
+                    uint16_t fill_y  = center_y - fft_out[i];
+                    uint16_t fill_cy = fft_out[i] * 2 + 1;
 #endif
 
                     gdispGFillArea(g, clear_x, clear_u_y, clear_cx, clear_cy, 0x000000);
@@ -876,7 +892,8 @@ static void vfx_task_handle(void *pvParameter)
             uint8_t y = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
-            float fft_amp[64] = {0};
+            float   fft_amp[64] = {0};
+            uint8_t fft_out[64] = {0};
             const uint16_t fft_n = 128;
             coord_t disp_width = 64;
             coord_t disp_height = 8;
@@ -889,40 +906,46 @@ static void vfx_task_handle(void *pvParameter)
                     break;
                 }
 
-                for (uint16_t k=0; k<fft_n; k++) {
-                    fft_plan->input[k] = (float)vfx_fifo_read();
-                }
+                if (vfx_buff_ready_read()) {
+                    for (uint16_t k=0; k<fft_n; k++) {
+                        fft_plan->input[k] = (float)vfx_buff_read();
+                    }
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                for (uint16_t k=1; k<fft_n/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
+                    fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
+                    if (fft_out[0] > disp_height) {
+                        fft_out[0] = disp_height;
+                    } else if (fft_out[0] < 1) {
+                        fft_out[0] = 1;
+                    }
+                    for (uint16_t k=1; k<fft_n/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                        fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
+                        if (fft_out[k] > disp_height) {
+                            fft_out[k] = disp_height;
+                        } else if (fft_out[k] < 1) {
+                            fft_out[k] = 1;
+                        }
+                    }
                 }
 
                 color_idx = 63;
                 for (uint16_t i=0; i<disp_width; i++) {
-                    uint8_t temp = fft_amp[i] / (65536 / disp_height) * fft_scale;
-
-                    if (temp > disp_height) {
-                        temp = disp_height;
-                    } else if (temp < 1) {
-                        temp = 1;
-                    }
-
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
                     uint8_t clear_y  = 7 - y;
                     uint8_t clear_cy = 1;
                     uint8_t clear_z  = 0;
-                    uint8_t clear_cz = disp_height - temp;
+                    uint8_t clear_cz = disp_height - fft_out[i];
 
                     uint8_t fill_x  = x;
                     uint8_t fill_cx = 1;
                     uint8_t fill_y  = 7 - y;
                     uint8_t fill_cy = 1;
-                    uint8_t fill_z  = disp_height - temp;
-                    uint8_t fill_cz = temp;
+                    uint8_t fill_z  = disp_height - fft_out[i];
+                    uint8_t fill_cz = fft_out[i];
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
                                   clear_cx, clear_cy, clear_cz,
@@ -956,7 +979,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
-            float fft_amp[64] = {0};
+            float   fft_amp[64] = {0};
+            uint8_t fft_out[64] = {0};
             const uint16_t fft_n = 128;
             coord_t disp_width = 64;
             coord_t disp_height = 8;
@@ -969,40 +993,46 @@ static void vfx_task_handle(void *pvParameter)
                     break;
                 }
 
-                for (uint16_t k=0; k<fft_n; k++) {
-                    fft_plan->input[k] = (float)vfx_fifo_read();
-                }
+                if (vfx_buff_ready_read()) {
+                    for (uint16_t k=0; k<fft_n; k++) {
+                        fft_plan->input[k] = (float)vfx_buff_read();
+                    }
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                for (uint16_t k=1; k<fft_n/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
+                    fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
+                    if (fft_out[0] > disp_height) {
+                        fft_out[0] = disp_height;
+                    } else if (fft_out[0] < 1) {
+                        fft_out[0] = 1;
+                    }
+                    for (uint16_t k=1; k<fft_n/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                        fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
+                        if (fft_out[k] > disp_height) {
+                            fft_out[k] = disp_height;
+                        } else if (fft_out[k] < 1) {
+                            fft_out[k] = 1;
+                        }
+                    }
                 }
 
                 color_idx = color_tmp;
                 for (uint16_t i=0; i<disp_width; i++) {
-                    uint8_t temp = fft_amp[i] / (65536 / disp_height) * fft_scale;
-
-                    if (temp > disp_height) {
-                        temp = disp_height;
-                    } else if (temp < 1) {
-                        temp = 1;
-                    }
-
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
                     uint8_t clear_y  = 7 - y;
                     uint8_t clear_cy = 1;
                     uint8_t clear_z  = 0;
-                    uint8_t clear_cz = disp_height - temp;
+                    uint8_t clear_cz = disp_height - fft_out[i];
 
                     uint8_t fill_x  = x;
                     uint8_t fill_cx = 1;
                     uint8_t fill_y  = 7 - y;
                     uint8_t fill_cy = 1;
-                    uint8_t fill_z  = disp_height - temp;
-                    uint8_t fill_cz = temp;
+                    uint8_t fill_z  = disp_height - fft_out[i];
+                    uint8_t fill_cz = fft_out[i];
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
                                   clear_cx, clear_cy, clear_cz,
@@ -1043,7 +1073,8 @@ static void vfx_task_handle(void *pvParameter)
             uint8_t color_cnt = 0;
             uint16_t color_idx[64] = {0};
             uint16_t color_ctr[64] = {vfx_ctr};
-            float fft_amp[64] = {0};
+            float   fft_amp[64] = {0};
+            uint8_t fft_out[64] = {0};
             const uint16_t fft_n = 128;
             const uint8_t led_idx_table[][64] = {
                 {
@@ -1075,42 +1106,48 @@ static void vfx_task_handle(void *pvParameter)
                     break;
                 }
 
-                for (uint16_t k=0; k<fft_n; k++) {
-                    fft_plan->input[k] = (float)vfx_fifo_read();
-                }
+                if (vfx_buff_ready_read()) {
+                    for (uint16_t k=0; k<fft_n; k++) {
+                        fft_plan->input[k] = (float)vfx_buff_read();
+                    }
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                for (uint16_t k=1; k<fft_n/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
+                    fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
+                    if (fft_out[0] > disp_height) {
+                        fft_out[0] = disp_height;
+                    } else if (fft_out[0] < 1) {
+                        fft_out[0] = 1;
+                    }
+                    for (uint16_t k=1; k<fft_n/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
+                        fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
+                        if (fft_out[k] > disp_height) {
+                            fft_out[k] = disp_height;
+                        } else if (fft_out[k] < 1) {
+                            fft_out[k] = 1;
+                        }
+                    }
                 }
 
                 for (uint16_t i=0; i<disp_width; i++) {
                     x = led_idx_table[0][i];
                     y = led_idx_table[1][i];
 
-                    uint8_t temp = fft_amp[i] / (65536 / disp_height) * fft_scale;
-
-                    if (temp > disp_height) {
-                        temp = disp_height;
-                    } else if (temp < 1) {
-                        temp = 1;
-                    }
-
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
                     uint8_t clear_y  = 7 - y;
                     uint8_t clear_cy = 1;
                     uint8_t clear_z  = 0;
-                    uint8_t clear_cz = disp_height - temp;
+                    uint8_t clear_cz = disp_height - fft_out[i];
 
                     uint8_t fill_x  = x;
                     uint8_t fill_cx = 1;
                     uint8_t fill_y  = 7 - y;
                     uint8_t fill_cy = 1;
-                    uint8_t fill_z  = disp_height - temp;
-                    uint8_t fill_cz = temp;
+                    uint8_t fill_z  = disp_height - fft_out[i];
+                    uint8_t fill_cz = fft_out[i];
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
                                   clear_cx, clear_cy, clear_cz,

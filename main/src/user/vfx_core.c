@@ -17,12 +17,11 @@
 #include "user/vfx_bitmap.h"
 #include "user/vfx_color_table.h"
 
-#define FIFO_SIZE 128
+#define BUFF_SIZE 128
 
-static uint16_t fifo_buf_num = 0;
-static fifo_element_t fifo_buf[FIFO_SIZE] = {0};
-static fifo_element_t *fifo_next_write = NULL;
-static fifo_element_t *fifo_next_read  = NULL;
+static int16_t vfx_buff[BUFF_SIZE] = {0};
+static uint16_t vfx_buff_write_pos = {0};
+static uint16_t vfx_buff_read_pos  = {0};
 
 inline uint32_t vfx_read_color_from_table(uint16_t color_idx, uint16_t color_ctr)
 {
@@ -176,35 +175,39 @@ void vfx_clear_cube(void)
     gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
 }
 
-void vfx_fifo_write(int16_t data)
+void vfx_buff_write(int16_t data)
 {
-    if (fifo_buf_num++ == FIFO_SIZE) {
-        fifo_buf_num = FIFO_SIZE;
+    if (vfx_buff_write_pos < BUFF_SIZE) {
+        vfx_buff[vfx_buff_write_pos++] = data;
     }
-    fifo_next_write->data = data;
-    fifo_next_write = fifo_next_write->next;
 }
 
-int16_t vfx_fifo_read(void)
+int16_t vfx_buff_read(void)
 {
-    if (fifo_buf_num-- == 0) {
-        fifo_buf_num = 0;
-        return 0x0000;
+    int16_t data = vfx_buff[vfx_buff_read_pos++];
+
+    if (vfx_buff_read_pos == BUFF_SIZE) {
+        vfx_buff_read_pos  = 0;
+        vfx_buff_write_pos = 0;
     }
-    int16_t data = fifo_next_read->data;
-    fifo_next_read = fifo_next_read->next;
+
     return data;
 }
 
-void vfx_fifo_init(void)
+uint8_t vfx_buff_ready_write(void)
 {
-    uint16_t i = 0;
-    for (i=0; i<FIFO_SIZE-1; i++) {
-        fifo_buf[i].data = 0;
-        fifo_buf[i].next = &fifo_buf[i+1];
+    if (vfx_buff_write_pos == BUFF_SIZE) {
+        return 0;
+    } else {
+        return 1;
     }
-    fifo_buf[i].data = 0;
-    fifo_buf[i].next = &fifo_buf[0];
-    fifo_next_write = &fifo_buf[0];
-    fifo_next_read  = &fifo_buf[0];
+}
+
+uint8_t vfx_buff_ready_read(void)
+{
+    if (vfx_buff_write_pos == BUFF_SIZE) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
