@@ -47,7 +47,7 @@ git clone --recursive https://github.com/redchenjs/bluetooth_speaker_esp32.git
 
 <img src="docs/st7789log.png">
 
-## VFX on CUBE0414 RGB Light Cube
+## VFX on CUBE0414 8x8x8 RGB Light Cube
 
 <img src="docs/cube0414.png">
 
