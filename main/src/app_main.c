@@ -23,7 +23,7 @@
 
 static void core_init(void)
 {
-    app_print_version();
+    app_print_info();
 
     os_init();
 }

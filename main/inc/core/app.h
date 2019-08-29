@@ -9,6 +9,6 @@
 #define INC_CORE_APP_H_
 
 extern const char *app_get_version(void);
-extern void app_print_version(void);
+extern void app_print_info(void);
 
 #endif /* INC_CORE_APP_H_ */

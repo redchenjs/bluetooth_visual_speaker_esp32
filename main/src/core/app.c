@@ -19,7 +19,7 @@ const char *app_get_version(void)
     return (const char *)app_desc->version;
 }
 
-void app_print_version(void)
+void app_print_info(void)
 {
     ESP_LOGW(TAG, "running %s", app_get_version());
 }
