@@ -52,7 +52,7 @@ static void led_task_handle(void *pvParameter)
         }
 #endif
 
-        vTaskDelayUntil(&xLastWakeTime, led_mode_table[led_mode_index][0]);
+        vTaskDelayUntil(&xLastWakeTime, led_mode_table[led_mode_index][0] / portTICK_RATE_MS);
     }
 }
 #endif
