@@ -20,8 +20,8 @@
 #define BUFF_SIZE 128
 
 static int16_t vfx_buff[BUFF_SIZE] = {0};
-static uint16_t vfx_buff_write_pos = {0};
-static uint16_t vfx_buff_read_pos  = {0};
+static uint16_t vfx_buff_write_pos = BUFF_SIZE;
+static uint16_t vfx_buff_read_pos  = 0;
 
 inline uint32_t vfx_read_color_from_table(uint16_t color_idx, uint16_t color_ctr)
 {
