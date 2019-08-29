@@ -81,6 +81,7 @@ static void audio_mp3_task_handle(void *pvParameters)
             xEventGroupClearBits(user_event_group, AUDIO_MP3_RUN_BIT);
         }
     }
+
 err:
     free(synth);
     free(frame);
