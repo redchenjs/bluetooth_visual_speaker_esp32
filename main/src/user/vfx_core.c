@@ -214,6 +214,8 @@ uint8_t vfx_buff_ready_read(void)
 
 void vfx_buff_reset(void)
 {
+    memset(vfx_buff, 0x00, sizeof(vfx_buff));
+
     vfx_buff_write_pos = BUFF_SIZE;
     vfx_buff_read_pos  = 0;
 }
