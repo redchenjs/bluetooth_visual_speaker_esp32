@@ -87,6 +87,7 @@ err:
     free(frame);
     free(stream);
 
+    ESP_LOGE(TAG, "unrecoverable error");
     esp_restart();
 }
 
