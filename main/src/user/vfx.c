@@ -1061,7 +1061,7 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
 
-                color_idx = 63;
+                color_idx = 511;
                 for (uint16_t i=0; i<disp_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
@@ -1091,9 +1091,8 @@ static void vfx_task_handle(void *pvParameter)
                         }
                     }
 
-                    color_idx += 7;
-                    if (color_idx > 511) {
-                        color_idx = 7;
+                    if ((color_idx -= 8) == 7) {
+                        color_idx = 511;
                     }
                 }
 
@@ -1363,7 +1362,7 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
 
-                color_idx = 63;
+                color_idx = 511;
                 for (uint16_t i=0; i<disp_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
@@ -1393,9 +1392,8 @@ static void vfx_task_handle(void *pvParameter)
                         }
                     }
 
-                    color_idx += 7;
-                    if (color_idx > 511) {
-                        color_idx = 7;
+                    if ((color_idx -= 8) == 7) {
+                        color_idx = 511;
                     }
                 }
 
