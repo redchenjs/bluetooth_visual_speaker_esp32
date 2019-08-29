@@ -98,9 +98,10 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
     if (vfx_buff_ready_write()) {
         uint32_t idx = 0;
         int32_t size = len;
+        int16_t data_l = 0, data_r = 0;
         while (size > 0) {
-            int16_t data_l = data[idx+1] << 8 | data[idx];
-            int16_t data_r = data[idx+3] << 8 | data[idx+2];
+            data_l = data[idx+1] << 8 | data[idx];
+            data_r = data[idx+3] << 8 | data[idx+2];
             vfx_buff_write((data_l + data_r) / 2);
             idx  += 4;
             size -= 4;
