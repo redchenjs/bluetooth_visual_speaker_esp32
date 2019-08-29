@@ -71,6 +71,7 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     vfx_clear_cube();
+                    vfx_buff_reset();
                     break;
                 }
 
@@ -167,6 +168,7 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     vfx_clear_cube();
+                    vfx_buff_reset();
                     break;
                 }
 
@@ -256,6 +258,7 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     vfx_clear_cube();
+                    vfx_buff_reset();
                     break;
                 }
 
@@ -356,6 +359,7 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     vfx_clear_cube();
+                    vfx_buff_reset();
                     break;
                 }
 
@@ -1027,6 +1031,7 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     vfx_clear_cube();
+                    vfx_buff_reset();
                     break;
                 }
 
@@ -1118,6 +1123,7 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     vfx_clear_cube();
+                    vfx_buff_reset();
                     break;
                 }
 
@@ -1235,6 +1241,7 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     vfx_clear_cube();
+                    vfx_buff_reset();
                     break;
                 }
 
@@ -1326,6 +1333,7 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     vfx_clear_cube();
+                    vfx_buff_reset();
                     break;
                 }
 
@@ -1417,6 +1425,7 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     vfx_clear_cube();
+                    vfx_buff_reset();
                     break;
                 }
 
@@ -1534,6 +1543,7 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     vfx_clear_cube();
+                    vfx_buff_reset();
                     break;
                 }
 
