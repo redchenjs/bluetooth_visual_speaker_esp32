@@ -25,7 +25,7 @@
 uint16_t vfx_ctr = 0x0190;
 
 static uint8_t vfx_mode = 0x0F;
-static uint16_t fft_scale = 256;
+static uint16_t fft_scale = 192;
 
 static void vfx_task_handle(void *pvParameter)
 {
@@ -266,7 +266,7 @@ static void vfx_task_handle(void *pvParameter)
                     fft_execute(fft_plan);
 
                     fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 64 / 2;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96 / 2;
                     if (fft_out[0] > center_y) {
                         fft_out[0] = center_y;
                     } else if (fft_out[0] < 0) {
@@ -275,7 +275,7 @@ static void vfx_task_handle(void *pvParameter)
 
                     for (uint16_t k=1; k<fft_n/2; k++) {
                         fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 64 / 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96 / 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
                         } else if (fft_out[k] < 0) {
@@ -366,7 +366,7 @@ static void vfx_task_handle(void *pvParameter)
                     fft_execute(fft_plan);
 
                     fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 64 / 2;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96 / 2;
                     if (fft_out[0] > center_y) {
                         fft_out[0] = center_y;
                     } else if (fft_out[0] < 0) {
@@ -375,7 +375,7 @@ static void vfx_task_handle(void *pvParameter)
 
                     for (uint16_t k=1; k<fft_n/2; k++) {
                         fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 64 / 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96 / 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
                         } else if (fft_out[k] < 0) {
@@ -1037,7 +1037,7 @@ static void vfx_task_handle(void *pvParameter)
                     fft_execute(fft_plan);
 
                     fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 64;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
                     if (fft_out[0] > disp_height) {
                         fft_out[0] = disp_height;
                     } else if (fft_out[0] < 1) {
@@ -1046,7 +1046,7 @@ static void vfx_task_handle(void *pvParameter)
 
                     for (uint16_t k=1; k<fft_n/2; k++) {
                         fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 64;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96;
                         if (fft_out[k] > disp_height) {
                             fft_out[k] = disp_height;
                         } else if (fft_out[k] < 1) {
@@ -1128,7 +1128,7 @@ static void vfx_task_handle(void *pvParameter)
                     fft_execute(fft_plan);
 
                     fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 64;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
                     if (fft_out[0] > disp_height) {
                         fft_out[0] = disp_height;
                     } else if (fft_out[0] < 1) {
@@ -1137,7 +1137,7 @@ static void vfx_task_handle(void *pvParameter)
 
                     for (uint16_t k=1; k<fft_n/2; k++) {
                         fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 64;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96;
                         if (fft_out[k] > disp_height) {
                             fft_out[k] = disp_height;
                         } else if (fft_out[k] < 1) {
@@ -1245,7 +1245,7 @@ static void vfx_task_handle(void *pvParameter)
                     fft_execute(fft_plan);
 
                     fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / fft_n;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 64;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
                     if (fft_out[0] > disp_height) {
                         fft_out[0] = disp_height;
                     } else if (fft_out[0] < 1) {
@@ -1254,7 +1254,7 @@ static void vfx_task_handle(void *pvParameter)
 
                     for (uint16_t k=1; k<fft_n/2; k++) {
                         fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / fft_n * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 64;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96;
                         if (fft_out[k] > disp_height) {
                             fft_out[k] = disp_height;
                         } else if (fft_out[k] < 1) {
