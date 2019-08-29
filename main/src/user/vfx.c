@@ -99,50 +99,50 @@ static void vfx_task_handle(void *pvParameter)
                             fft_out[k] = 1;
                         }
                     }
-                }
 
-                color_tmp = color_idx;
-                for (uint16_t i=0; i<disp_width; i++) {
-                    uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
+                    color_tmp = color_idx;
+                    for (uint16_t i=0; i<disp_width; i++) {
+                        uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
-                    uint16_t clear_x  = i * 3;
-                    uint16_t clear_cx = 3;
-                    uint16_t clear_y  = 0;
-                    uint16_t clear_cy = disp_height - fft_out[i];
+                        uint16_t clear_x  = i * 3;
+                        uint16_t clear_cx = 3;
+                        uint16_t clear_y  = 0;
+                        uint16_t clear_cy = disp_height - fft_out[i];
 
-                    uint16_t fill_x  = i * 3;
-                    uint16_t fill_cx = 3;
-                    uint16_t fill_y  = disp_height - fft_out[i];
-                    uint16_t fill_cy = fft_out[i];
+                        uint16_t fill_x  = i * 3;
+                        uint16_t fill_cx = 3;
+                        uint16_t fill_y  = disp_height - fft_out[i];
+                        uint16_t fill_cy = fft_out[i];
 #else
-                    uint16_t clear_x  = i * 4;
-                    uint16_t clear_cx = 4;
-                    uint16_t clear_y  = 0;
-                    uint16_t clear_cy = disp_height - fft_out[i];
+                        uint16_t clear_x  = i * 4;
+                        uint16_t clear_cx = 4;
+                        uint16_t clear_y  = 0;
+                        uint16_t clear_cy = disp_height - fft_out[i];
 
-                    uint16_t fill_x  = i * 4;
-                    uint16_t fill_cx = 4;
-                    uint16_t fill_y  = disp_height - fft_out[i];
-                    uint16_t fill_cy = fft_out[i];
+                        uint16_t fill_x  = i * 4;
+                        uint16_t fill_cx = 4;
+                        uint16_t fill_y  = disp_height - fft_out[i];
+                        uint16_t fill_cy = fft_out[i];
 #endif
 
-                    gdispGFillArea(g, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
-                    gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
+                        gdispGFillArea(g, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
+                        gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (++color_idx > 511) {
+                        if (++color_idx > 511) {
+                            color_idx = 0;
+                        }
+                    }
+
+                    if (++color_cnt % (32 / FFT_PERIOD) == 0) {
+                        color_idx = ++color_tmp;
+                    } else {
+                        color_idx = color_tmp;
+                    }
+
+                    if (color_idx > 511) {
                         color_idx = 0;
                     }
-                }
-
-                if (++color_cnt % (32 / FFT_PERIOD) == 0) {
-                    color_idx = ++color_tmp;
-                } else {
-                    color_idx = color_tmp;
-                }
-
-                if (color_idx > 511) {
-                    color_idx = 0;
                 }
 
                 vTaskDelayUntil(&xLastWakeTime, FFT_PERIOD / portTICK_RATE_MS);
@@ -196,39 +196,39 @@ static void vfx_task_handle(void *pvParameter)
                             fft_out[k] = 1;
                         }
                     }
-                }
 
-                color_idx = 511;
-                for (uint16_t i=0; i<disp_width; i++) {
-                    uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
+                    color_idx = 511;
+                    for (uint16_t i=0; i<disp_width; i++) {
+                        uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
-                    uint16_t clear_x  = i * 3;
-                    uint16_t clear_cx = 3;
-                    uint16_t clear_y  = 0;
-                    uint16_t clear_cy = disp_height - fft_out[i];
+                        uint16_t clear_x  = i * 3;
+                        uint16_t clear_cx = 3;
+                        uint16_t clear_y  = 0;
+                        uint16_t clear_cy = disp_height - fft_out[i];
 
-                    uint16_t fill_x  = i * 3;
-                    uint16_t fill_cx = 3;
-                    uint16_t fill_y  = disp_height - fft_out[i];
-                    uint16_t fill_cy = fft_out[i];
+                        uint16_t fill_x  = i * 3;
+                        uint16_t fill_cx = 3;
+                        uint16_t fill_y  = disp_height - fft_out[i];
+                        uint16_t fill_cy = fft_out[i];
 #else
-                    uint16_t clear_x  = i * 4;
-                    uint16_t clear_cx = 4;
-                    uint16_t clear_y  = 0;
-                    uint16_t clear_cy = disp_height - fft_out[i];
+                        uint16_t clear_x  = i * 4;
+                        uint16_t clear_cx = 4;
+                        uint16_t clear_y  = 0;
+                        uint16_t clear_cy = disp_height - fft_out[i];
 
-                    uint16_t fill_x  = i * 4;
-                    uint16_t fill_cx = 4;
-                    uint16_t fill_y  = disp_height - fft_out[i];
-                    uint16_t fill_cy = fft_out[i];
+                        uint16_t fill_x  = i * 4;
+                        uint16_t fill_cx = 4;
+                        uint16_t fill_y  = disp_height - fft_out[i];
+                        uint16_t fill_cy = fft_out[i];
 #endif
 
-                    gdispGFillArea(g, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
-                    gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
+                        gdispGFillArea(g, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
+                        gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if ((color_idx -= 8) == 7) {
-                        color_idx = 511;
+                        if ((color_idx -= 8) == 7) {
+                            color_idx = 511;
+                        }
                     }
                 }
 
@@ -286,53 +286,53 @@ static void vfx_task_handle(void *pvParameter)
                             fft_out[k] = 0;
                         }
                     }
-                }
 
-                color_tmp = color_idx;
-                for (uint16_t i=0; i<disp_width; i++) {
-                    uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
+                    color_tmp = color_idx;
+                    for (uint16_t i=0; i<disp_width; i++) {
+                        uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
-                    uint16_t clear_x  = i * 3;
-                    uint16_t clear_cx = 3;
-                    uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + fft_out[i] + 2;
-                    uint16_t clear_cy  = center_y - fft_out[i];
+                        uint16_t clear_x  = i * 3;
+                        uint16_t clear_cx = 3;
+                        uint16_t clear_u_y = 0;
+                        uint16_t clear_d_y = center_y + fft_out[i] + 2;
+                        uint16_t clear_cy  = center_y - fft_out[i];
 
-                    uint16_t fill_x  = i * 3;
-                    uint16_t fill_cx = 3;
-                    uint16_t fill_y  = center_y - fft_out[i];
-                    uint16_t fill_cy = fft_out[i] * 2 + 2;
+                        uint16_t fill_x  = i * 3;
+                        uint16_t fill_cx = 3;
+                        uint16_t fill_y  = center_y - fft_out[i];
+                        uint16_t fill_cy = fft_out[i] * 2 + 2;
 #else
-                    uint16_t clear_x  = i * 4;
-                    uint16_t clear_cx = 4;
-                    uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + fft_out[i] + 1;
-                    uint16_t clear_cy  = center_y - fft_out[i];
+                        uint16_t clear_x  = i * 4;
+                        uint16_t clear_cx = 4;
+                        uint16_t clear_u_y = 0;
+                        uint16_t clear_d_y = center_y + fft_out[i] + 1;
+                        uint16_t clear_cy  = center_y - fft_out[i];
 
-                    uint16_t fill_x  = i * 4;
-                    uint16_t fill_cx = 4;
-                    uint16_t fill_y  = center_y - fft_out[i];
-                    uint16_t fill_cy = fft_out[i] * 2 + 1;
+                        uint16_t fill_x  = i * 4;
+                        uint16_t fill_cx = 4;
+                        uint16_t fill_y  = center_y - fft_out[i];
+                        uint16_t fill_cy = fft_out[i] * 2 + 1;
 #endif
 
-                    gdispGFillArea(g, clear_x, clear_u_y, clear_cx, clear_cy, 0x000000);
-                    gdispGFillArea(g, clear_x, clear_d_y, clear_cx, clear_cy, 0x000000);
-                    gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
+                        gdispGFillArea(g, clear_x, clear_u_y, clear_cx, clear_cy, 0x000000);
+                        gdispGFillArea(g, clear_x, clear_d_y, clear_cx, clear_cy, 0x000000);
+                        gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (++color_idx > 511) {
+                        if (++color_idx > 511) {
+                            color_idx = 0;
+                        }
+                    }
+
+                    if (++color_cnt % (32 / FFT_PERIOD) == 0) {
+                        color_idx = ++color_tmp;
+                    } else {
+                        color_idx = color_tmp;
+                    }
+
+                    if (color_idx > 511) {
                         color_idx = 0;
                     }
-                }
-
-                if (++color_cnt % (32 / FFT_PERIOD) == 0) {
-                    color_idx = ++color_tmp;
-                } else {
-                    color_idx = color_tmp;
-                }
-
-                if (color_idx > 511) {
-                    color_idx = 0;
                 }
 
                 vTaskDelayUntil(&xLastWakeTime, FFT_PERIOD / portTICK_RATE_MS);
@@ -387,42 +387,42 @@ static void vfx_task_handle(void *pvParameter)
                             fft_out[k] = 0;
                         }
                     }
-                }
 
-                color_idx = 511;
-                for (uint16_t i=0; i<disp_width; i++) {
-                    uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
+                    color_idx = 511;
+                    for (uint16_t i=0; i<disp_width; i++) {
+                        uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
-                    uint16_t clear_x  = i * 3;
-                    uint16_t clear_cx = 3;
-                    uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + fft_out[i] + 2;
-                    uint16_t clear_cy  = center_y - fft_out[i];
+                        uint16_t clear_x  = i * 3;
+                        uint16_t clear_cx = 3;
+                        uint16_t clear_u_y = 0;
+                        uint16_t clear_d_y = center_y + fft_out[i] + 2;
+                        uint16_t clear_cy  = center_y - fft_out[i];
 
-                    uint16_t fill_x  = i * 3;
-                    uint16_t fill_cx = 3;
-                    uint16_t fill_y  = center_y - fft_out[i];
-                    uint16_t fill_cy = fft_out[i] * 2 + 2;
+                        uint16_t fill_x  = i * 3;
+                        uint16_t fill_cx = 3;
+                        uint16_t fill_y  = center_y - fft_out[i];
+                        uint16_t fill_cy = fft_out[i] * 2 + 2;
 #else
-                    uint16_t clear_x  = i * 4;
-                    uint16_t clear_cx = 4;
-                    uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + fft_out[i] + 1;
-                    uint16_t clear_cy  = center_y - fft_out[i];
+                        uint16_t clear_x  = i * 4;
+                        uint16_t clear_cx = 4;
+                        uint16_t clear_u_y = 0;
+                        uint16_t clear_d_y = center_y + fft_out[i] + 1;
+                        uint16_t clear_cy  = center_y - fft_out[i];
 
-                    uint16_t fill_x  = i * 4;
-                    uint16_t fill_cx = 4;
-                    uint16_t fill_y  = center_y - fft_out[i];
-                    uint16_t fill_cy = fft_out[i] * 2 + 1;
+                        uint16_t fill_x  = i * 4;
+                        uint16_t fill_cx = 4;
+                        uint16_t fill_y  = center_y - fft_out[i];
+                        uint16_t fill_cy = fft_out[i] * 2 + 1;
 #endif
 
-                    gdispGFillArea(g, clear_x, clear_u_y, clear_cx, clear_cy, 0x000000);
-                    gdispGFillArea(g, clear_x, clear_d_y, clear_cx, clear_cy, 0x000000);
-                    gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
+                        gdispGFillArea(g, clear_x, clear_u_y, clear_cx, clear_cy, 0x000000);
+                        gdispGFillArea(g, clear_x, clear_d_y, clear_cx, clear_cy, 0x000000);
+                        gdispGFillArea(g, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if ((color_idx -= 8) == 7) {
-                        color_idx = 511;
+                        if ((color_idx -= 8) == 7) {
+                            color_idx = 511;
+                        }
                     }
                 }
 
@@ -1059,40 +1059,40 @@ static void vfx_task_handle(void *pvParameter)
                             fft_out[k] = 1;
                         }
                     }
-                }
 
-                color_idx = 511;
-                for (uint16_t i=0; i<disp_width; i++) {
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = disp_height - fft_out[i];
+                    color_idx = 511;
+                    for (uint16_t i=0; i<disp_width; i++) {
+                        uint8_t clear_x  = x;
+                        uint8_t clear_cx = 1;
+                        uint8_t clear_y  = 7 - y;
+                        uint8_t clear_cy = 1;
+                        uint8_t clear_z  = 0;
+                        uint8_t clear_cz = disp_height - fft_out[i];
 
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = disp_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
+                        uint8_t fill_x  = x;
+                        uint8_t fill_cx = 1;
+                        uint8_t fill_y  = 7 - y;
+                        uint8_t fill_cy = 1;
+                        uint8_t fill_z  = disp_height - fft_out[i];
+                        uint8_t fill_cz = fft_out[i];
 
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 511);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_idx, color_ctr);
+                        vfx_fill_cube(clear_x, clear_y, clear_z,
+                                    clear_cx, clear_cy, clear_cz,
+                                    0, 511);
+                        vfx_fill_cube(fill_x, fill_y, fill_z,
+                                    fill_cx, fill_cy, fill_cz,
+                                    color_idx, color_ctr);
 
-                    if (y++ == 7) {
-                        y = 0;
-                        if (x++ == 7) {
-                            x = 0;
+                        if (y++ == 7) {
+                            y = 0;
+                            if (x++ == 7) {
+                                x = 0;
+                            }
                         }
-                    }
 
-                    if ((color_idx -= 8) == 7) {
-                        color_idx = 511;
+                        if ((color_idx -= 8) == 7) {
+                            color_idx = 511;
+                        }
                     }
                 }
 
@@ -1150,48 +1150,48 @@ static void vfx_task_handle(void *pvParameter)
                             fft_out[k] = 1;
                         }
                     }
-                }
 
-                color_idx = color_tmp;
-                for (uint16_t i=0; i<disp_width; i++) {
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = disp_height - fft_out[i];
+                    color_idx = color_tmp;
+                    for (uint16_t i=0; i<disp_width; i++) {
+                        uint8_t clear_x  = x;
+                        uint8_t clear_cx = 1;
+                        uint8_t clear_y  = 7 - y;
+                        uint8_t clear_cy = 1;
+                        uint8_t clear_z  = 0;
+                        uint8_t clear_cz = disp_height - fft_out[i];
 
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = disp_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
+                        uint8_t fill_x  = x;
+                        uint8_t fill_cx = 1;
+                        uint8_t fill_y  = 7 - y;
+                        uint8_t fill_cy = 1;
+                        uint8_t fill_z  = disp_height - fft_out[i];
+                        uint8_t fill_cz = fft_out[i];
 
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 511);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_idx, color_ctr);
+                        vfx_fill_cube(clear_x, clear_y, clear_z,
+                                    clear_cx, clear_cy, clear_cz,
+                                    0, 511);
+                        vfx_fill_cube(fill_x, fill_y, fill_z,
+                                    fill_cx, fill_cy, fill_cz,
+                                    color_idx, color_ctr);
 
-                    if (y++ == 7) {
-                        y = 0;
-                        if (x++ == 7) {
-                            x = 0;
+                        if (y++ == 7) {
+                            y = 0;
+                            if (x++ == 7) {
+                                x = 0;
+                            }
+                        }
+
+                        color_idx += 8;
+                        if (color_idx > 511) {
+                            color_idx = 0;
                         }
                     }
 
-                    color_idx += 8;
-                    if (color_idx > 511) {
-                        color_idx = 0;
-                    }
-                }
-
-                if (++color_cnt % (256 / FFT_PERIOD) == 0) {
-                    color_tmp += 8;
-                    if (color_tmp > 511) {
-                        color_tmp = 0;
+                    if (++color_cnt % (256 / FFT_PERIOD) == 0) {
+                        color_tmp += 8;
+                        if (color_tmp > 511) {
+                            color_tmp = 0;
+                        }
                     }
                 }
 
@@ -1268,44 +1268,44 @@ static void vfx_task_handle(void *pvParameter)
                             fft_out[k] = 1;
                         }
                     }
-                }
 
-                for (uint16_t i=0; i<disp_width; i++) {
-                    x = led_idx_table[0][i];
-                    y = led_idx_table[1][i];
+                    for (uint16_t i=0; i<disp_width; i++) {
+                        x = led_idx_table[0][i];
+                        y = led_idx_table[1][i];
 
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = disp_height - fft_out[i];
+                        uint8_t clear_x  = x;
+                        uint8_t clear_cx = 1;
+                        uint8_t clear_y  = 7 - y;
+                        uint8_t clear_cy = 1;
+                        uint8_t clear_z  = 0;
+                        uint8_t clear_cz = disp_height - fft_out[i];
 
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = disp_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
+                        uint8_t fill_x  = x;
+                        uint8_t fill_cx = 1;
+                        uint8_t fill_y  = 7 - y;
+                        uint8_t fill_cy = 1;
+                        uint8_t fill_z  = disp_height - fft_out[i];
+                        uint8_t fill_cz = fft_out[i];
 
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 511);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_idx[i], color_ctr[i]);
+                        vfx_fill_cube(clear_x, clear_y, clear_z,
+                                    clear_cx, clear_cy, clear_cz,
+                                    0, 511);
+                        vfx_fill_cube(fill_x, fill_y, fill_z,
+                                    fill_cx, fill_cy, fill_cz,
+                                    color_idx[i], color_ctr[i]);
 
-                    if (color_flg) {
-                        if (color_idx[i]-- == 0) {
-                            color_idx[i] = 511;
+                        if (color_flg) {
+                            if (color_idx[i]-- == 0) {
+                                color_idx[i] = 511;
+                            }
                         }
                     }
-                }
 
-                if (++color_cnt % (64 / FFT_PERIOD) == 0) {
-                    color_flg = 1;
-                } else {
-                    color_flg = 0;
+                    if (++color_cnt % (64 / FFT_PERIOD) == 0) {
+                        color_flg = 1;
+                    } else {
+                        color_flg = 0;
+                    }
                 }
 
                 vTaskDelayUntil(&xLastWakeTime, FFT_PERIOD / portTICK_RATE_MS);
@@ -1360,40 +1360,40 @@ static void vfx_task_handle(void *pvParameter)
                             fft_out[k] = 1;
                         }
                     }
-                }
 
-                color_idx = 511;
-                for (uint16_t i=0; i<disp_width; i++) {
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = disp_height - fft_out[i];
+                    color_idx = 511;
+                    for (uint16_t i=0; i<disp_width; i++) {
+                        uint8_t clear_x  = x;
+                        uint8_t clear_cx = 1;
+                        uint8_t clear_y  = 7 - y;
+                        uint8_t clear_cy = 1;
+                        uint8_t clear_z  = 0;
+                        uint8_t clear_cz = disp_height - fft_out[i];
 
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = disp_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
+                        uint8_t fill_x  = x;
+                        uint8_t fill_cx = 1;
+                        uint8_t fill_y  = 7 - y;
+                        uint8_t fill_cy = 1;
+                        uint8_t fill_z  = disp_height - fft_out[i];
+                        uint8_t fill_cz = fft_out[i];
 
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 511);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_idx, color_ctr);
+                        vfx_fill_cube(clear_x, clear_y, clear_z,
+                                    clear_cx, clear_cy, clear_cz,
+                                    0, 511);
+                        vfx_fill_cube(fill_x, fill_y, fill_z,
+                                    fill_cx, fill_cy, fill_cz,
+                                    color_idx, color_ctr);
 
-                    if (y++ == 7) {
-                        y = 0;
-                        if (x++ == 7) {
-                            x = 0;
+                        if (y++ == 7) {
+                            y = 0;
+                            if (x++ == 7) {
+                                x = 0;
+                            }
                         }
-                    }
 
-                    if ((color_idx -= 8) == 7) {
-                        color_idx = 511;
+                        if ((color_idx -= 8) == 7) {
+                            color_idx = 511;
+                        }
                     }
                 }
 
@@ -1451,48 +1451,48 @@ static void vfx_task_handle(void *pvParameter)
                             fft_out[k] = 1;
                         }
                     }
-                }
 
-                color_idx = color_tmp;
-                for (uint16_t i=0; i<disp_width; i++) {
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = disp_height - fft_out[i];
+                    color_idx = color_tmp;
+                    for (uint16_t i=0; i<disp_width; i++) {
+                        uint8_t clear_x  = x;
+                        uint8_t clear_cx = 1;
+                        uint8_t clear_y  = 7 - y;
+                        uint8_t clear_cy = 1;
+                        uint8_t clear_z  = 0;
+                        uint8_t clear_cz = disp_height - fft_out[i];
 
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = disp_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
+                        uint8_t fill_x  = x;
+                        uint8_t fill_cx = 1;
+                        uint8_t fill_y  = 7 - y;
+                        uint8_t fill_cy = 1;
+                        uint8_t fill_z  = disp_height - fft_out[i];
+                        uint8_t fill_cz = fft_out[i];
 
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 511);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_idx, color_ctr);
+                        vfx_fill_cube(clear_x, clear_y, clear_z,
+                                    clear_cx, clear_cy, clear_cz,
+                                    0, 511);
+                        vfx_fill_cube(fill_x, fill_y, fill_z,
+                                    fill_cx, fill_cy, fill_cz,
+                                    color_idx, color_ctr);
 
-                    if (y++ == 7) {
-                        y = 0;
-                        if (x++ == 7) {
-                            x = 0;
+                        if (y++ == 7) {
+                            y = 0;
+                            if (x++ == 7) {
+                                x = 0;
+                            }
+                        }
+
+                        color_idx += 8;
+                        if (color_idx > 511) {
+                            color_idx = 0;
                         }
                     }
 
-                    color_idx += 8;
-                    if (color_idx > 511) {
-                        color_idx = 0;
-                    }
-                }
-
-                if (++color_cnt % (256 / FFT_PERIOD) == 0) {
-                    color_tmp += 8;
-                    if (color_tmp > 511) {
-                        color_tmp = 0;
+                    if (++color_cnt % (256 / FFT_PERIOD) == 0) {
+                        color_tmp += 8;
+                        if (color_tmp > 511) {
+                            color_tmp = 0;
+                        }
                     }
                 }
 
@@ -1569,44 +1569,44 @@ static void vfx_task_handle(void *pvParameter)
                             fft_out[k] = 1;
                         }
                     }
-                }
 
-                for (uint16_t i=0; i<disp_width; i++) {
-                    x = led_idx_table[0][i];
-                    y = led_idx_table[1][i];
+                    for (uint16_t i=0; i<disp_width; i++) {
+                        x = led_idx_table[0][i];
+                        y = led_idx_table[1][i];
 
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = disp_height - fft_out[i];
+                        uint8_t clear_x  = x;
+                        uint8_t clear_cx = 1;
+                        uint8_t clear_y  = 7 - y;
+                        uint8_t clear_cy = 1;
+                        uint8_t clear_z  = 0;
+                        uint8_t clear_cz = disp_height - fft_out[i];
 
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = disp_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
+                        uint8_t fill_x  = x;
+                        uint8_t fill_cx = 1;
+                        uint8_t fill_y  = 7 - y;
+                        uint8_t fill_cy = 1;
+                        uint8_t fill_z  = disp_height - fft_out[i];
+                        uint8_t fill_cz = fft_out[i];
 
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 511);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_idx[i], color_ctr[i]);
+                        vfx_fill_cube(clear_x, clear_y, clear_z,
+                                    clear_cx, clear_cy, clear_cz,
+                                    0, 511);
+                        vfx_fill_cube(fill_x, fill_y, fill_z,
+                                    fill_cx, fill_cy, fill_cz,
+                                    color_idx[i], color_ctr[i]);
 
-                    if (color_flg) {
-                        if (color_idx[i]-- == 0) {
-                            color_idx[i] = 511;
+                        if (color_flg) {
+                            if (color_idx[i]-- == 0) {
+                                color_idx[i] = 511;
+                            }
                         }
                     }
-                }
 
-                if (++color_cnt % (64 / FFT_PERIOD) == 0) {
-                    color_flg = 1;
-                } else {
-                    color_flg = 0;
+                    if (++color_cnt % (64 / FFT_PERIOD) == 0) {
+                        color_flg = 1;
+                    } else {
+                        color_flg = 0;
+                    }
                 }
 
                 vTaskDelayUntil(&xLastWakeTime, FFT_PERIOD / portTICK_RATE_MS);
