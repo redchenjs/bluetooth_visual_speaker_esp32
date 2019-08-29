@@ -20,6 +20,7 @@
 
 #define TAG "vfx"
 
+#define VFX_PERIOD (GDISP_NEED_TIMERFLUSH * 1)
 #define FFT_PERIOD (GDISP_NEED_TIMERFLUSH * 2)
 
 uint16_t vfx_ctr = 0x0190;
@@ -468,7 +469,7 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
             break;
         }
@@ -511,7 +512,7 @@ static void vfx_task_handle(void *pvParameter)
                     color_idx = 0;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
             break;
         }
@@ -533,7 +534,7 @@ static void vfx_task_handle(void *pvParameter)
                     color_idx = 0;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
             break;
         }
@@ -570,7 +571,7 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
             break;
         }
@@ -1652,5 +1653,5 @@ uint16_t vfx_get_fft_scale(void)
 
 void vfx_init(void)
 {
-    xTaskCreate(vfx_task_handle, "VfxT", 5120, NULL, 5, NULL);
+    xTaskCreatePinnedToCore(vfx_task_handle, "VfxT", 5120, NULL, 5, NULL, 1);
 }

@@ -24,7 +24,6 @@ static bool bt_app_send_msg(bt_app_msg_t *msg);
 static void bt_app_work_dispatched(bt_app_msg_t *msg);
 
 static xQueueHandle s_bt_app_task_queue = NULL;
-static xTaskHandle s_bt_app_task_handle = NULL;
 
 bool bt_app_work_dispatch(bt_app_cb_t p_cback, uint16_t event, void *p_params, int param_len, bt_app_copy_cb_t p_copy_cback)
 {
@@ -97,18 +96,6 @@ static void bt_app_task_handler(void *arg)
 void bt_app_task_start_up(void)
 {
     s_bt_app_task_queue = xQueueCreate(10, sizeof(bt_app_msg_t));
-    xTaskCreate(bt_app_task_handler, "BtAppT", 2048, NULL, 7, &s_bt_app_task_handle);
+    xTaskCreatePinnedToCore(bt_app_task_handler, "BtAppT", 2048, NULL, 7, NULL, 0);
     return;
-}
-
-void bt_app_task_shut_down(void)
-{
-    if (s_bt_app_task_handle) {
-        vTaskDelete(s_bt_app_task_handle);
-        s_bt_app_task_handle = NULL;
-    }
-    if (s_bt_app_task_queue) {
-        vQueueDelete(s_bt_app_task_queue);
-        s_bt_app_task_queue = NULL;
-    }
 }

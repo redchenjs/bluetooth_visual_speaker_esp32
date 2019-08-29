@@ -39,6 +39,4 @@ bool bt_app_work_dispatch(bt_app_cb_t p_cback, uint16_t event, void *p_params, i
 
 void bt_app_task_start_up(void);
 
-void bt_app_task_shut_down(void);
-
 #endif /* INC_USER_BT_APP_CORE_H_ */
