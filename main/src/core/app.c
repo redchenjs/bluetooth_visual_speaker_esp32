@@ -21,5 +21,5 @@ const char *app_get_version(void)
 
 void app_print_version(void)
 {
-    ESP_LOGW(TAG, "current app version is %s", app_get_version());
+    ESP_LOGW(TAG, "running %s", app_get_version());
 }
