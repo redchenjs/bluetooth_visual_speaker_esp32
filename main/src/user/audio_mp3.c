@@ -55,11 +55,10 @@ static void audio_mp3_task_handle(void *pvParameters)
         mad_frame_init(frame);
         mad_synth_init(synth);
 
-        mad_stream_buffer(
-            stream,
-            (const unsigned char *)mp3_file_ptr[mp3_file_index][0],
-            mp3_file_ptr[mp3_file_index][1] - mp3_file_ptr[mp3_file_index][0]
+        mad_stream_buffer(stream, (const unsigned char *)mp3_file_ptr[mp3_file_index][0],
+                          mp3_file_ptr[mp3_file_index][1] - mp3_file_ptr[mp3_file_index][0]
         );
+
         while (1) {
             if (mad_frame_decode(frame, stream) == -1) {
                 if (!MAD_RECOVERABLE(stream->error)) {
@@ -86,7 +85,7 @@ err:
     free(synth);
     free(frame);
     free(stream);
-    ESP_LOGE(TAG, "task failed");
+
     esp_restart();
 }
 
