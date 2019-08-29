@@ -70,6 +70,8 @@ static void audio_mp3_task_handle(void *pvParameters)
             mad_synth_frame(synth, frame);
         }
 
+        i2s_zero_dma_buffer(CONFIG_AUDIO_OUTPUT_I2S_NUM);
+
         mad_synth_finish(synth);
         mad_frame_finish(frame);
         mad_stream_finish(stream);
