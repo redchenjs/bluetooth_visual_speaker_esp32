@@ -11,7 +11,8 @@
 #include "board/st7735.h"
 
 #define init_board(g)           st7735_init_board()
-#define setpin_reset(g, rst)    st7735_setpin_reset(rst)
+#define setpin_bl(g, val)       st7735_setpin_bl(val)
+#define setpin_reset(g, val)    st7735_setpin_reset(val)
 #define write_cmd(g, cmd)       st7735_write_cmd(cmd)
 #define write_data(g, data)     st7735_write_data(data)
 #define refresh_gram(g, gram)   st7735_refresh_gram(gram)

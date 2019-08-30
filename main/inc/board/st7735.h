@@ -16,8 +16,10 @@
 #define ST7735_SCREEN_HEIGHT 160
 
 extern void st7735_init_board(void);
+
+extern void st7735_setpin_bl(uint8_t val);
 extern void st7735_setpin_dc(spi_transaction_t *);
-extern void st7735_setpin_reset(uint8_t rst);
+extern void st7735_setpin_reset(uint8_t val);
 
 extern void st7735_write_cmd(uint8_t cmd);
 extern void st7735_write_data(uint8_t data);

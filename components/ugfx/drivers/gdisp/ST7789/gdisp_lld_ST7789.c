@@ -62,6 +62,9 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     // Initialise the board interface
     init_board(g);
 
+    // Turn off the backlight
+    setpin_bl(g, 0);
+
     // Hardware reset
     setpin_reset(g, 0);
     gfxSleepMilliseconds(120);
@@ -132,6 +135,9 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         write_data(g, 0x23);
     write_cmd(g, ST7789_NORON);     // 17: Normal display on, no args, no delay
     write_cmd(g, ST7789_DISPON);    // 18: Main screen turn on, no args, no delay
+
+    // Turn on the backlight
+    setpin_bl(g, 1);
 
     /* Initialise the GDISP structure */
     g->g.Width  = GDISP_SCREEN_HEIGHT;

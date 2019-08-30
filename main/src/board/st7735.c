@@ -23,14 +23,21 @@ spi_transaction_t hspi_trans[6];
 
 void st7735_init_board(void)
 {
+    gpio_set_direction(CONFIG_SCREEN_PANEL_BL_PIN,  GPIO_MODE_OUTPUT);
     gpio_set_direction(CONFIG_SCREEN_PANEL_DC_PIN,  GPIO_MODE_OUTPUT);
     gpio_set_direction(CONFIG_SCREEN_PANEL_RST_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(CONFIG_SCREEN_PANEL_BL_PIN,  0);
     gpio_set_level(CONFIG_SCREEN_PANEL_DC_PIN,  0);
     gpio_set_level(CONFIG_SCREEN_PANEL_RST_PIN, 0);
 
     memset(hspi_trans, 0, sizeof(hspi_trans));
 
-    ESP_LOGI(TAG, "initialized, dc: %d, rst: %d", CONFIG_SCREEN_PANEL_DC_PIN, CONFIG_SCREEN_PANEL_RST_PIN);
+    ESP_LOGI(TAG, "initialized, bl: %d, dc: %d, rst: %d", CONFIG_SCREEN_PANEL_BL_PIN, CONFIG_SCREEN_PANEL_DC_PIN, CONFIG_SCREEN_PANEL_RST_PIN);
+}
+
+void st7735_setpin_bl(uint8_t val)
+{
+    gpio_set_level(CONFIG_SCREEN_PANEL_BL_PIN, val);
 }
 
 void st7735_setpin_dc(spi_transaction_t *t)
@@ -39,9 +46,9 @@ void st7735_setpin_dc(spi_transaction_t *t)
     gpio_set_level(CONFIG_SCREEN_PANEL_DC_PIN, dc);
 }
 
-void st7735_setpin_reset(uint8_t rst)
+void st7735_setpin_reset(uint8_t val)
 {
-    gpio_set_level(CONFIG_SCREEN_PANEL_RST_PIN, rst);
+    gpio_set_level(CONFIG_SCREEN_PANEL_RST_PIN, val);
 }
 
 void st7735_write_cmd(uint8_t cmd)
