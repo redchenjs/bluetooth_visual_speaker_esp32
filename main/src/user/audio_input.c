@@ -50,7 +50,7 @@ static void audio_input_task_handle(void *pvParameters)
             while (size > 0) {
                 data_l = data[idx+1] << 8 | data[idx];
                 data_r = data[idx+3] << 8 | data[idx+2];
-                vfx_fifo_write((data_l + data_r) / 2);
+                vfx_buff_write((data_l + data_r) / 2);
                 idx  += 4;
                 size -= 4;
             }
