@@ -45,14 +45,16 @@ void i2s0_init(void)
         .bits_per_sample = i2s_output_bits_per_sample,
         .intr_alloc_flags = ESP_INTR_FLAG_LEVEL3,
         .tx_desc_auto_clear = true,                                             // Auto clear tx descriptor on underflow
+        .dma_buf_count = 6,
+        .dma_buf_len = 600,
 #else
         .use_apll = 0,                                                          // Use PLL_D2
         .sample_rate = i2s_input_sample_rate,
         .bits_per_sample = i2s_input_bits_per_sample,
-#endif
-        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
         .dma_buf_count = 6,
         .dma_buf_len = 60,
+#endif
+        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
     };
     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL));
     i2s_pin_config_t pin_config = {
@@ -106,14 +108,16 @@ void i2s1_init(void)
         .bits_per_sample = i2s_output_bits_per_sample,
         .intr_alloc_flags = ESP_INTR_FLAG_LEVEL3,
         .tx_desc_auto_clear = true,                                             // Auto clear tx descriptor on underflow
+        .dma_buf_count = 6,
+        .dma_buf_len = 600,
 #else
         .use_apll = 0,                                                          // Use PLL_D2
         .sample_rate = i2s_input_sample_rate,
         .bits_per_sample = i2s_input_bits_per_sample,
-#endif
-        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
         .dma_buf_count = 6,
         .dma_buf_len = 60,
+#endif
+        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
     };
     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_1, &i2s_config, 0, NULL));
     i2s_pin_config_t pin_config = {

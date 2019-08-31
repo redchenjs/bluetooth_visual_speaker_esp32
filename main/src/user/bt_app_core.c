@@ -74,7 +74,8 @@ static void bt_app_work_dispatched(bt_app_msg_t *msg)
 static void bt_app_task_handler(void *arg)
 {
     bt_app_msg_t msg;
-    for (;;) {
+
+    while (1) {
         if (pdTRUE == xQueueReceive(s_bt_app_task_queue, &msg, (portTickType)portMAX_DELAY)) {
             ESP_LOGD(BT_APP_CORE_TAG, "%s, sig 0x%x, 0x%x", __func__, msg.sig, msg.event);
             switch (msg.sig) {
@@ -96,6 +97,6 @@ static void bt_app_task_handler(void *arg)
 void bt_app_task_start_up(void)
 {
     s_bt_app_task_queue = xQueueCreate(10, sizeof(bt_app_msg_t));
-    xTaskCreatePinnedToCore(bt_app_task_handler, "BtAppT", 2048, NULL, 7, NULL, 1);
-    return;
+
+    xTaskCreatePinnedToCore(bt_app_task_handler, "BtAppT", 2048, NULL, configMAX_PRIORITIES - 3, NULL, 1);
 }

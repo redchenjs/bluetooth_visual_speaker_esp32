@@ -33,7 +33,6 @@
 #define BT_A2D_TAG   "bt_a2d"
 #define BT_RC_CT_TAG "bt_rc_ct"
 #define BT_RC_TG_TAG "bt_rc_tg"
-#define BT_RC_RN_TAG "bt_rc_rn"
 
 // AVRCP used transaction label
 #define APP_RC_CT_TL_GET_CAPS            (0)
@@ -71,7 +70,7 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
-#if !defined(CONFIG_AUDIO_INPUT_NONE) || defined(CONFIG_ENABLE_AUDIO_PROMPT) || defined(CONFIG_ENABLE_VFX)
+#if !defined(CONFIG_AUDIO_INPUT_NONE) || defined(CONFIG_ENABLE_AUDIO_PROMPT)
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
 #endif
 
@@ -90,10 +89,13 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
     size_t bytes_written = 0;
     i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, data, len, &bytes_written, portMAX_DELAY);
 
-#ifdef CONFIG_ENABLE_VFX
+#ifndef CONFIG_AUDIO_INPUT_NONE
     if (uxBits & AUDIO_INPUT_RUN_BIT) {
         return;
     }
+#endif
+
+#ifdef CONFIG_ENABLE_VFX
     // Copy data to FIFO
     if (vfx_buff_ready_write()) {
         uint32_t idx = 0;
@@ -113,10 +115,11 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 static void bt_app_alloc_meta_buffer(esp_avrc_ct_cb_param_t *param)
 {
     esp_avrc_ct_cb_param_t *rc = (esp_avrc_ct_cb_param_t *)(param);
-    uint8_t *attr_text = (uint8_t *) malloc (rc->meta_rsp.attr_length + 1);
-    memcpy(attr_text, rc->meta_rsp.attr_text, rc->meta_rsp.attr_length);
-    attr_text[rc->meta_rsp.attr_length] = 0;
+    uint8_t *attr_text = (uint8_t *) malloc(rc->meta_rsp.attr_length + 1);
 
+    memcpy(attr_text, rc->meta_rsp.attr_text, rc->meta_rsp.attr_length);
+
+    attr_text[rc->meta_rsp.attr_length] = 0;
     rc->meta_rsp.attr_text = attr_text;
 }
 
@@ -256,11 +259,9 @@ static void bt_av_notify_evt_handler(uint8_t event_id, esp_avrc_rn_param_t *even
         bt_av_new_track();
         break;
     case ESP_AVRC_RN_PLAY_STATUS_CHANGE:
-        ESP_LOGI(BT_RC_RN_TAG, "playback status changed: 0x%x", event_parameter->playback);
         bt_av_play_status_changed();
         break;
     case ESP_AVRC_RN_PLAY_POS_CHANGED:
-        ESP_LOGI(BT_RC_RN_TAG, "playback position changed: %d-ms", event_parameter->play_pos);
         bt_av_play_pos_changed();
         break;
     }
