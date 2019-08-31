@@ -19,6 +19,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "chip/i2s.h"
 #include "core/os.h"
 #include "core/app.h"
 #include "user/led.h"
@@ -33,6 +34,9 @@
 
 static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
 static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
+
+static uint8_t audio_input_prev_mode = 0;
+static uint8_t vfx_prev_mode = 0;
 
 static long image_length = 0;
 static long data_recv = 0;
@@ -82,12 +86,14 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
             image_length = 0;
 
+            i2s_init_output();
+
 #ifndef CONFIG_AUDIO_INPUT_NONE
-            audio_input_init();
+            audio_input_set_mode(audio_input_prev_mode);
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-            vfx_init();
+            vfx_set_mode(vfx_prev_mode);
 #endif
         }
 
@@ -118,12 +124,16 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
                 if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT)) {
+                    i2s_deinit_output();
+
 #ifndef CONFIG_AUDIO_INPUT_NONE
-                    audio_input_deinit();
+                    audio_input_prev_mode = audio_input_get_mode();
+                    audio_input_set_mode(0);
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-                    vfx_deinit();
+                    vfx_prev_mode = vfx_get_mode();
+                    vfx_set_mode(0);
 #endif
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
@@ -185,12 +195,14 @@ err1:
 err0:
                 esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
 
+                i2s_init_output();
+
 #ifndef CONFIG_AUDIO_INPUT_NONE
-                audio_input_init();
+                audio_input_set_mode(audio_input_prev_mode);
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-                vfx_init();
+                vfx_set_mode(vfx_prev_mode);
 #endif
             }
         }

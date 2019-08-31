@@ -11,6 +11,9 @@
 extern void i2s0_init(void);
 extern void i2s1_init(void);
 
+extern void i2s_init_output(void);
+extern void i2s_deinit_output(void);
+
 extern void i2s_set_output_sample_rate(int rate);
 extern void i2s_set_input_sample_rate(int rate);
 

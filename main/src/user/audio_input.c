@@ -18,8 +18,6 @@
 
 static uint8_t audio_input_mode = 0;
 
-static xTaskHandle s_audio_input_task_handle = NULL;
-
 static void audio_input_task_handle(void *pvParameters)
 {
 #ifndef CONFIG_AUDIO_INPUT_NONE
@@ -82,15 +80,5 @@ uint8_t audio_input_get_mode(void)
 
 void audio_input_init(void)
 {
-    xTaskCreatePinnedToCore(audio_input_task_handle, "AudioInputT", 2048, NULL, 7, &s_audio_input_task_handle, 1);
-}
-
-void audio_input_deinit(void)
-{
-    if (s_audio_input_task_handle) {
-        vTaskSuspend(s_audio_input_task_handle);
-
-        vTaskDelete(s_audio_input_task_handle);
-        s_audio_input_task_handle = NULL;
-    }
+    xTaskCreatePinnedToCore(audio_input_task_handle, "AudioInputT", 2048, NULL, 7, NULL, 1);
 }

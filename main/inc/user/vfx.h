@@ -22,6 +22,5 @@ extern void vfx_set_fft_scale(uint16_t scale);
 extern uint16_t vfx_get_fft_scale(void);
 
 extern void vfx_init(void);
-extern void vfx_deinit(void);
 
 #endif /* INC_USER_VFX_H_ */

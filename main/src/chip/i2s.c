@@ -87,6 +87,11 @@ void i2s0_init(void)
              pin_config.data_in_num
     );
 }
+
+void i2s0_deinit(void)
+{
+    ESP_ERROR_CHECK(i2s_driver_uninstall(I2S_NUM_0));
+}
 #endif
 
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 1) || (CONFIG_AUDIO_INPUT_I2S_NUM == 1)
@@ -143,7 +148,30 @@ void i2s1_init(void)
              pin_config.data_in_num
     );
 }
+
+void i2s1_deinit(void)
+{
+    ESP_ERROR_CHECK(i2s_driver_uninstall(I2S_NUM_1));
+}
 #endif
+
+void i2s_init_output(void)
+{
+#if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0)
+    i2s0_init();
+#else
+    i2s1_init();
+#endif
+}
+
+void i2s_deinit_output(void)
+{
+#if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0)
+    i2s0_deinit();
+#else
+    i2s1_deinit();
+#endif
+}
 
 void i2s_set_output_sample_rate(int rate)
 {

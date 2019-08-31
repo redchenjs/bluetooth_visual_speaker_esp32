@@ -28,8 +28,6 @@ uint16_t vfx_ctr = 0x0190;
 static uint8_t vfx_mode = 0x0F;
 static uint16_t fft_scale = 192;
 
-static xTaskHandle s_vfx_task_handle = NULL;
-
 static void vfx_task_handle(void *pvParameter)
 {
     portTickType xLastWakeTime;
@@ -1643,18 +1641,5 @@ uint16_t vfx_get_fft_scale(void)
 
 void vfx_init(void)
 {
-    xTaskCreatePinnedToCore(vfx_task_handle, "VfxT", 5120, NULL, 7, &s_vfx_task_handle, 1);
-}
-
-void vfx_deinit(void)
-{
-    if (s_vfx_task_handle) {
-        vTaskSuspend(s_vfx_task_handle);
-
-        vfx_clear_cube();
-        vfx_buff_reset();
-
-        vTaskDelete(s_vfx_task_handle);
-        s_vfx_task_handle = NULL;
-    }
+    xTaskCreatePinnedToCore(vfx_task_handle, "VfxT", 5120, NULL, 7, NULL, 1);
 }
