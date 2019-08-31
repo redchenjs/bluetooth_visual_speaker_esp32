@@ -76,5 +76,5 @@ static void key_scan_task_handle(void *pvParameter)
 
 void key_scan_init(void)
 {
-   xTaskCreatePinnedToCore(key_scan_task_handle, "KeyScanT", 2048, NULL, 5, NULL, 0);
+   xTaskCreate(key_scan_task_handle, "KeyScanT", 2048, NULL, 6, NULL);
 }
