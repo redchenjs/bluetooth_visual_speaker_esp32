@@ -98,5 +98,5 @@ void bt_app_task_start_up(void)
 {
     s_bt_app_task_queue = xQueueCreate(10, sizeof(bt_app_msg_t));
 
-    xTaskCreate(bt_app_task_handler, "BtAppT", 2048, NULL, configMAX_PRIORITIES - 3, NULL);
+    xTaskCreatePinnedToCore(bt_app_task_handler, "BtAppT", 2048, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }
