@@ -24,7 +24,7 @@ static void audio_input_task_handle(void *pvParameters)
 {
 #ifndef CONFIG_AUDIO_INPUT_NONE
     size_t bytes_read = 0, bytes_written = 0;
-    char *read_buff = (char *)calloc(BUFF_SIZE * 4, sizeof(char));
+    char read_buff[BUFF_SIZE * 4] = {0};
 
     while (1) {
         xEventGroupWaitBits(
