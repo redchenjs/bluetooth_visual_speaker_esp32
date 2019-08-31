@@ -33,7 +33,6 @@
 static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
 static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
 
-static uint8_t ota_running = 0;
 static long image_length = 0;
 static long data_recv = 0;
 
@@ -76,10 +75,10 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         ESP_LOGI(BT_SPP_TAG, "SPP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_spp_conn_state_str[0], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
 
-        if (ota_running == 1) {
+        if (update_handle) {
             esp_ota_end(update_handle);
+            update_handle = 0;
 
-            ota_running  = 0;
             image_length = 0;
 
             vfx_init();
@@ -94,7 +93,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
     case ESP_SPP_CL_INIT_EVT:
         break;
     case ESP_SPP_DATA_IND_EVT:
-        if (ota_running == 0) {
+        if (update_handle == 0) {
             if (strncmp(fw_cmd[0], (const char *)param->data_ind.data, strlen(fw_cmd[0])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+RST");
 
@@ -104,6 +103,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
                 char str_buf[24] = {0};
                 snprintf(str_buf, sizeof(str_buf), rsp_str[4], app_get_version());
+
                 esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
             } else if (strncmp(fw_cmd[2], (const char *)param->data_ind.data, 7) == 0) {
                 sscanf((const char *)param->data_ind.data, fw_cmd[2], &image_length);
@@ -112,8 +112,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
                 if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT)) {
                     vfx_deinit();
-
-                    ota_running = 1;
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
                     if (update_partition != NULL) {
@@ -147,6 +145,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 ESP_LOGE(BT_OTA_TAG, "esp_ota_write failed (%s)", esp_err_to_name(err));
                 goto err1;
             }
+
             data_recv += param->data_ind.len;
             ESP_LOGD(BT_OTA_TAG, "have written image length %ld", data_recv);
 
@@ -156,23 +155,22 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                     ESP_LOGE(BT_OTA_TAG, "esp_ota_end failed (%s)", esp_err_to_name(err));
                     goto err0;
                 }
+
                 err = esp_ota_set_boot_partition(update_partition);
                 if (err != ESP_OK) {
                     ESP_LOGE(BT_OTA_TAG, "esp_ota_set_boot_partition failed (%s)", esp_err_to_name(err));
                     goto err0;
                 }
 
-                esp_spp_write(param->write.handle, strlen(rsp_str[1]), (uint8_t *)rsp_str[1]);
+                update_handle = 0;
 
-                goto exit;
+                esp_spp_write(param->write.handle, strlen(rsp_str[1]), (uint8_t *)rsp_str[1]);
             } else if (data_recv > image_length) {
 err1:
                 esp_ota_end(update_handle);
+                update_handle = 0;
 err0:
                 esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
-exit:
-                ota_running  = 0;
-                image_length = 0;
 
                 vfx_init();
             }
