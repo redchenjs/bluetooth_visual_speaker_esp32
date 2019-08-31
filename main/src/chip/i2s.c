@@ -91,6 +91,8 @@ void i2s0_init(void)
 void i2s0_deinit(void)
 {
     ESP_ERROR_CHECK(i2s_driver_uninstall(I2S_NUM_0));
+
+    ESP_LOGI(I2S0_TAG, "deinitialized.");
 }
 #endif
 
@@ -152,6 +154,8 @@ void i2s1_init(void)
 void i2s1_deinit(void)
 {
     ESP_ERROR_CHECK(i2s_driver_uninstall(I2S_NUM_1));
+
+    ESP_LOGI(I2S1_TAG, "deinitialized.");
 }
 #endif
 
