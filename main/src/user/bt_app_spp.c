@@ -33,7 +33,6 @@
 static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
 static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
 
-static uint8_t vfx_prev_mode = 0;
 static uint8_t ota_running = 0;
 static long image_length = 0;
 static long data_recv = 0;
@@ -83,7 +82,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             ota_running  = 0;
             image_length = 0;
 
-            vfx_set_mode(vfx_prev_mode);
+            vfx_init();
         }
 
         led_set_mode(3);
@@ -112,8 +111,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
                 if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT)) {
-                    vfx_prev_mode = vfx_get_mode();
-                    vfx_set_mode(0);
+                    vfx_deinit();
 
                     ota_running = 1;
 
@@ -176,7 +174,7 @@ exit:
                 ota_running  = 0;
                 image_length = 0;
 
-                vfx_set_mode(vfx_prev_mode);
+                vfx_init();
             }
         }
         break;
