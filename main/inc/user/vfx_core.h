@@ -20,8 +20,6 @@ extern void vfx_clear_cube(void);
 
 extern void vfx_buff_write(int16_t data);
 extern int16_t vfx_buff_read(void);
-extern uint8_t vfx_buff_ready_write(void);
-extern uint8_t vfx_buff_ready_read(void);
 extern void vfx_buff_reset(void);
 
 #endif /* INC_USER_VFX_CORE_H_ */
