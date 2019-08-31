@@ -17,12 +17,6 @@
 #include "user/vfx_bitmap.h"
 #include "user/vfx_color_table.h"
 
-#define BUFF_SIZE 128
-
-static int16_t vfx_buff[BUFF_SIZE] = {0};
-static uint16_t vfx_buff_write_pos = BUFF_SIZE;
-static uint16_t vfx_buff_read_pos  = 0;
-
 inline uint32_t vfx_read_color_from_table(uint16_t color_idx, uint16_t color_ctr)
 {
     uint16_t table_x = color_idx;
@@ -173,37 +167,4 @@ void vfx_clear_cube(void)
     coord_t disp_width = gdispGGetWidth(g);
     coord_t disp_height = gdispGGetHeight(g);
     gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
-}
-
-void vfx_buff_write(int16_t data)
-{
-    if (vfx_buff_write_pos == BUFF_SIZE) {
-        if (vfx_buff_read_pos == 0) {
-            vfx_buff_write_pos = 0;
-        } else {
-            return;
-        }
-    }
-
-    vfx_buff[vfx_buff_write_pos++] = data;
-}
-
-int16_t vfx_buff_read(void)
-{
-    int16_t data = vfx_buff[vfx_buff_read_pos++];
-
-    if (vfx_buff_read_pos == BUFF_SIZE) {
-        vfx_buff_read_pos  = 0;
-        vfx_buff_write_pos = 0;
-    }
-
-    return data;
-}
-
-void vfx_buff_reset(void)
-{
-    memset(vfx_buff, 0x00, sizeof(vfx_buff));
-
-    vfx_buff_write_pos = BUFF_SIZE;
-    vfx_buff_read_pos  = 0;
 }

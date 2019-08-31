@@ -18,8 +18,4 @@ extern void vfx_write_layer_bitmap(uint8_t layer, const uint8_t *bitmap);
 extern void vfx_write_layer_number(uint8_t num, uint8_t layer, uint16_t color_idx, uint16_t color_ctr);
 extern void vfx_clear_cube(void);
 
-extern void vfx_buff_write(int16_t data);
-extern int16_t vfx_buff_read(void);
-extern void vfx_buff_reset(void);
-
 #endif /* INC_USER_VFX_CORE_H_ */
