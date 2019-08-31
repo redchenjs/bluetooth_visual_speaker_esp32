@@ -35,8 +35,8 @@
 static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
 static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
 
-static uint8_t audio_input_prev_mode = 0;
-static uint8_t vfx_prev_mode = 0;
+uint8_t audio_input_prev_mode = 0;
+uint8_t vfx_prev_mode = 0;
 
 static long image_length = 0;
 static long data_recv = 0;
