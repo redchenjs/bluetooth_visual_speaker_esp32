@@ -42,18 +42,16 @@ static void audio_input_task_handle(void *pvParameters)
 
 #ifdef CONFIG_ENABLE_VFX
         // Copy data to FIFO
-        if (vfx_buff_ready_write()) {
-            uint32_t idx = 0;
-            int32_t size = bytes_read;
-            int16_t data_l = 0, data_r = 0;
-            const uint8_t *data = (const uint8_t *)read_buff;
-            while (size > 0) {
-                data_l = data[idx+1] << 8 | data[idx];
-                data_r = data[idx+3] << 8 | data[idx+2];
-                vfx_buff_write((data_l + data_r) / 2);
-                idx  += 4;
-                size -= 4;
-            }
+        uint32_t idx = 0;
+        int32_t size = bytes_read;
+        int16_t data_l = 0, data_r = 0;
+        const uint8_t *data = (const uint8_t *)read_buff;
+        while (size > 0) {
+            data_l = data[idx+1] << 8 | data[idx];
+            data_r = data[idx+3] << 8 | data[idx+2];
+            vfx_buff_write((data_l + data_r) / 2);
+            idx  += 4;
+            size -= 4;
         }
 #endif // CONFIG_ENABLE_VFX
     }
@@ -82,5 +80,5 @@ uint8_t audio_input_get_mode(void)
 
 void audio_input_init(void)
 {
-    xTaskCreate(audio_input_task_handle, "AudioInputT", 2048, NULL, 7, NULL);
+    xTaskCreatePinnedToCore(audio_input_task_handle, "AudioInputT", 2048, NULL, 7, NULL, 1);
 }

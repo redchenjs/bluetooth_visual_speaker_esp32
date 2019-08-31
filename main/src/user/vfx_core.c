@@ -177,9 +177,15 @@ void vfx_clear_cube(void)
 
 void vfx_buff_write(int16_t data)
 {
-    if (vfx_buff_write_pos < BUFF_SIZE) {
-        vfx_buff[vfx_buff_write_pos++] = data;
+    if (vfx_buff_write_pos == BUFF_SIZE) {
+        if (vfx_buff_read_pos == 0) {
+            vfx_buff_write_pos = 0;
+        } else {
+            return;
+        }
     }
+
+    vfx_buff[vfx_buff_write_pos++] = data;
 }
 
 int16_t vfx_buff_read(void)
@@ -192,24 +198,6 @@ int16_t vfx_buff_read(void)
     }
 
     return data;
-}
-
-uint8_t vfx_buff_ready_write(void)
-{
-    if (vfx_buff_write_pos == BUFF_SIZE) {
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-uint8_t vfx_buff_ready_read(void)
-{
-    if (vfx_buff_write_pos == BUFF_SIZE) {
-        return 1;
-    } else {
-        return 0;
-    }
 }
 
 void vfx_buff_reset(void)
