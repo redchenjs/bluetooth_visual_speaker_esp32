@@ -1643,14 +1643,11 @@ uint16_t vfx_get_fft_scale(void)
 
 void vfx_init(void)
 {
-#ifdef CONFIG_ENABLE_VFX
     xTaskCreatePinnedToCore(vfx_task_handle, "VfxT", 5120, NULL, 7, &s_vfx_task_handle, 1);
-#endif
 }
 
 void vfx_deinit(void)
 {
-#ifdef CONFIG_ENABLE_VFX
     if (s_vfx_task_handle) {
         vTaskSuspend(s_vfx_task_handle);
 
@@ -1660,5 +1657,4 @@ void vfx_deinit(void)
         vTaskDelete(s_vfx_task_handle);
         s_vfx_task_handle = NULL;
     }
-#endif
 }

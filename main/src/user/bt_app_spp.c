@@ -24,6 +24,7 @@
 #include "user/led.h"
 #include "user/vfx.h"
 #include "user/ble_app.h"
+#include "user/audio_input.h"
 
 #define BT_SPP_TAG "bt_spp"
 #define BT_OTA_TAG "bt_ota"
@@ -81,7 +82,13 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
             image_length = 0;
 
+#ifndef CONFIG_AUDIO_INPUT_NONE
+            audio_input_init();
+#endif
+
+#ifdef CONFIG_ENABLE_VFX
             vfx_init();
+#endif
         }
 
         led_set_mode(3);
@@ -111,7 +118,13 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
                 if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT)) {
+#ifndef CONFIG_AUDIO_INPUT_NONE
+                    audio_input_deinit();
+#endif
+
+#ifdef CONFIG_ENABLE_VFX
                     vfx_deinit();
+#endif
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
                     if (update_partition != NULL) {
@@ -172,7 +185,13 @@ err1:
 err0:
                 esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
 
+#ifndef CONFIG_AUDIO_INPUT_NONE
+                audio_input_init();
+#endif
+
+#ifdef CONFIG_ENABLE_VFX
                 vfx_init();
+#endif
             }
         }
         break;
