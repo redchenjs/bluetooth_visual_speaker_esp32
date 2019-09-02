@@ -31,11 +31,11 @@ static void audio_input_task_handle(void *pvParameters)
             portMAX_DELAY
         );
 
-        i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, read_buff, FFT_N, &bytes_read, portMAX_DELAY);
+        i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, read_buff, FFT_N * 4, &bytes_read, portMAX_DELAY);
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (uxBits & AUDIO_INPUT_LOOP_BIT) {
-            i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, read_buff, FFT_N, &bytes_written, portMAX_DELAY);
+            i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, read_buff, FFT_N * 4, &bytes_written, portMAX_DELAY);
         }
 
 #ifdef CONFIG_ENABLE_VFX
