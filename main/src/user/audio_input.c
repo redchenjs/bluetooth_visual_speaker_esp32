@@ -84,5 +84,5 @@ uint8_t audio_input_get_mode(void)
 
 void audio_input_init(void)
 {
-    xTaskCreatePinnedToCore(audio_input_task_handle, "AudioInputT", 2048, NULL, 9, NULL, 1);
+    xTaskCreatePinnedToCore(audio_input_task_handle, "AudioInputT", 2048, NULL, 8, NULL, 1);
 }
