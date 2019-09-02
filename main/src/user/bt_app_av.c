@@ -21,12 +21,14 @@
 #include "freertos/task.h"
 #include "driver/i2s.h"
 
+#include "fft.h"
+
 #include "core/os.h"
 #include "chip/i2s.h"
 #include "user/led.h"
-#include "user/vfx_core.h"
-#include "user/audio_mp3.h"
+#include "user/vfx.h"
 #include "user/ble_app.h"
+#include "user/audio_mp3.h"
 #include "user/bt_app_av.h"
 #include "user/bt_app_core.h"
 
@@ -70,7 +72,7 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
-#if !defined(CONFIG_AUDIO_INPUT_NONE) || defined(CONFIG_ENABLE_AUDIO_PROMPT)
+#if !defined(CONFIG_AUDIO_INPUT_NONE) || defined(CONFIG_ENABLE_AUDIO_PROMPT) || defined(CONFIG_ENABLE_VFX)
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
 #endif
 
@@ -96,16 +98,23 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-    // Copy data to FIFO
-    uint32_t idx = 0;
-    int32_t size = len;
-    int16_t data_l = 0, data_r = 0;
-    while (size > 0) {
-        data_l = data[idx+1] << 8 | data[idx];
-        data_r = data[idx+3] << 8 | data[idx+2];
-        vfx_buff_write((data_l + data_r) / 2);
-        idx  += 4;
-        size -= 4;
+    if (uxBits & FFT_INPUT_FULL_BIT || uxBits & VFX_RELOAD_BIT) {
+        return;
+    }
+
+    // Copy data to FFT input buffer
+    if (fft_plan) {
+        uint32_t idx = 0;
+        int16_t data_l = 0, data_r = 0;
+
+        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
+            data_l = data[idx+1] << 8 | data[idx];
+            data_r = data[idx+3] << 8 | data[idx+2];
+
+            fft_plan->input[k] = (float)((data_l + data_r) / 2);
+        }
+
+        xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
     }
 #endif
 }
@@ -170,7 +179,8 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             audio_mp3_play(1);
             led_set_mode(3);
 
-            vfx_buff_reset();
+            xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+            xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
 

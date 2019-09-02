@@ -10,6 +10,12 @@
 
 #include <stdint.h>
 
+#include "fft.h"
+
+#define FFT_N 128
+
+extern fft_config_t *fft_plan;
+
 extern uint16_t vfx_ctr;
 
 extern void vfx_set_mode(uint8_t mode);
