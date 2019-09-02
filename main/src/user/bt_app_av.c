@@ -98,7 +98,7 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-    if (uxBits & FFT_INPUT_FULL_BIT || uxBits & VFX_RELOAD_BIT) {
+    if (uxBits & VFX_FFT_EXEC_BIT || uxBits & VFX_RELOAD_BIT) {
         return;
     }
 
@@ -114,7 +114,7 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
             fft_plan->input[k] = (float)((data_l + data_r) / 2);
         }
 
-        xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+        xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
     }
 #endif
 }
@@ -179,7 +179,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             audio_mp3_play(1);
             led_set_mode(3);
 
-            xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+            xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
             xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);

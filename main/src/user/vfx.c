@@ -50,7 +50,7 @@ static void vfx_task_handle(void *pvParameter)
     audio_input_set_mode(1);
 #endif
 
-    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
 
     while (1) {
 #if defined(CONFIG_SCREEN_PANEL_OUTPUT_FFT)
@@ -75,22 +75,24 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
                 }
 
                 xEventGroupWaitBits(
                     user_event_group,
-                    FFT_INPUT_FULL_BIT,
-                    pdFALSE,
+                    VFX_FFT_FULL_BIT,
+                    pdTRUE,
                     pdFALSE,
                     portMAX_DELAY
                 );
 
+                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+
                 fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, FFT_INPUT_FULL_BIT);
+                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
                 fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
@@ -179,22 +181,24 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
                 }
 
                 xEventGroupWaitBits(
                     user_event_group,
-                    FFT_INPUT_FULL_BIT,
-                    pdFALSE,
+                    VFX_FFT_FULL_BIT,
+                    pdTRUE,
                     pdFALSE,
                     portMAX_DELAY
                 );
 
+                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+
                 fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, FFT_INPUT_FULL_BIT);
+                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
                 fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
@@ -276,22 +280,24 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
                 }
 
                 xEventGroupWaitBits(
                     user_event_group,
-                    FFT_INPUT_FULL_BIT,
-                    pdFALSE,
+                    VFX_FFT_FULL_BIT,
+                    pdTRUE,
                     pdFALSE,
                     portMAX_DELAY
                 );
 
+                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+
                 fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, FFT_INPUT_FULL_BIT);
+                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
                 fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96 / 2;
@@ -384,22 +390,24 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
                 }
 
                 xEventGroupWaitBits(
                     user_event_group,
-                    FFT_INPUT_FULL_BIT,
-                    pdFALSE,
+                    VFX_FFT_FULL_BIT,
+                    pdTRUE,
                     pdFALSE,
                     portMAX_DELAY
                 );
 
+                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+
                 fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, FFT_INPUT_FULL_BIT);
+                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
                 fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96 / 2;
@@ -1063,22 +1071,24 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
                 }
 
                 xEventGroupWaitBits(
                     user_event_group,
-                    FFT_INPUT_FULL_BIT,
-                    pdFALSE,
+                    VFX_FFT_FULL_BIT,
+                    pdTRUE,
                     pdFALSE,
                     portMAX_DELAY
                 );
 
+                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+
                 fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, FFT_INPUT_FULL_BIT);
+                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
                 fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
@@ -1161,22 +1171,24 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
                 }
 
                 xEventGroupWaitBits(
                     user_event_group,
-                    FFT_INPUT_FULL_BIT,
-                    pdFALSE,
+                    VFX_FFT_FULL_BIT,
+                    pdTRUE,
                     pdFALSE,
                     portMAX_DELAY
                 );
 
+                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+
                 fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, FFT_INPUT_FULL_BIT);
+                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
                 fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
@@ -1286,22 +1298,24 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
                 }
 
                 xEventGroupWaitBits(
                     user_event_group,
-                    FFT_INPUT_FULL_BIT,
-                    pdFALSE,
+                    VFX_FFT_FULL_BIT,
+                    pdTRUE,
                     pdFALSE,
                     portMAX_DELAY
                 );
 
+                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+
                 fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, FFT_INPUT_FULL_BIT);
+                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
                 fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
@@ -1385,22 +1399,24 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
                 }
 
                 xEventGroupWaitBits(
                     user_event_group,
-                    FFT_INPUT_FULL_BIT,
-                    pdFALSE,
+                    VFX_FFT_FULL_BIT,
+                    pdTRUE,
                     pdFALSE,
                     portMAX_DELAY
                 );
 
+                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+
                 fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, FFT_INPUT_FULL_BIT);
+                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
                 fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
@@ -1483,22 +1499,24 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
                 }
 
                 xEventGroupWaitBits(
                     user_event_group,
-                    FFT_INPUT_FULL_BIT,
-                    pdFALSE,
+                    VFX_FFT_FULL_BIT,
+                    pdTRUE,
                     pdFALSE,
                     portMAX_DELAY
                 );
 
+                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+
                 fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, FFT_INPUT_FULL_BIT);
+                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
                 fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
@@ -1608,22 +1626,24 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
                 }
 
                 xEventGroupWaitBits(
                     user_event_group,
-                    FFT_INPUT_FULL_BIT,
-                    pdFALSE,
+                    VFX_FFT_FULL_BIT,
+                    pdTRUE,
                     pdFALSE,
                     portMAX_DELAY
                 );
 
+                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+
                 fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, FFT_INPUT_FULL_BIT);
+                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
                 fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;

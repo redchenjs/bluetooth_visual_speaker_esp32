@@ -20,7 +20,7 @@ static void audio_input_task_handle(void *pvParameters)
 {
 #ifndef CONFIG_AUDIO_INPUT_NONE
     size_t bytes_read = 0, bytes_written = 0;
-    char read_buff[FFT_N * 4] = {0};
+    char data[FFT_N * 4] = {0};
 
     while (1) {
         xEventGroupWaitBits(
@@ -31,15 +31,15 @@ static void audio_input_task_handle(void *pvParameters)
             portMAX_DELAY
         );
 
-        i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, read_buff, FFT_N * 4, &bytes_read, portMAX_DELAY);
+        i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, data, FFT_N * 4, &bytes_read, portMAX_DELAY);
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (uxBits & AUDIO_INPUT_LOOP_BIT) {
-            i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, read_buff, FFT_N * 4, &bytes_written, portMAX_DELAY);
+            i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, data, FFT_N * 4, &bytes_written, portMAX_DELAY);
         }
 
 #ifdef CONFIG_ENABLE_VFX
-        if (uxBits & FFT_INPUT_FULL_BIT || uxBits & VFX_RELOAD_BIT) {
+        if (uxBits & VFX_FFT_EXEC_BIT || uxBits & VFX_RELOAD_BIT) {
             continue;
         }
 
@@ -47,7 +47,6 @@ static void audio_input_task_handle(void *pvParameters)
         if (fft_plan) {
             uint32_t idx = 0;
             int16_t data_l = 0, data_r = 0;
-            const uint8_t *data = (const uint8_t *)read_buff;
 
             for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
                 data_l = data[idx+1] << 8 | data[idx];
@@ -56,7 +55,7 @@ static void audio_input_task_handle(void *pvParameters)
                 fft_plan->input[k] = (float)((data_l + data_r) / 2);
             }
 
-            xEventGroupSetBits(user_event_group, FFT_INPUT_FULL_BIT);
+            xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
         }
 #endif // CONFIG_ENABLE_VFX
     }
@@ -85,5 +84,5 @@ uint8_t audio_input_get_mode(void)
 
 void audio_input_init(void)
 {
-    xTaskCreatePinnedToCore(audio_input_task_handle, "AudioInputT", 2048, NULL, 7, NULL, 1);
+    xTaskCreatePinnedToCore(audio_input_task_handle, "AudioInputT", 2048, NULL, 9, NULL, 1);
 }
