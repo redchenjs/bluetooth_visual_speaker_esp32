@@ -83,7 +83,7 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 #endif
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    if (uxBits & AUDIO_MP3_RUN_BIT) {
+    if (uxBits & BT_A2DP_IDLE_BIT || uxBits & AUDIO_MP3_RUN_BIT) {
         return;
     }
 #endif
@@ -179,8 +179,9 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             audio_mp3_play(1);
             led_set_mode(3);
 
-            xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
             xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
+            xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
+            xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
 
@@ -208,6 +209,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         if (a2d->audio_cfg.mcc.type == ESP_A2D_MCT_SBC) {
             int sample_rate = 16000;
             char oct0 = a2d->audio_cfg.mcc.cie.sbc[0];
+
             if (oct0 & (0x01 << 6)) {
                 sample_rate = 32000;
             } else if (oct0 & (0x01 << 5)) {
@@ -215,6 +217,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             } else if (oct0 & (0x01 << 4)) {
                 sample_rate = 48000;
             }
+
             i2s_set_output_sample_rate(sample_rate);
 
             ESP_LOGI(BT_A2D_TAG, "configure audio player %x-%x-%x-%x",
@@ -224,6 +227,9 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                      a2d->audio_cfg.mcc.cie.sbc[3]);
             ESP_LOGI(BT_A2D_TAG, "audio player configured, sample rate=%d", sample_rate);
         }
+
+        xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
+
         break;
     }
     default:
