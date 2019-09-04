@@ -36,6 +36,8 @@ static void led_task_handle(void *pvParameter)
 
     gpio_set_direction(CONFIG_LED_PIN, GPIO_MODE_OUTPUT);
 
+    ESP_LOGI(TAG, "started.");
+
     while (1) {
         xLastWakeTime = xTaskGetTickCount();
 

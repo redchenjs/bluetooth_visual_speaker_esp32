@@ -47,6 +47,8 @@ static void key_scan_task_handle(void *pvParameter)
 
     xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
 
+    ESP_LOGI(TAG, "started.");
+
     while (1) {
         xEventGroupWaitBits(
             user_event_group,

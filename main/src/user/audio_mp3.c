@@ -41,6 +41,8 @@ static void audio_mp3_task_handle(void *pvParameters)
     if (frame  == NULL) { ESP_LOGE(TAG, "malloc(frame) failed");  goto err; }
     if (synth  == NULL) { ESP_LOGE(TAG, "malloc(synth) failed");  goto err; }
 
+    ESP_LOGI(TAG, "started.");
+
     while (1) {
         xEventGroupWaitBits(
             user_event_group,

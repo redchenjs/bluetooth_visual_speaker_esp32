@@ -13,12 +13,15 @@
 #include "driver/gpio.h"
 
 #include "core/os.h"
+#include "user/vfx.h"
 #include "user/audio_mp3.h"
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
 void key_sleep_handle(void)
 {
     xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
+
+    vfx_set_mode(0);
 
     audio_mp3_play(3);
     xEventGroupWaitBits(

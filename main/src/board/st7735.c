@@ -57,6 +57,8 @@ void st7735_init_board(void)
 
 void st7735_set_backlight(uint8_t val)
 {
+    ESP_LOGI(TAG, "backlight %u", val);
+
     ledc_set_fade_with_time(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, val, 500);
     ledc_fade_start(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, LEDC_FADE_NO_WAIT);
 }

@@ -25,7 +25,7 @@
 
 fft_config_t *fft_plan = NULL;
 
-uint16_t vfx_ctr = 0x0190;
+uint16_t vfx_ctr = 0x0100;
 
 static uint8_t vfx_mode = 0x0F;
 static uint16_t fft_scale = 192;
@@ -36,14 +36,10 @@ static void vfx_task_handle(void *pvParameter)
 
     gfxInit();
 
-#if defined(CONFIG_VFX_OUTPUT_CUBE0414)
-    ESP_LOGI(TAG, "Start Light Cube Output");
-#elif defined(CONFIG_SCREEN_PANEL_OUTPUT_MMAP)
-    vfx_ctr = 0x0100;
-    ESP_LOGI(TAG, "Start LCD MMAP Output");
-#else
-    vfx_ctr = 0x0100;
-    ESP_LOGI(TAG, "Start LCD FFT Output");
+    GDisplay *g = gdispGetDisplay(0);
+
+#ifdef CONFIG_VFX_OUTPUT_CUBE0414
+    vfx_ctr = 0x0190;
 #endif
 
 #ifndef CONFIG_AUDIO_INPUT_NONE
@@ -51,6 +47,8 @@ static void vfx_task_handle(void *pvParameter)
 #endif
 
     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
+
+    ESP_LOGI(TAG, "started.");
 
     while (1) {
 #if defined(CONFIG_SCREEN_PANEL_OUTPUT_FFT)
@@ -63,9 +61,10 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_ctr = vfx_ctr;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
-            GDisplay *g = gdispGetDisplay(0);
             coord_t disp_width = gdispGGetWidth(g);
             coord_t disp_height = gdispGGetHeight(g);
+
+            gdispGSetBacklight(g, 255);
 
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -73,20 +72,22 @@ static void vfx_task_handle(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
+                xEventGroupWaitBits(
+                    user_event_group,
+                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
+                    pdFALSE,
+                    pdFALSE,
+                    portMAX_DELAY
+                );
+
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
+                } else {
+                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
                 }
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT,
-                    pdTRUE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
@@ -169,9 +170,10 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_ctr = vfx_ctr;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
-            GDisplay *g = gdispGetDisplay(0);
             coord_t disp_width = gdispGGetWidth(g);
             coord_t disp_height = gdispGGetHeight(g);
+
+            gdispGSetBacklight(g, 255);
 
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -179,20 +181,22 @@ static void vfx_task_handle(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
+                xEventGroupWaitBits(
+                    user_event_group,
+                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
+                    pdFALSE,
+                    pdFALSE,
+                    portMAX_DELAY
+                );
+
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
+                } else {
+                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
                 }
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT,
-                    pdTRUE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
@@ -267,10 +271,11 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_ctr = vfx_ctr;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
-            GDisplay *g = gdispGetDisplay(0);
             coord_t disp_width = gdispGGetWidth(g);
             coord_t disp_height = gdispGGetHeight(g);
             uint16_t center_y = disp_height % 2 ? disp_height / 2 : disp_height / 2 - 1;
+
+            gdispGSetBacklight(g, 255);
 
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -278,20 +283,22 @@ static void vfx_task_handle(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
+                xEventGroupWaitBits(
+                    user_event_group,
+                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
+                    pdFALSE,
+                    pdFALSE,
+                    portMAX_DELAY
+                );
+
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
+                } else {
+                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
                 }
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT,
-                    pdTRUE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
@@ -377,10 +384,11 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_ctr = vfx_ctr;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
-            GDisplay *g = gdispGetDisplay(0);
             coord_t disp_width = gdispGGetWidth(g);
             coord_t disp_height = gdispGGetHeight(g);
             uint16_t center_y = disp_height % 2 ? disp_height / 2 : disp_height / 2 - 1;
+
+            gdispGSetBacklight(g, 255);
 
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -388,20 +396,22 @@ static void vfx_task_handle(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
+                xEventGroupWaitBits(
+                    user_event_group,
+                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
+                    pdFALSE,
+                    pdFALSE,
+                    portMAX_DELAY
+                );
+
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
+                } else {
+                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
                 }
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT,
-                    pdTRUE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
@@ -473,7 +483,16 @@ static void vfx_task_handle(void *pvParameter)
             break;
         }
         default:
-            vTaskDelay(1000 / portTICK_RATE_MS);
+            gdispGSetBacklight(g, 0);
+
+            xEventGroupWaitBits(
+                user_event_group,
+                VFX_RELOAD_BIT,
+                pdTRUE,
+                pdFALSE,
+                portMAX_DELAY
+            );
+
             break;
         }
 #else
@@ -485,6 +504,9 @@ static void vfx_task_handle(void *pvParameter)
             uint8_t z = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
+
+            gdispGSetBacklight(g, 255);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -523,6 +545,9 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
+
+            gdispGSetBacklight(g, 255);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -563,6 +588,9 @@ static void vfx_task_handle(void *pvParameter)
         case 0x03: {   // 漸變彩燈(體漸變)
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
+
+            gdispGSetBacklight(g, 255);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -587,6 +615,9 @@ static void vfx_task_handle(void *pvParameter)
             uint8_t color_cnt = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = 511;
+
+            gdispGSetBacklight(g, 255);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -627,6 +658,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_idx[512] = {0};
+
+            gdispGSetBacklight(g, 255);
 
             for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
@@ -716,6 +749,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t led_idx[512] = {0};
             uint16_t color_idx[512] = {0};
 
+            gdispGSetBacklight(g, 255);
+
             for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
                 color_idx[i] = i % 80 + 170;
@@ -804,6 +839,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t led_idx[512] = {0};
             uint16_t color_idx[512] = {0};
 
+            gdispGSetBacklight(g, 255);
+
             for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
                 color_idx[i] = i % 85 + 345;
@@ -887,6 +924,9 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t num = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
+
+            gdispGSetBacklight(g, 255);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -920,6 +960,9 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t layer1 = 0;
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
+
+            gdispGSetBacklight(g, 255);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -972,6 +1015,9 @@ static void vfx_task_handle(void *pvParameter)
         }
         case 0x0A: {   // 漸變波動曲面
             uint16_t frame_idx = 0;
+
+            gdispGSetBacklight(g, 255);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -994,6 +1040,9 @@ static void vfx_task_handle(void *pvParameter)
         case 0x0B: {   // 漸變旋轉曲面(逆時針)
             uint16_t frame_pre = 0;
             uint16_t frame_idx = 0;
+
+            gdispGSetBacklight(g, 255);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -1025,6 +1074,9 @@ static void vfx_task_handle(void *pvParameter)
         case 0x0C: {   // 漸變旋轉曲面(順時針)
             uint16_t frame_pre = 0;
             uint16_t frame_idx = 0;
+
+            gdispGSetBacklight(g, 255);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -1063,26 +1115,30 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGSetBacklight(g, 255);
+
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(fft_plan->input, 0x00, FFT_N * sizeof(float));
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
+                xEventGroupWaitBits(
+                    user_event_group,
+                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
+                    pdFALSE,
+                    pdFALSE,
+                    portMAX_DELAY
+                );
+
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
+                } else {
+                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
                 }
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT,
-                    pdTRUE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
@@ -1163,26 +1219,30 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGSetBacklight(g, 255);
+
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(fft_plan->input, 0x00, FFT_N * sizeof(float));
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
+                xEventGroupWaitBits(
+                    user_event_group,
+                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
+                    pdFALSE,
+                    pdFALSE,
+                    portMAX_DELAY
+                );
+
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
+                } else {
+                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
                 }
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT,
-                    pdTRUE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
@@ -1285,6 +1345,8 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGSetBacklight(g, 255);
+
             for (uint16_t i=0; i<64; i++) {
                 color_idx[i] = i * 8;
                 color_ctr[i] = vfx_ctr;
@@ -1296,20 +1358,22 @@ static void vfx_task_handle(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
+                xEventGroupWaitBits(
+                    user_event_group,
+                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
+                    pdFALSE,
+                    pdFALSE,
+                    portMAX_DELAY
+                );
+
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
+                } else {
+                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
                 }
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT,
-                    pdTRUE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
@@ -1391,26 +1455,30 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGSetBacklight(g, 255);
+
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(fft_plan->input, 0x00, FFT_N * sizeof(float));
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
+                xEventGroupWaitBits(
+                    user_event_group,
+                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
+                    pdFALSE,
+                    pdFALSE,
+                    portMAX_DELAY
+                );
+
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
+                } else {
+                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
                 }
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT,
-                    pdTRUE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
@@ -1491,26 +1559,30 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGSetBacklight(g, 255);
+
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(fft_plan->input, 0x00, FFT_N * sizeof(float));
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
+                xEventGroupWaitBits(
+                    user_event_group,
+                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
+                    pdFALSE,
+                    pdFALSE,
+                    portMAX_DELAY
+                );
+
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
+                } else {
+                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
                 }
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT,
-                    pdTRUE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
@@ -1613,6 +1685,8 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGSetBacklight(g, 255);
+
             for (uint16_t i=0; i<64; i++) {
                 color_idx[i] = i * 8;
                 color_ctr[i] = vfx_ctr;
@@ -1624,20 +1698,22 @@ static void vfx_task_handle(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
+                xEventGroupWaitBits(
+                    user_event_group,
+                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
+                    pdFALSE,
+                    pdFALSE,
+                    portMAX_DELAY
+                );
+
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     vfx_clear_cube();
                     break;
+                } else {
+                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
                 }
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT,
-                    pdTRUE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
@@ -1710,7 +1786,15 @@ static void vfx_task_handle(void *pvParameter)
             break;
         }
         default:
-            vTaskDelay(1000 / portTICK_RATE_MS);
+            gdispGSetBacklight(g, 0);
+
+            xEventGroupWaitBits(
+                user_event_group,
+                VFX_RELOAD_BIT,
+                pdTRUE,
+                pdFALSE,
+                portMAX_DELAY
+            );
 exit:
             break;
         }
@@ -1722,6 +1806,8 @@ void vfx_set_mode(uint8_t mode)
 {
 #ifdef CONFIG_ENABLE_VFX
     vfx_mode = mode;
+    ESP_LOGI(TAG, "mode 0x%02X", vfx_mode);
+
     xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
 #endif
 }
@@ -1734,6 +1820,8 @@ uint8_t vfx_get_mode(void)
 void vfx_set_ctr(uint16_t ctr)
 {
     vfx_ctr = ctr;
+    ESP_LOGI(TAG, "ctr 0x%04X", vfx_ctr);
+
     xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
 }
 
@@ -1745,6 +1833,8 @@ uint16_t vfx_get_ctr(void)
 void vfx_set_fft_scale(uint16_t scale)
 {
     fft_scale = scale;
+    ESP_LOGI(TAG, "fft scale %u", fft_scale);
+
     xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
 }
 

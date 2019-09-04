@@ -14,6 +14,8 @@
 #include "chip/i2s.h"
 #include "user/vfx.h"
 
+#define TAG "audio_input"
+
 static uint8_t audio_input_mode = 0;
 
 static void audio_input_task_handle(void *pvParameters)
@@ -21,6 +23,8 @@ static void audio_input_task_handle(void *pvParameters)
 #ifndef CONFIG_AUDIO_INPUT_NONE
     size_t bytes_read = 0, bytes_written = 0;
     char data[FFT_N * 4] = {0};
+
+    ESP_LOGI(TAG, "started.");
 
     while (1) {
         xEventGroupWaitBits(
@@ -65,6 +69,8 @@ static void audio_input_task_handle(void *pvParameters)
 void audio_input_set_mode(uint8_t mode)
 {
     audio_input_mode = mode;
+    ESP_LOGI(TAG, "mode %u", audio_input_mode);
+
     if (audio_input_mode == 1) {
         xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
         xEventGroupClearBits(user_event_group, AUDIO_INPUT_LOOP_BIT);

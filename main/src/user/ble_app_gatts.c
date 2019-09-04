@@ -155,19 +155,15 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         if (!param->write.is_prep) {
             if (param->write.value[0] == 0x04 && param->write.len == 2) {
                 uint8_t audio_input_mode = param->write.value[1] % 0x03;
-                ESP_LOGI(BLE_GATTS_TAG, "set audio input mode %u", audio_input_mode);
                 audio_input_set_mode(audio_input_mode);
             } else if (param->write.value[0] == 0x03 && param->write.len == 3) {
                 uint16_t fft_scale = (param->write.value[1] << 8 | param->write.value[2]);
-                ESP_LOGI(BLE_GATTS_TAG, "set fft scale %u", fft_scale);
                 vfx_set_fft_scale(fft_scale);
             } else if (param->write.value[0] == 0x02 && param->write.len == 3) {
                 uint16_t ctr = (param->write.value[1] << 8 | param->write.value[2]) % 0x0200;
-                ESP_LOGI(BLE_GATTS_TAG, "set vfx ctr 0x%04X", ctr);
                 vfx_set_ctr(ctr);
             } else if (param->write.value[0] == 0x01 && param->write.len == 2) {
                 uint8_t mode = param->write.value[1];
-                ESP_LOGI(BLE_GATTS_TAG, "set vfx mode 0x%02X", mode);
                 vfx_set_mode(mode);
             } else {
                 ESP_LOGW(BLE_GATTS_TAG, "unknown command");
