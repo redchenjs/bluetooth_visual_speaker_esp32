@@ -167,7 +167,6 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
         }
         g->g.Powermode = (powermode_t)g->p.ptr;
         return;
-
     case GDISP_CONTROL_ORIENTATION:
         if (g->g.Orientation == (orientation_t)g->p.ptr)
             return;
@@ -181,7 +180,6 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
         }
         g->g.Orientation = (orientation_t)g->p.ptr;
         return;
-
     case GDISP_CONTROL_BACKLIGHT:
         if ((unsigned)g->p.ptr > 100)
             g->p.ptr = (void *)100;

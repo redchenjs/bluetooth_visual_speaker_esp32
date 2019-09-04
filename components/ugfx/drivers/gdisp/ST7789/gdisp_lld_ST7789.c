@@ -39,7 +39,7 @@
     #define GDISP_INITIAL_CONTRAST  100
 #endif
 #ifndef GDISP_INITIAL_BACKLIGHT
-    #define GDISP_INITIAL_BACKLIGHT 100
+    #define GDISP_INITIAL_BACKLIGHT 255
 #endif
 
 #define GDISP_FLG_NEEDFLUSH         (GDISP_FLG_DRIVER<<0)
@@ -244,7 +244,6 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
         }
         g->g.Powermode = (powermode_t)g->p.ptr;
         return;
-
     case GDISP_CONTROL_ORIENTATION:
         if (g->g.Orientation == (orientation_t)g->p.ptr)
             return;
@@ -270,11 +269,11 @@ LLDSPEC void gdisp_lld_control(GDisplay *g) {
         }
         g->g.Orientation = (orientation_t)g->p.ptr;
         return;
-
     case GDISP_CONTROL_BACKLIGHT:
-        if ((unsigned)g->p.ptr > 100)
-            g->p.ptr = (void *)100;
+        if ((unsigned)g->p.ptr > 255)
+            g->p.ptr = (void *)255;
         g->g.Backlight = (unsigned)g->p.ptr;
+        set_backlight(g, g->g.Backlight);
         return;
     default:
         return;
