@@ -17,7 +17,7 @@
 
 extern void st7789_init_board(void);
 
-extern void st7789_setpin_bl(uint8_t val);
+extern void st7789_set_backlight(uint8_t val);
 extern void st7789_setpin_dc(spi_transaction_t *);
 extern void st7789_setpin_reset(uint8_t val);
 

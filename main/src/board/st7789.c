@@ -10,6 +10,7 @@
 #include "esp_log.h"
 
 #include "driver/gpio.h"
+#include "driver/ledc.h"
 #include "driver/spi_master.h"
 
 #include "chip/spi.h"
@@ -23,21 +24,41 @@ spi_transaction_t hspi_trans[6];
 
 void st7789_init_board(void)
 {
-    gpio_set_direction(CONFIG_SCREEN_PANEL_BL_PIN,  GPIO_MODE_OUTPUT);
+    memset(hspi_trans, 0, sizeof(hspi_trans));
+
     gpio_set_direction(CONFIG_SCREEN_PANEL_DC_PIN,  GPIO_MODE_OUTPUT);
     gpio_set_direction(CONFIG_SCREEN_PANEL_RST_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_level(CONFIG_SCREEN_PANEL_BL_PIN,  0);
     gpio_set_level(CONFIG_SCREEN_PANEL_DC_PIN,  0);
     gpio_set_level(CONFIG_SCREEN_PANEL_RST_PIN, 0);
 
-    memset(hspi_trans, 0, sizeof(hspi_trans));
+    ledc_timer_config_t ledc_timer = {
+        .duty_resolution = LEDC_TIMER_8_BIT,
+        .freq_hz         = 50000,
+        .speed_mode      = LEDC_HIGH_SPEED_MODE,
+        .timer_num       = LEDC_TIMER_0,
+        .clk_cfg         = LEDC_AUTO_CLK,
+    };
+    ledc_timer_config(&ledc_timer);
+
+    ledc_channel_config_t ledc_channel = {
+        .channel    = LEDC_CHANNEL_0,
+        .duty       = 0,
+        .gpio_num   = CONFIG_SCREEN_PANEL_BL_PIN,
+        .speed_mode = LEDC_HIGH_SPEED_MODE,
+        .hpoint     = 0,
+        .timer_sel  = LEDC_TIMER_0,
+    };
+    ledc_channel_config(&ledc_channel);
+
+    ledc_fade_func_install(0);
 
     ESP_LOGI(TAG, "initialized, bl: %d, dc: %d, rst: %d", CONFIG_SCREEN_PANEL_BL_PIN, CONFIG_SCREEN_PANEL_DC_PIN, CONFIG_SCREEN_PANEL_RST_PIN);
 }
 
-void st7789_setpin_bl(uint8_t val)
+void st7789_set_backlight(uint8_t val)
 {
-    gpio_set_level(CONFIG_SCREEN_PANEL_BL_PIN, val);
+    ledc_set_fade_with_time(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, val, 500);
+    ledc_fade_start(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, LEDC_FADE_NO_WAIT);
 }
 
 void st7789_setpin_dc(spi_transaction_t *t)

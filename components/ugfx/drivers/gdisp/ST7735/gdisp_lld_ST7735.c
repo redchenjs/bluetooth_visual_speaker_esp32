@@ -63,7 +63,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     init_board(g);
 
     // Turn off the backlight
-    setpin_bl(g, 0);
+    set_backlight(g, 0);
 
     // Hardware reset
     setpin_reset(g, 0);
@@ -152,7 +152,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     write_cmd(g, ST7735_DISPON);    // 19: Main screen turn on, no args, no delay
 
     // Turn on the backlight
-    setpin_bl(g, 1);
+    set_backlight(g, 255);
 
     /* Initialise the GDISP structure */
     g->g.Width  = GDISP_SCREEN_HEIGHT;
