@@ -53,9 +53,9 @@ static void vfx_task_handle(void *pvParameter)
     ESP_LOGI(TAG, "started.");
 
     while (1) {
-#if defined(CONFIG_SCREEN_PANEL_OUTPUT_FFT)
-        // LCD FFT Output
         switch (vfx_mode) {
+#ifdef CONFIG_SCREEN_PANEL_OUTPUT_FFT
+        // LCD Output
         case 0x0C: {   // 音頻FFT(橫排漸變-線性譜)
             uint8_t  color_cnt = 0;
             uint16_t color_tmp = 0;
@@ -480,28 +480,8 @@ static void vfx_task_handle(void *pvParameter)
 
             break;
         }
-        default:
-            gdispGSetBacklight(g, 0);
-
-            vTaskDelay(500 / portTICK_RATE_MS);
-
-            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
-
-            ESP_LOGI(TAG, "suspended.");
-
-            xEventGroupWaitBits(
-                user_event_group,
-                VFX_RELOAD_BIT,
-                pdTRUE,
-                pdFALSE,
-                portMAX_DELAY
-            );
-
-            break;
-        }
 #else
         // Light Cube Output
-        switch (vfx_mode) {
         case 0x01: {   // 漸變彩燈(點漸變)
             uint8_t x = 0;
             uint8_t y = 0;
@@ -926,6 +906,7 @@ static void vfx_task_handle(void *pvParameter)
                     }
                 }
             }
+exit:
             break;
         }
         case 0x08: {   // 漸變靜態數字
@@ -1804,6 +1785,7 @@ static void vfx_task_handle(void *pvParameter)
 
             break;
         }
+#endif // #ifdef CONFIG_SCREEN_PANEL_OUTPUT_FFT
         default:
             gdispGSetBacklight(g, 0);
 
@@ -1820,10 +1802,9 @@ static void vfx_task_handle(void *pvParameter)
                 pdFALSE,
                 portMAX_DELAY
             );
-exit:
+
             break;
         }
-#endif // CONFIG_SCREEN_PANEL_OUTPUT_FFT
     }
 }
 
