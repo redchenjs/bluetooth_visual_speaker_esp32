@@ -78,7 +78,7 @@ config SCREEN_PANEL_DC_PIN
 
 config SCREEN_PANEL_BL_PIN
     int "Screen Panel BL Pin"
-    default 2
+    default 4
     depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
 
 config SPI_SCLK_PIN
