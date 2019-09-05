@@ -27,7 +27,7 @@ inline uint32_t vfx_read_color_from_table(uint16_t color_idx, uint16_t color_ctr
 }
 
 #ifndef CONFIG_SCREEN_PANEL_OUTPUT_FFT
-void vfx_write_pixel(uint8_t x, uint8_t y, uint8_t z, uint16_t color_idx, uint16_t color_ctr)
+void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, uint16_t color_idx, uint16_t color_ctr)
 {
     uint32_t pixel_color = vfx_read_color_from_table(color_idx, color_ctr);
     uint8_t pixel_x = x + y * 8;
@@ -55,13 +55,13 @@ void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint
     for (uint8_t i=0; i<cx; i++) {
         for (uint8_t j=0; j<cy; j++) {
             for (uint8_t k=0; k<cz; k++) {
-                vfx_write_pixel(x+i, y+j, z+k, color_idx, color_ctr);
+                vfx_draw_pixel(x+i, y+j, z+k, color_idx, color_ctr);
             }
         }
     }
 }
 
-void vfx_write_cube_bitmap(const uint8_t *bitmap)
+void vfx_draw_cube_bitmap(const uint8_t *bitmap)
 {
     uint8_t x = 0;
     uint8_t y = 0;
@@ -74,9 +74,9 @@ void vfx_write_cube_bitmap(const uint8_t *bitmap)
         uint8_t temp = *(bitmap + i);
         for (uint8_t j=0; j<8; j++) {
             if (temp & 0x80) {
-                vfx_write_pixel(x, y, z, color_idx, color_ctr);
+                vfx_draw_pixel(x, y, z, color_idx, color_ctr);
             } else {
-                vfx_write_pixel(x, y, z, 0, 511);
+                vfx_draw_pixel(x, y, z, 0, 511);
             }
             temp <<= 1;
             if (z++ == 7) {
@@ -100,7 +100,7 @@ void vfx_write_cube_bitmap(const uint8_t *bitmap)
     }
 }
 
-void vfx_write_layer_bitmap(uint8_t layer, const uint8_t *bitmap)
+void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap)
 {
     uint8_t x = 0;
     uint8_t y = 0;
@@ -113,9 +113,9 @@ void vfx_write_layer_bitmap(uint8_t layer, const uint8_t *bitmap)
         uint8_t temp = *(bitmap + i);
         for (uint8_t j=0; j<8; j++) {
             if (temp & 0x80) {
-                vfx_write_pixel(x, y, z, color_idx, color_ctr);
+                vfx_draw_pixel(x, y, z, color_idx, color_ctr);
             } else {
-                vfx_write_pixel(x, y, z, 0, 511);
+                vfx_draw_pixel(x, y, z, 0, 511);
             }
             temp <<= 1;
             if (y++ == 7) {
@@ -136,7 +136,7 @@ void vfx_write_layer_bitmap(uint8_t layer, const uint8_t *bitmap)
     }
 }
 
-void vfx_write_layer_number(uint8_t num, uint8_t layer, uint16_t color_idx, uint16_t color_ctr)
+void vfx_draw_layer_number(uint8_t num, uint8_t layer, uint16_t color_idx, uint16_t color_ctr)
 {
     uint8_t x = 0;
     uint8_t y = layer;
@@ -145,9 +145,9 @@ void vfx_write_layer_number(uint8_t num, uint8_t layer, uint16_t color_idx, uint
         unsigned char temp = vfx_bitmap_number[num][i];
         for (uint8_t j=0; j<8; j++) {
             if (temp & 0x80) {
-                vfx_write_pixel(x, y, z, color_idx, color_ctr);
+                vfx_draw_pixel(x, y, z, color_idx, color_ctr);
             } else {
-                vfx_write_pixel(x, y, z, 0, 511);
+                vfx_draw_pixel(x, y, z, 0, 511);
             }
             temp <<= 1;
             if (z++ == 7) {
@@ -160,11 +160,3 @@ void vfx_write_layer_number(uint8_t num, uint8_t layer, uint16_t color_idx, uint
     }
 }
 #endif // CONFIG_SCREEN_PANEL_OUTPUT_FFT
-
-void vfx_clear_cube(void)
-{
-    GDisplay *g = gdispGetDisplay(0);
-    coord_t disp_width = gdispGGetWidth(g);
-    coord_t disp_height = gdispGGetHeight(g);
-    gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
-}

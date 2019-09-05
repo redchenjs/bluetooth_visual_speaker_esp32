@@ -37,6 +37,8 @@ static void vfx_task_handle(void *pvParameter)
     gfxInit();
 
     GDisplay *g = gdispGetDisplay(0);
+    coord_t disp_width = gdispGGetWidth(g);
+    coord_t disp_height = gdispGGetHeight(g);
 
 #ifdef CONFIG_VFX_OUTPUT_CUBE0414
     vfx_ctr = 0x0190;
@@ -61,8 +63,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_ctr = vfx_ctr;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
-            coord_t disp_width = gdispGGetWidth(g);
-            coord_t disp_height = gdispGGetHeight(g);
+
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
 
             gdispGSetBacklight(g, 255);
 
@@ -83,7 +85,6 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-                    vfx_clear_cube();
                     break;
                 } else {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -170,8 +171,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_ctr = vfx_ctr;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
-            coord_t disp_width = gdispGGetWidth(g);
-            coord_t disp_height = gdispGGetHeight(g);
+
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
 
             gdispGSetBacklight(g, 255);
 
@@ -192,7 +193,6 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-                    vfx_clear_cube();
                     break;
                 } else {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -271,9 +271,9 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_ctr = vfx_ctr;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
-            coord_t disp_width = gdispGGetWidth(g);
-            coord_t disp_height = gdispGGetHeight(g);
             uint16_t center_y = disp_height % 2 ? disp_height / 2 : disp_height / 2 - 1;
+
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
 
             gdispGSetBacklight(g, 255);
 
@@ -294,7 +294,6 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-                    vfx_clear_cube();
                     break;
                 } else {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -384,9 +383,9 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_ctr = vfx_ctr;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
-            coord_t disp_width = gdispGGetWidth(g);
-            coord_t disp_height = gdispGGetHeight(g);
             uint16_t center_y = disp_height % 2 ? disp_height / 2 : disp_height / 2 - 1;
+
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
 
             gdispGSetBacklight(g, 255);
 
@@ -407,7 +406,6 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-                    vfx_clear_cube();
                     break;
                 } else {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -485,6 +483,10 @@ static void vfx_task_handle(void *pvParameter)
         default:
             gdispGSetBacklight(g, 0);
 
+            vTaskDelay(500 / portTICK_RATE_MS);
+
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             xEventGroupWaitBits(
                 user_event_group,
                 VFX_RELOAD_BIT,
@@ -505,6 +507,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             while (1) {
@@ -512,12 +516,11 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
                     break;
                 }
 
                 while (1) {
-                    vfx_write_pixel(x, y, z, color_idx, color_ctr);
+                    vfx_draw_pixel(x, y, z, color_idx, color_ctr);
 
                     if (x++ == 7) {
                         x = 0;
@@ -546,6 +549,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             while (1) {
@@ -553,14 +558,13 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
                     break;
                 }
 
                 color_tmp = color_idx;
                 while (1) {
                     for (uint8_t i=0; i<8; i++) {
-                        vfx_write_pixel(x, y, i, color_idx, color_ctr);
+                        vfx_draw_pixel(x, y, i, color_idx, color_ctr);
                     }
 
                     if (x++ == 7) {
@@ -589,6 +593,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             while (1) {
@@ -596,7 +602,6 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
                     break;
                 }
 
@@ -616,6 +621,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_idx = 0;
             uint16_t color_ctr = 511;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             while (1) {
@@ -623,7 +630,6 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
                     break;
                 }
 
@@ -659,6 +665,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t led_idx[512] = {0};
             uint16_t color_idx[512] = {0};
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             for (uint16_t i=0; i<512; i++) {
@@ -692,18 +700,17 @@ static void vfx_task_handle(void *pvParameter)
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[i], --j);
+                        vfx_draw_pixel(x, y, z, color_idx[i], --j);
 
                         if (i >= led_num - 1) {
                             x = (led_idx[i-(led_num-1)] % 64) % 8;
                             y = (led_idx[i-(led_num-1)] % 64) / 8;
                             z = led_idx[i-(led_num-1)] / 64;
-                            vfx_write_pixel(x, y, z, color_idx[i-(led_num-1)], ++k);
+                            vfx_draw_pixel(x, y, z, color_idx[i-(led_num-1)], ++k);
                         }
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            vfx_clear_cube();
                             goto exit;
                         }
 
@@ -721,16 +728,15 @@ static void vfx_task_handle(void *pvParameter)
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[i], --j);
+                        vfx_draw_pixel(x, y, z, color_idx[i], --j);
 
                         x = (led_idx[(512-(led_num-1))+i] % 64) % 8;
                         y = (led_idx[(512-(led_num-1))+i] % 64) / 8;
                         z = led_idx[(512-(led_num-1))+i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[(512-(led_num-1))+i], ++k);
+                        vfx_draw_pixel(x, y, z, color_idx[(512-(led_num-1))+i], ++k);
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            vfx_clear_cube();
                             goto exit;
                         }
 
@@ -748,6 +754,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_idx[512] = {0};
+
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
 
             gdispGSetBacklight(g, 255);
 
@@ -782,18 +790,17 @@ static void vfx_task_handle(void *pvParameter)
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[i], --j);
+                        vfx_draw_pixel(x, y, z, color_idx[i], --j);
 
                         if (i >= led_num - 1) {
                             x = (led_idx[i-(led_num-1)] % 64) % 8;
                             y = (led_idx[i-(led_num-1)] % 64) / 8;
                             z = led_idx[i-(led_num-1)] / 64;
-                            vfx_write_pixel(x, y, z, color_idx[i-(led_num-1)], ++k);
+                            vfx_draw_pixel(x, y, z, color_idx[i-(led_num-1)], ++k);
                         }
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            vfx_clear_cube();
                             goto exit;
                         }
 
@@ -811,16 +818,15 @@ static void vfx_task_handle(void *pvParameter)
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[i], --j);
+                        vfx_draw_pixel(x, y, z, color_idx[i], --j);
 
                         x = (led_idx[(512-(led_num-1))+i] % 64) % 8;
                         y = (led_idx[(512-(led_num-1))+i] % 64) / 8;
                         z = led_idx[(512-(led_num-1))+i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[(512-(led_num-1))+i], ++k);
+                        vfx_draw_pixel(x, y, z, color_idx[(512-(led_num-1))+i], ++k);
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            vfx_clear_cube();
                             goto exit;
                         }
 
@@ -838,6 +844,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_idx[512] = {0};
+
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
 
             gdispGSetBacklight(g, 255);
 
@@ -872,18 +880,17 @@ static void vfx_task_handle(void *pvParameter)
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[i], --j);
+                        vfx_draw_pixel(x, y, z, color_idx[i], --j);
 
                         if (i >= led_num - 1) {
                             x = (led_idx[i-(led_num-1)] % 64) % 8;
                             y = (led_idx[i-(led_num-1)] % 64) / 8;
                             z = led_idx[i-(led_num-1)] / 64;
-                            vfx_write_pixel(x, y, z, color_idx[i-(led_num-1)], ++k);
+                            vfx_draw_pixel(x, y, z, color_idx[i-(led_num-1)], ++k);
                         }
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            vfx_clear_cube();
                             goto exit;
                         }
 
@@ -901,16 +908,15 @@ static void vfx_task_handle(void *pvParameter)
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[i], --j);
+                        vfx_draw_pixel(x, y, z, color_idx[i], --j);
 
                         x = (led_idx[(512-(led_num-1))+i] % 64) % 8;
                         y = (led_idx[(512-(led_num-1))+i] % 64) / 8;
                         z = led_idx[(512-(led_num-1))+i] / 64;
-                        vfx_write_pixel(x, y, z, color_idx[(512-(led_num-1))+i], ++k);
+                        vfx_draw_pixel(x, y, z, color_idx[(512-(led_num-1))+i], ++k);
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            vfx_clear_cube();
                             goto exit;
                         }
 
@@ -925,6 +931,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             while (1) {
@@ -932,14 +940,13 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
                     break;
                 }
 
-                vfx_write_layer_number(num, 2, color_idx, color_ctr);
-                vfx_write_layer_number(num, 3, color_idx, color_ctr);
-                vfx_write_layer_number(num, 4, color_idx, color_ctr);
-                vfx_write_layer_number(num, 5, color_idx, color_ctr);
+                vfx_draw_layer_number(num, 2, color_idx, color_ctr);
+                vfx_draw_layer_number(num, 3, color_idx, color_ctr);
+                vfx_draw_layer_number(num, 4, color_idx, color_ctr);
+                vfx_draw_layer_number(num, 5, color_idx, color_ctr);
 
                 color_idx += 8;
                 if (color_idx > 511) {
@@ -961,6 +968,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t color_idx = 0;
             uint16_t color_ctr = vfx_ctr;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             while (1) {
@@ -968,22 +977,21 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
                     break;
                 }
 
                 for (uint8_t i=layer0; i<=layer1; i++) {
-                    vfx_write_layer_number(num, i, color_idx, color_ctr);
+                    vfx_draw_layer_number(num, i, color_idx, color_ctr);
                 }
 
                 if (layer1 != 7 && layer0 != 0) {
-                    vfx_write_layer_number(num, layer0, 0, 511);
+                    vfx_draw_layer_number(num, layer0, 0, 511);
 
                     layer1++;
                     layer0++;
                 } else if (layer1 == 7) {
                     if (layer0++ == 7) {
-                        vfx_write_layer_number(num, 7, 0, 511);
+                        vfx_draw_layer_number(num, 7, 0, 511);
 
                         layer0 = 0;
                         layer1 = 0;
@@ -992,13 +1000,13 @@ static void vfx_task_handle(void *pvParameter)
                             num = 0;
                         }
                     } else {
-                        vfx_write_layer_number(num, layer0 - 1, 0, 511);
+                        vfx_draw_layer_number(num, layer0 - 1, 0, 511);
                     }
                 } else {
                     if ((layer1 - layer0) != 4) {
                         layer1++;
                     } else {
-                        vfx_write_layer_number(num, 0, 0, 511);
+                        vfx_draw_layer_number(num, 0, 0, 511);
 
                         layer1++;
                         layer0++;
@@ -1016,6 +1024,8 @@ static void vfx_task_handle(void *pvParameter)
         case 0x0A: {   // 漸變波動曲面
             uint16_t frame_idx = 0;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             while (1) {
@@ -1023,11 +1033,10 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
                     break;
                 }
 
-                vfx_write_cube_bitmap(vfx_bitmap_wave[frame_idx]);
+                vfx_draw_cube_bitmap(vfx_bitmap_wave[frame_idx]);
 
                 if (frame_idx++ == 44) {
                     frame_idx = 8;
@@ -1041,6 +1050,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t frame_pre = 0;
             uint16_t frame_idx = 0;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             while (1) {
@@ -1048,13 +1059,12 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
                     break;
                 }
 
                 frame_pre = frame_idx;
                 for (uint8_t i=0; i<8; i++) {
-                    vfx_write_layer_bitmap(i, vfx_bitmap_line[frame_idx]);
+                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx]);
 
                     if (frame_idx++ == 27) {
                         frame_idx = 0;
@@ -1075,6 +1085,8 @@ static void vfx_task_handle(void *pvParameter)
             uint16_t frame_pre = 0;
             uint16_t frame_idx = 0;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             while (1) {
@@ -1082,13 +1094,12 @@ static void vfx_task_handle(void *pvParameter)
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    vfx_clear_cube();
                     break;
                 }
 
                 frame_pre = frame_idx;
                 for (uint8_t i=0; i<8; i++) {
-                    vfx_write_layer_bitmap(i, vfx_bitmap_line[frame_idx]);
+                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx]);
 
                     if (frame_idx-- == 0) {
                         frame_idx = 27;
@@ -1115,6 +1126,8 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
@@ -1134,7 +1147,6 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-                    vfx_clear_cube();
                     break;
                 } else {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -1181,11 +1193,11 @@ static void vfx_task_handle(void *pvParameter)
                     uint8_t fill_cz = fft_out[i];
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
-                                clear_cx, clear_cy, clear_cz,
-                                0, 511);
+                                  clear_cx, clear_cy, clear_cz,
+                                  0, 511);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
-                                fill_cx, fill_cy, fill_cz,
-                                color_idx, color_ctr);
+                                  fill_cx, fill_cy, fill_cz,
+                                  color_idx, color_ctr);
 
                     if (y++ == 7) {
                         y = 0;
@@ -1219,6 +1231,8 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
@@ -1238,7 +1252,6 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-                    vfx_clear_cube();
                     break;
                 } else {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -1285,11 +1298,11 @@ static void vfx_task_handle(void *pvParameter)
                     uint8_t fill_cz = fft_out[i];
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
-                                clear_cx, clear_cy, clear_cz,
-                                0, 511);
+                                  clear_cx, clear_cy, clear_cz,
+                                  0, 511);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
-                                fill_cx, fill_cy, fill_cz,
-                                color_idx, color_ctr);
+                                  fill_cx, fill_cy, fill_cz,
+                                  color_idx, color_ctr);
 
                     if (y++ == 7) {
                         y = 0;
@@ -1345,6 +1358,8 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             for (uint16_t i=0; i<64; i++) {
@@ -1369,7 +1384,6 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-                    vfx_clear_cube();
                     break;
                 } else {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -1418,11 +1432,11 @@ static void vfx_task_handle(void *pvParameter)
                     uint8_t fill_cz = fft_out[i];
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
-                                clear_cx, clear_cy, clear_cz,
-                                0, 511);
+                                  clear_cx, clear_cy, clear_cz,
+                                  0, 511);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
-                                fill_cx, fill_cy, fill_cz,
-                                color_idx[i], color_ctr[i]);
+                                  fill_cx, fill_cy, fill_cz,
+                                  color_idx[i], color_ctr[i]);
 
                     if (color_flg) {
                         if (color_idx[i]-- == 0) {
@@ -1455,6 +1469,8 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
@@ -1474,7 +1490,6 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-                    vfx_clear_cube();
                     break;
                 } else {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -1521,11 +1536,11 @@ static void vfx_task_handle(void *pvParameter)
                     uint8_t fill_cz = fft_out[i];
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
-                                clear_cx, clear_cy, clear_cz,
-                                0, 511);
+                                  clear_cx, clear_cy, clear_cz,
+                                  0, 511);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
-                                fill_cx, fill_cy, fill_cz,
-                                color_idx, color_ctr);
+                                  fill_cx, fill_cy, fill_cz,
+                                  color_idx, color_ctr);
 
                     if (y++ == 7) {
                         y = 0;
@@ -1559,6 +1574,8 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
@@ -1578,7 +1595,6 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-                    vfx_clear_cube();
                     break;
                 } else {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -1625,11 +1641,11 @@ static void vfx_task_handle(void *pvParameter)
                     uint8_t fill_cz = fft_out[i];
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
-                                clear_cx, clear_cy, clear_cz,
-                                0, 511);
+                                  clear_cx, clear_cy, clear_cz,
+                                  0, 511);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
-                                fill_cx, fill_cy, fill_cz,
-                                color_idx, color_ctr);
+                                  fill_cx, fill_cy, fill_cz,
+                                  color_idx, color_ctr);
 
                     if (y++ == 7) {
                         y = 0;
@@ -1685,6 +1701,8 @@ static void vfx_task_handle(void *pvParameter)
             coord_t disp_width = 64;
             coord_t disp_height = 8;
 
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
             gdispGSetBacklight(g, 255);
 
             for (uint16_t i=0; i<64; i++) {
@@ -1709,7 +1727,6 @@ static void vfx_task_handle(void *pvParameter)
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-                    vfx_clear_cube();
                     break;
                 } else {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -1758,11 +1775,11 @@ static void vfx_task_handle(void *pvParameter)
                     uint8_t fill_cz = fft_out[i];
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
-                                clear_cx, clear_cy, clear_cz,
-                                0, 511);
+                                  clear_cx, clear_cy, clear_cz,
+                                  0, 511);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
-                                fill_cx, fill_cy, fill_cz,
-                                color_idx[i], color_ctr[i]);
+                                  fill_cx, fill_cy, fill_cz,
+                                  color_idx[i], color_ctr[i]);
 
                     if (color_flg) {
                         if (color_idx[i]-- == 0) {
@@ -1787,6 +1804,10 @@ static void vfx_task_handle(void *pvParameter)
         }
         default:
             gdispGSetBacklight(g, 0);
+
+            vTaskDelay(500 / portTICK_RATE_MS);
+
+            gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
 
             xEventGroupWaitBits(
                 user_event_group,
