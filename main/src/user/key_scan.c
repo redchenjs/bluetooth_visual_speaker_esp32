@@ -45,6 +45,8 @@ static void key_scan_task_handle(void *pvParameter)
         }
     }
 
+    vTaskDelay(1000 / portTICK_RATE_MS);
+
     xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
 
     ESP_LOGI(TAG, "started.");
