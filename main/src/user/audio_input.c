@@ -48,7 +48,7 @@ static void audio_input_task_handle(void *pvParameters)
         }
 
         // Copy data to FFT input buffer
-        if (fft_plan) {
+        if (vfx_fft_plan) {
             uint32_t idx = 0;
             int16_t data_l = 0, data_r = 0;
 
@@ -56,7 +56,7 @@ static void audio_input_task_handle(void *pvParameters)
                 data_l = data[idx+1] << 8 | data[idx];
                 data_r = data[idx+3] << 8 | data[idx+2];
 
-                fft_plan->input[k] = (float)((data_l + data_r) / 2);
+                vfx_fft_plan->input[k] = (float)((data_l + data_r) / 2);
             }
 
             xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -66,9 +66,9 @@ static void audio_input_task_handle(void *pvParameters)
 #endif // CONFIG_AUDIO_INPUT_NONE
 }
 
-void audio_input_set_mode(uint8_t mode)
+void audio_input_set_mode(uint8_t idx)
 {
-    audio_input_mode = mode;
+    audio_input_mode = idx;
     ESP_LOGI(TAG, "mode %u", audio_input_mode);
 
     if (audio_input_mode == 1) {

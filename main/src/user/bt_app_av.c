@@ -105,7 +105,7 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
     }
 
     // Copy data to FFT input buffer
-    if (fft_plan) {
+    if (vfx_fft_plan) {
         uint32_t idx = 0;
         int16_t data_l = 0, data_r = 0;
 
@@ -113,7 +113,7 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
             data_l = data[idx+1] << 8 | data[idx];
             data_r = data[idx+3] << 8 | data[idx+2];
 
-            fft_plan->input[k] = (float)((data_l + data_r) / 2);
+            vfx_fft_plan->input[k] = (float)((data_l + data_r) / 2);
         }
 
         xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
@@ -182,7 +182,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 
-            audio_mp3_play(1);
+            audio_mp3_play_file(1);
             led_set_mode(3);
 
             xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
@@ -195,7 +195,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
-            audio_mp3_play(0);
+            audio_mp3_play_file(0);
             led_set_mode(2);
         }
         break;

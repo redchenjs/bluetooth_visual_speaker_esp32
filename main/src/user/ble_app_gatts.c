@@ -135,36 +135,41 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         break;
     case ESP_GATTS_READ_EVT: {
         esp_gatt_rsp_t rsp;
-        uint8_t mode = vfx_get_mode();
-        uint16_t ctr = vfx_get_ctr();
-        uint16_t fft_scale = vfx_get_fft_scale();
+        uint8_t vfx_mode = vfx_get_mode();
+        uint16_t vfx_scale = vfx_get_scale();
+        uint16_t vfx_contrast = vfx_get_contrast();
+        uint8_t vfx_backlight = vfx_get_backlight();
         uint8_t audio_input_mode = audio_input_get_mode();
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
-        rsp.attr_value.len = 6;
-        rsp.attr_value.value[0] = mode;
-        rsp.attr_value.value[1] = ctr >> 8;
-        rsp.attr_value.value[2] = ctr & 0xff;
-        rsp.attr_value.value[3] = fft_scale >> 8;
-        rsp.attr_value.value[4] = fft_scale & 0xff;
-        rsp.attr_value.value[5] = audio_input_mode;
+        rsp.attr_value.len = 7;
+        rsp.attr_value.value[0] = vfx_mode;
+        rsp.attr_value.value[1] = vfx_scale >> 8;
+        rsp.attr_value.value[2] = vfx_scale & 0xff;
+        rsp.attr_value.value[3] = vfx_contrast >> 8;
+        rsp.attr_value.value[4] = vfx_contrast & 0xff;
+        rsp.attr_value.value[5] = vfx_backlight;
+        rsp.attr_value.value[6] = audio_input_mode;
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
         break;
     }
     case ESP_GATTS_WRITE_EVT: {
         if (!param->write.is_prep) {
-            if (param->write.value[0] == 0x04 && param->write.len == 2) {
+            if (param->write.value[0] == 0x01 && param->write.len == 2) {
+                uint8_t vfx_mode = param->write.value[1];
+                vfx_set_mode(vfx_mode);
+            } else if (param->write.value[0] == 0x02 && param->write.len == 3) {
+                uint16_t vfx_scale = (param->write.value[1] << 8 | param->write.value[2]);
+                vfx_set_scale(vfx_scale);
+            } else if (param->write.value[0] == 0x03 && param->write.len == 3) {
+                uint16_t vfx_contrast = (param->write.value[1] << 8 | param->write.value[2]) % 0x0200;
+                vfx_set_contrast(vfx_contrast);
+            } else if (param->write.value[0] == 0x04 && param->write.len == 2) {
+                uint8_t vfx_backlight = param->write.value[1];
+                vfx_set_backlight(vfx_backlight);
+            } else if (param->write.value[0] == 0x05 && param->write.len == 2) {
                 uint8_t audio_input_mode = param->write.value[1] % 0x03;
                 audio_input_set_mode(audio_input_mode);
-            } else if (param->write.value[0] == 0x03 && param->write.len == 3) {
-                uint16_t fft_scale = (param->write.value[1] << 8 | param->write.value[2]);
-                vfx_set_fft_scale(fft_scale);
-            } else if (param->write.value[0] == 0x02 && param->write.len == 3) {
-                uint16_t ctr = (param->write.value[1] << 8 | param->write.value[2]) % 0x0200;
-                vfx_set_ctr(ctr);
-            } else if (param->write.value[0] == 0x01 && param->write.len == 2) {
-                uint8_t mode = param->write.value[1];
-                vfx_set_mode(mode);
             } else {
                 ESP_LOGW(BLE_GATTS_TAG, "unknown command");
             }

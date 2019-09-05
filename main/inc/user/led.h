@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-extern void led_set_mode(uint8_t mode);
+extern void led_set_mode(uint8_t idx);
 
 extern void led_init(void);
 

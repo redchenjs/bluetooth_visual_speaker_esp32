@@ -93,14 +93,14 @@ err:
     esp_restart();
 }
 
-void audio_mp3_play(uint8_t filename_index)
+void audio_mp3_play_file(uint8_t idx)
 {
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    if (filename_index >= (sizeof(mp3_file_ptr) / 2)) {
-        ESP_LOGE(TAG, "invalid filename index");
+    if (idx >= (sizeof(mp3_file_ptr) / 2)) {
+        ESP_LOGE(TAG, "invalid file index");
         return;
     }
-    mp3_file_index = filename_index;
+    mp3_file_index = idx;
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
     if (uxBits & AUDIO_INPUT_LOOP_BIT) {
         return;

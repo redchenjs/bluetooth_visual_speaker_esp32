@@ -10,22 +10,25 @@
 
 #include <stdint.h>
 
+#include "gfx.h"
 #include "fft.h"
 
 #define FFT_N 128
 
-extern fft_config_t *fft_plan;
+extern GDisplay *vfx_gdisp;
+extern fft_config_t *vfx_fft_plan;
 
-extern uint16_t vfx_ctr;
-
-extern void vfx_set_mode(uint8_t mode);
+extern void vfx_set_mode(uint8_t idx);
 extern uint8_t vfx_get_mode(void);
 
-extern void vfx_set_ctr(uint16_t ctr);
-extern uint16_t vfx_get_ctr(void);
+extern void vfx_set_scale(uint16_t val);
+extern uint16_t vfx_get_scale(void);
 
-extern void vfx_set_fft_scale(uint16_t scale);
-extern uint16_t vfx_get_fft_scale(void);
+extern void vfx_set_contrast(uint16_t val);
+extern uint16_t vfx_get_contrast(void);
+
+extern void vfx_set_backlight(uint8_t val);
+extern uint8_t vfx_get_backlight(void);
 
 extern void vfx_init(void);
 

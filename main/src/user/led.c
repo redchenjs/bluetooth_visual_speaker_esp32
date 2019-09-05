@@ -59,14 +59,14 @@ static void led_task_handle(void *pvParameter)
 }
 #endif
 
-void led_set_mode(uint8_t mode_index)
+void led_set_mode(uint8_t idx)
 {
 #ifdef CONFIG_ENABLE_LED
-    if (mode_index >= (sizeof(led_mode_table) / 2)) {
+    if (idx >= (sizeof(led_mode_table) / 2)) {
         ESP_LOGE(TAG, "invalid mode index");
         return;
     }
-    led_mode_index = mode_index;
+    led_mode_index = idx;
 #endif
 }
 

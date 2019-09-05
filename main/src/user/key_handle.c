@@ -29,7 +29,7 @@ void key_sleep_handle(void)
 
     vfx_set_mode(0);
 
-    audio_mp3_play(3);
+    audio_mp3_play_file(3);
     xEventGroupWaitBits(
         user_event_group,
         AUDIO_MP3_IDLE_BIT,

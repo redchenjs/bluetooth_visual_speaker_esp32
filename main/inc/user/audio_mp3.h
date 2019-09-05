@@ -23,7 +23,7 @@ extern const char snd2_mp3_end[] asm("_binary_snd2_mp3_end");
 extern const char snd3_mp3_ptr[] asm("_binary_snd3_mp3_start");
 extern const char snd3_mp3_end[] asm("_binary_snd3_mp3_end");
 
-extern void audio_mp3_play(uint8_t filename_index);
+extern void audio_mp3_play_file(uint8_t idx);
 
 extern void audio_mp3_init(void);
 

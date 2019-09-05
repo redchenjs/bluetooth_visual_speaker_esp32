@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-extern void audio_input_set_mode(uint8_t mode);
+extern void audio_input_set_mode(uint8_t idx);
 extern uint8_t audio_input_get_mode(void);
 
 extern void audio_input_init(void);

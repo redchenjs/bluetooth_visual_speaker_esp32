@@ -62,6 +62,6 @@ void os_init(void)
     user_event_group = xEventGroupCreate();
 
 #ifdef CONFIG_ENABLE_WAKEUP_KEY
-    audio_mp3_play(2);
+    audio_mp3_play_file(2);
 #endif
 }
