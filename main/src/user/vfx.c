@@ -1130,7 +1130,7 @@ exit:
                 xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
-fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
+                fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
                 if (fft_out[0] > disp_height) {
                     fft_out[0] = disp_height;
                 } else if (fft_out[0] < 1) {
