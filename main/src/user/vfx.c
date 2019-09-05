@@ -487,6 +487,8 @@ static void vfx_task_handle(void *pvParameter)
 
             gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
 
+            ESP_LOGI(TAG, "suspended.");
+
             xEventGroupWaitBits(
                 user_event_group,
                 VFX_RELOAD_BIT,
@@ -1808,6 +1810,8 @@ static void vfx_task_handle(void *pvParameter)
             vTaskDelay(500 / portTICK_RATE_MS);
 
             gdispGFillArea(g, 0, 0, disp_width, disp_height, 0x000000);
+
+            ESP_LOGI(TAG, "suspended.");
 
             xEventGroupWaitBits(
                 user_event_group,
