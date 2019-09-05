@@ -19,20 +19,22 @@
 
 EventGroupHandle_t user_event_group;
 
-#ifdef CONFIG_ENABLE_WAKEUP_KEY
+#if defined(CONFIG_ENABLE_WAKEUP_KEY) || defined(CONFIG_ENABLE_SLEEP_KEY)
 void os_enter_sleep_mode(void)
 {
     ESP_LOGI(TAG, "entering sleep mode");
 
-#ifdef CONFIG_WAKEUP_KEY_ACTIVE_LOW
-    esp_sleep_enable_ext1_wakeup(1ULL << CONFIG_WAKEUP_KEY_PIN, ESP_EXT1_WAKEUP_ALL_LOW);
-#else
-    esp_sleep_enable_ext1_wakeup(1ULL << CONFIG_WAKEUP_KEY_PIN, ESP_EXT1_WAKEUP_ANY_HIGH);
-#endif
+#ifdef CONFIG_ENABLE_WAKEUP_KEY
+    #ifdef CONFIG_WAKEUP_KEY_ACTIVE_LOW
+        esp_sleep_enable_ext1_wakeup(1ULL << CONFIG_WAKEUP_KEY_PIN, ESP_EXT1_WAKEUP_ALL_LOW);
+    #else
+        esp_sleep_enable_ext1_wakeup(1ULL << CONFIG_WAKEUP_KEY_PIN, ESP_EXT1_WAKEUP_ANY_HIGH);
+    #endif // #ifdef CONFIG_WAKEUP_KEY_ACTIVE_LOW
+#endif // #ifdef CONFIG_ENABLE_WAKEUP_KEY
 
     esp_deep_sleep_start();
 }
-#endif // CONFIG_ENABLE_WAKEUP_KEY
+#endif // #if defined(CONFIG_ENABLE_WAKEUP_KEY) || defined(CONFIG_ENABLE_SLEEP_KEY)
 
 void os_init(void)
 {

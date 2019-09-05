@@ -26,8 +26,8 @@ typedef enum user_event_group_bits {
 
 extern EventGroupHandle_t user_event_group;
 
-#ifdef CONFIG_ENABLE_WAKEUP_KEY
-extern void os_enter_sleep_mode(void);
+#if defined(CONFIG_ENABLE_WAKEUP_KEY) || defined(CONFIG_ENABLE_SLEEP_KEY)
+    extern void os_enter_sleep_mode(void);
 #endif
 
 extern void os_init(void);
