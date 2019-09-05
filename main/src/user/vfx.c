@@ -74,43 +74,37 @@ static void vfx_task_handle(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
-                    pdFALSE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
-
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
-                } else {
+                }
+
+                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-                }
 
-                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
-                fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
-                if (fft_out[0] > disp_height) {
-                    fft_out[0] = disp_height;
-                } else if (fft_out[0] < 1) {
-                    fft_out[0] = 1;
-                }
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
+                    fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
+                    if (fft_out[0] > disp_height) {
+                        fft_out[0] = disp_height;
+                    } else if (fft_out[0] < 1) {
+                        fft_out[0] = 1;
+                    }
 
-                for (uint16_t k=1; k<FFT_N/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                    fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
-                    if (fft_out[k] > disp_height) {
-                        fft_out[k] = disp_height;
-                    } else if (fft_out[k] < 1) {
-                        fft_out[k] = 1;
+                    for (uint16_t k=1; k<FFT_N/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
+                        if (fft_out[k] > disp_height) {
+                            fft_out[k] = disp_height;
+                        } else if (fft_out[k] < 1) {
+                            fft_out[k] = 1;
+                        }
                     }
                 }
 
@@ -283,43 +277,37 @@ static void vfx_task_handle(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
-                    pdFALSE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
-
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
-                } else {
+                }
+
+                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-                }
 
-                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
-                fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96 / 2;
-                if (fft_out[0] > center_y) {
-                    fft_out[0] = center_y;
-                } else if (fft_out[0] < 0) {
-                    fft_out[0] = 0;
-                }
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96 / 2;
+                    if (fft_out[0] > center_y) {
+                        fft_out[0] = center_y;
+                    } else if (fft_out[0] < 0) {
+                        fft_out[0] = 0;
+                    }
 
-                for (uint16_t k=1; k<FFT_N/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                    fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96 / 2;
-                    if (fft_out[k] > center_y) {
-                        fft_out[k] = center_y;
-                    } else if (fft_out[k] < 0) {
-                        fft_out[k] = 0;
+                    for (uint16_t k=1; k<FFT_N/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96 / 2;
+                        if (fft_out[k] > center_y) {
+                            fft_out[k] = center_y;
+                        } else if (fft_out[k] < 0) {
+                            fft_out[k] = 0;
+                        }
                     }
                 }
 
@@ -1142,7 +1130,7 @@ exit:
                 xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                 fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
-                fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
+fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
                 if (fft_out[0] > disp_height) {
                     fft_out[0] = disp_height;
                 } else if (fft_out[0] < 1) {
@@ -1224,43 +1212,37 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
-                    pdFALSE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
-
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
-                } else {
+                }
+
+                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-                }
 
-                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
-                fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
-                if (fft_out[0] > disp_height) {
-                    fft_out[0] = disp_height;
-                } else if (fft_out[0] < 1) {
-                    fft_out[0] = 1;
-                }
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
+                    if (fft_out[0] > disp_height) {
+                        fft_out[0] = disp_height;
+                    } else if (fft_out[0] < 1) {
+                        fft_out[0] = 1;
+                    }
 
-                for (uint16_t k=1; k<FFT_N/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                    fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96;
-                    if (fft_out[k] > disp_height) {
-                        fft_out[k] = disp_height;
-                    } else if (fft_out[k] < 1) {
-                        fft_out[k] = 1;
+                    for (uint16_t k=1; k<FFT_N/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96;
+                        if (fft_out[k] > disp_height) {
+                            fft_out[k] = disp_height;
+                        } else if (fft_out[k] < 1) {
+                            fft_out[k] = 1;
+                        }
                     }
                 }
 
@@ -1356,43 +1338,37 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
-                    pdFALSE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
-
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
-                } else {
+                }
+
+                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-                }
 
-                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
-                fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
-                if (fft_out[0] > disp_height) {
-                    fft_out[0] = disp_height;
-                } else if (fft_out[0] < 1) {
-                    fft_out[0] = 1;
-                }
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / disp_height) * fft_scale * 96;
+                    if (fft_out[0] > disp_height) {
+                        fft_out[0] = disp_height;
+                    } else if (fft_out[0] < 1) {
+                        fft_out[0] = 1;
+                    }
 
-                for (uint16_t k=1; k<FFT_N/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                    fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96;
-                    if (fft_out[k] > disp_height) {
-                        fft_out[k] = disp_height;
-                    } else if (fft_out[k] < 1) {
-                        fft_out[k] = 1;
+                    for (uint16_t k=1; k<FFT_N/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / disp_height) * fft_scale * 96;
+                        if (fft_out[k] > disp_height) {
+                            fft_out[k] = disp_height;
+                        } else if (fft_out[k] < 1) {
+                            fft_out[k] = 1;
+                        }
                     }
                 }
 
@@ -1567,43 +1543,37 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
-                    pdFALSE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
-
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
-                } else {
+                }
+
+                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-                }
 
-                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
-                fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
-                if (fft_out[0] > disp_height) {
-                    fft_out[0] = disp_height;
-                } else if (fft_out[0] < 1) {
-                    fft_out[0] = 1;
-                }
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
+                    fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
+                    if (fft_out[0] > disp_height) {
+                        fft_out[0] = disp_height;
+                    } else if (fft_out[0] < 1) {
+                        fft_out[0] = 1;
+                    }
 
-                for (uint16_t k=1; k<FFT_N/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                    fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
-                    if (fft_out[k] > disp_height) {
-                        fft_out[k] = disp_height;
-                    } else if (fft_out[k] < 1) {
-                        fft_out[k] = 1;
+                    for (uint16_t k=1; k<FFT_N/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
+                        if (fft_out[k] > disp_height) {
+                            fft_out[k] = disp_height;
+                        } else if (fft_out[k] < 1) {
+                            fft_out[k] = 1;
+                        }
                     }
                 }
 
@@ -1699,43 +1669,37 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                xEventGroupWaitBits(
-                    user_event_group,
-                    VFX_FFT_FULL_BIT | VFX_RELOAD_BIT,
-                    pdFALSE,
-                    pdFALSE,
-                    portMAX_DELAY
-                );
-
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
                     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
-                } else {
+                }
+
+                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-                }
 
-                xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_execute(fft_plan);
+                    fft_execute(fft_plan);
 
-                xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
-                fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
-                if (fft_out[0] > disp_height) {
-                    fft_out[0] = disp_height;
-                } else if (fft_out[0] < 1) {
-                    fft_out[0] = 1;
-                }
+                    fft_amp[0] = sqrt(pow(fft_plan->output[0], 2) + pow(fft_plan->output[1], 2)) / FFT_N;
+                    fft_out[0] = fft_amp[0] / (65536 / disp_height) * fft_scale;
+                    if (fft_out[0] > disp_height) {
+                        fft_out[0] = disp_height;
+                    } else if (fft_out[0] < 1) {
+                        fft_out[0] = 1;
+                    }
 
-                for (uint16_t k=1; k<FFT_N/2; k++) {
-                    fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                    fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
-                    if (fft_out[k] > disp_height) {
-                        fft_out[k] = disp_height;
-                    } else if (fft_out[k] < 1) {
-                        fft_out[k] = 1;
+                    for (uint16_t k=1; k<FFT_N/2; k++) {
+                        fft_amp[k] = sqrt(pow(fft_plan->output[2*k], 2) + pow(fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_out[k] = fft_amp[k] / (65536 / disp_height) * fft_scale;
+                        if (fft_out[k] > disp_height) {
+                            fft_out[k] = disp_height;
+                        } else if (fft_out[k] < 1) {
+                            fft_out[k] = 1;
+                        }
                     }
                 }
 
