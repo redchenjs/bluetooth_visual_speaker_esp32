@@ -10,6 +10,8 @@
 
 #include "esp_spp_api.h"
 
+extern esp_bd_addr_t spp_remote_bda;
+
 extern void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param);
 
 #endif /* INC_USER_BT_APP_SPP_H_ */

@@ -12,6 +12,8 @@
 #include "esp_a2dp_api.h"
 #include "esp_avrc_api.h"
 
+extern esp_bd_addr_t a2d_remote_bda;
+
 /**
  * @brief     callback function for A2DP sink
  */

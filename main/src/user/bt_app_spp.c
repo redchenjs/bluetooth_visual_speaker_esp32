@@ -60,9 +60,10 @@ static const char rsp_str[][24] = {
 
 static const char *s_spp_conn_state_str[] = {"disconnected", "connected"};
 
+esp_bd_addr_t spp_remote_bda = {0};
+
 void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
-    static esp_bd_addr_t bda = {0};
     switch (event) {
     case ESP_SPP_INIT_EVT:
         esp_spp_start_srv(sec_mask, role_slave, 0, SPP_SERVER_NAME);
@@ -78,7 +79,11 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 #endif
 
         ESP_LOGI(BT_SPP_TAG, "SPP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
-                 s_spp_conn_state_str[0], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+                 s_spp_conn_state_str[0],
+                 spp_remote_bda[0], spp_remote_bda[1], spp_remote_bda[2],
+                 spp_remote_bda[3], spp_remote_bda[4], spp_remote_bda[5]);
+
+        memset(&spp_remote_bda, 0x00, sizeof(esp_bd_addr_t));
 
         if (update_handle) {
             esp_ota_end(update_handle);
@@ -219,9 +224,12 @@ err0:
         esp_ble_gap_stop_advertising();
 #endif
 
-        memcpy(&bda, param->srv_open.rem_bda, sizeof(esp_bd_addr_t));
+        memcpy(&spp_remote_bda, param->srv_open.rem_bda, sizeof(esp_bd_addr_t));
+
         ESP_LOGI(BT_SPP_TAG, "SPP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
-                 s_spp_conn_state_str[1], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+                 s_spp_conn_state_str[1],
+                 spp_remote_bda[0], spp_remote_bda[1], spp_remote_bda[2],
+                 spp_remote_bda[3], spp_remote_bda[4], spp_remote_bda[5]);
 
         led_set_mode(7);
         break;

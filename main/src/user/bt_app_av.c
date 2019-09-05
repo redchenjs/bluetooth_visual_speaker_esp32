@@ -55,6 +55,8 @@ static const char *s_a2d_audio_state_str[] = {"suspended", "stopped", "started"}
 
 static esp_avrc_rn_evt_cap_mask_t s_avrc_peer_rn_cap;
 
+esp_bd_addr_t a2d_remote_bda = {0};
+
 /* callback for A2DP sink */
 void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 {
@@ -166,14 +168,18 @@ void bt_app_avrc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t *par
 
 static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 {
-    esp_a2d_cb_param_t *a2d = NULL;
+    esp_a2d_cb_param_t *a2d = (esp_a2d_cb_param_t *)(p_param);
     switch (event) {
     case ESP_A2D_CONNECTION_STATE_EVT: {
-        a2d = (esp_a2d_cb_param_t *)(p_param);
-        uint8_t *bda = a2d->conn_stat.remote_bda;
         ESP_LOGI(BT_A2D_TAG, "A2DP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
-                 s_a2d_conn_state_str[a2d->conn_stat.state], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+                 s_a2d_conn_state_str[a2d->conn_stat.state],
+                 a2d->conn_stat.remote_bda[0], a2d->conn_stat.remote_bda[1],
+                 a2d->conn_stat.remote_bda[2], a2d->conn_stat.remote_bda[3],
+                 a2d->conn_stat.remote_bda[4], a2d->conn_stat.remote_bda[5]);
+
         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
+            memset(&a2d_remote_bda, 0x00, sizeof(esp_bd_addr_t));
+
             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 
             audio_mp3_play(1);
@@ -183,6 +189,8 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
+            memcpy(&a2d_remote_bda, a2d->conn_stat.remote_bda, sizeof(esp_bd_addr_t));
+
             xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
 
             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
@@ -193,7 +201,6 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         break;
     }
     case ESP_A2D_AUDIO_STATE_EVT: {
-        a2d = (esp_a2d_cb_param_t *)(p_param);
         ESP_LOGI(BT_A2D_TAG, "A2DP audio state: %s", s_a2d_audio_state_str[a2d->audio_stat.state]);
         if (a2d->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
             led_set_mode(1);
@@ -203,7 +210,6 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         break;
     }
     case ESP_A2D_AUDIO_CFG_EVT: {
-        a2d = (esp_a2d_cb_param_t *)(p_param);
         ESP_LOGI(BT_A2D_TAG, "A2DP audio stream configuration, codec type %d", a2d->audio_cfg.mcc.type);
         // for now only SBC stream is supported
         if (a2d->audio_cfg.mcc.type == ESP_A2D_MCT_SBC) {
@@ -286,9 +292,11 @@ static void bt_av_hdl_avrc_ct_evt(uint16_t event, void *p_param)
     esp_avrc_ct_cb_param_t *rc = (esp_avrc_ct_cb_param_t *)(p_param);
     switch (event) {
     case ESP_AVRC_CT_CONNECTION_STATE_EVT: {
-        uint8_t *bda = rc->conn_stat.remote_bda;
         ESP_LOGI(BT_RC_CT_TAG, "AVRC conn_state evt: state %d, [%02x:%02x:%02x:%02x:%02x:%02x]",
-                 rc->conn_stat.connected, bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+                 rc->conn_stat.connected,
+                 rc->conn_stat.remote_bda[0], rc->conn_stat.remote_bda[1],
+                 rc->conn_stat.remote_bda[2], rc->conn_stat.remote_bda[3],
+                 rc->conn_stat.remote_bda[4], rc->conn_stat.remote_bda[5]);
 
         if (rc->conn_stat.connected) {
             // get remote supported event_ids of peer AVRCP Target
@@ -337,9 +345,11 @@ static void bt_av_hdl_avrc_tg_evt(uint16_t event, void *p_param)
     esp_avrc_tg_cb_param_t *rc = (esp_avrc_tg_cb_param_t *)(p_param);
     switch (event) {
     case ESP_AVRC_TG_CONNECTION_STATE_EVT: {
-        uint8_t *bda = rc->conn_stat.remote_bda;
         ESP_LOGI(BT_RC_TG_TAG, "AVRC conn_state evt: state %d, [%02x:%02x:%02x:%02x:%02x:%02x]",
-                 rc->conn_stat.connected, bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+                 rc->conn_stat.connected,
+                 rc->conn_stat.remote_bda[0], rc->conn_stat.remote_bda[1],
+                 rc->conn_stat.remote_bda[2], rc->conn_stat.remote_bda[3],
+                 rc->conn_stat.remote_bda[4], rc->conn_stat.remote_bda[5]);
         break;
     }
     case ESP_AVRC_TG_PASSTHROUGH_CMD_EVT: {
