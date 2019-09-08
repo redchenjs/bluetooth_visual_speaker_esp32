@@ -126,7 +126,9 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     switch (event) {
     case ESP_GATTS_REG_EVT:
         // generate a resolvable random address
+#ifdef CONFIG_BLE_USE_RANDOM_ADDR
         esp_ble_gap_config_local_privacy(true);
+#endif
         gl_profile_tab[PROFILE_A_APP_ID].service_id.is_primary = true;
         gl_profile_tab[PROFILE_A_APP_ID].service_id.id.inst_id = 0x00;
         gl_profile_tab[PROFILE_A_APP_ID].service_id.id.uuid.len = ESP_UUID_LEN_16;

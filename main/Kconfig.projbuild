@@ -26,10 +26,17 @@ config ENABLE_BLE_CONTROL_IF
     help
         Select this to enable BLE Control Interface.
 
+config BLE_USE_RANDOM_ADDR
+    bool "Use Random Address"
+    default y
+    depends on ENABLE_BLE_CONTROL_IF
+    help
+        Generate a resolvable random address for BLE Control Interface.
+
 config BLE_ADV_NAME
     string "BLE Advertising Name"
     default "Bluetooth Speaker Control"
-    depends on ENABLE_BLE_CONTROL_IF
+    depends on ENABLE_BLE_CONTROL_IF && BLE_USE_RANDOM_ADDR
     help
         Advertising name for BLE Control Interface.
 
