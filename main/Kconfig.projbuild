@@ -1,5 +1,6 @@
 menu "Bluetooth Speaker"
 
+menu "Bluetooth Configuration"
 config BT_NAME
     string "Bluetooth Name"
     default "Bluetooth Speaker"
@@ -12,22 +13,14 @@ config ENABLE_OTA_OVER_SPP
     help
         Enable OTA feature, you can use the SPP profile to upload the new firmware.
 
-menu "VFX Configuration"
-config ENABLE_VFX
-    bool "Enable Visual Effects Output"
-    default n
-    help
-        Select this to enable Visual Effects Output.
-
 config ENABLE_BLE_CONTROL_IF
     bool "Enable BLE Control Interface"
     default y
-    depends on ENABLE_VFX
     help
         Select this to enable BLE Control Interface.
 
 config BLE_USE_RANDOM_ADDR
-    bool "Use Random Address"
+    bool "Use Random BLE Address"
     default y
     depends on ENABLE_BLE_CONTROL_IF
     help
@@ -39,6 +32,14 @@ config BLE_ADV_NAME
     depends on ENABLE_BLE_CONTROL_IF && BLE_USE_RANDOM_ADDR
     help
         Advertising name for BLE Control Interface.
+endmenu
+
+menu "VFX Configuration"
+config ENABLE_VFX
+    bool "Enable Visual Effects Output"
+    default n
+    help
+        Select this to enable Visual Effects Output.
 
 choice VFX_OUTPUT
     prompt "VFX Output Device"
