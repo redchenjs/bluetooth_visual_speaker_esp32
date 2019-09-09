@@ -79,6 +79,9 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (uxBits & BT_OTA_RESTART_BIT) {
+            vTaskDelay(1000 / portTICK_RATE_MS);
+
+            ESP_LOGW(BT_SPP_TAG, "restart now");
             esp_restart();
         }
 
