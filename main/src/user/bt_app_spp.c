@@ -30,7 +30,7 @@
 #define BT_SPP_TAG "bt_spp"
 #define BT_OTA_TAG "bt_ota"
 
-#define SPP_SERVER_NAME "FW+CMD"
+#define SPP_SERVER_NAME "FW"
 
 static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
 static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
