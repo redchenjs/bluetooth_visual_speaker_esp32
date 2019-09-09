@@ -1737,8 +1737,6 @@ exit:
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            ESP_LOGI(TAG, "suspended.");
-
             xEventGroupWaitBits(
                 user_event_group,
                 VFX_RELOAD_BIT,
@@ -1758,7 +1756,7 @@ void vfx_set_mode(uint8_t idx)
     vfx_mode = idx;
     ESP_LOGI(TAG, "mode 0x%02X", vfx_mode);
 
-    xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
+    xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
 #endif
 }
 
