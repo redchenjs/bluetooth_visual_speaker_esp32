@@ -185,9 +185,8 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             audio_player_play_file(1);
             led_set_mode(3);
 
-            xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
-            xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
+            xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             memcpy(&a2d_remote_bda, a2d->conn_stat.remote_bda, sizeof(esp_bd_addr_t));
 

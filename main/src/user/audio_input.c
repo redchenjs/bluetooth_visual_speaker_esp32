@@ -75,11 +75,10 @@ void audio_input_set_mode(uint8_t idx)
         xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
         xEventGroupClearBits(user_event_group, AUDIO_INPUT_LOOP_BIT);
     } else if (audio_input_mode == 2) {
-        xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
-        xEventGroupSetBits(user_event_group, AUDIO_INPUT_LOOP_BIT);
+        xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT | AUDIO_INPUT_LOOP_BIT);
     } else {
-        xEventGroupClearBits(user_event_group, AUDIO_INPUT_RUN_BIT);
-        xEventGroupClearBits(user_event_group, AUDIO_INPUT_LOOP_BIT);
+        xEventGroupClearBits(user_event_group, AUDIO_INPUT_RUN_BIT | AUDIO_INPUT_LOOP_BIT);
+        xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
     }
 }
 
