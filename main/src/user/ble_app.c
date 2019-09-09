@@ -15,6 +15,7 @@
 
 #include "user/ble_app_gatts.h"
 
+#define BLE_APP_TAG "ble_app"
 #define BLE_GAP_TAG "ble_gap"
 
 static uint8_t adv_config_done = 0;
@@ -119,4 +120,6 @@ void ble_app_init(void)
     ESP_ERROR_CHECK(esp_ble_gatts_app_register(0));
 
     ESP_ERROR_CHECK(esp_ble_gatt_set_local_mtu(500));
+
+    ESP_LOGI(BLE_APP_TAG, "started.");
 }
