@@ -72,15 +72,15 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
     case ESP_SPP_OPEN_EVT:
         break;
     case ESP_SPP_CLOSE_EVT:
-        esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-        esp_ble_gap_start_advertising(&adv_params);
-#endif
-
         ESP_LOGI(BT_SPP_TAG, "SPP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_spp_conn_state_str[0],
                  spp_remote_bda[0], spp_remote_bda[1], spp_remote_bda[2],
                  spp_remote_bda[3], spp_remote_bda[4], spp_remote_bda[5]);
+
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+        if (uxBits & BT_OTA_RESTART_BIT) {
+            esp_restart();
+        }
 
         memset(&spp_remote_bda, 0x00, sizeof(esp_bd_addr_t));
 
@@ -101,6 +101,11 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
         led_set_mode(3);
 
+        esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+        esp_ble_gap_start_advertising(&adv_params);
+#endif
+
         xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
         break;
     case ESP_SPP_START_EVT:
@@ -112,7 +117,9 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             if (strncmp(fw_cmd[0], (const char *)param->data_ind.data, strlen(fw_cmd[0])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+RST");
 
-                esp_restart();
+                xEventGroupSetBits(user_event_group, BT_OTA_RESTART_BIT);
+
+                esp_spp_disconnect(param->write.handle);
             } else if (strncmp(fw_cmd[1], (const char *)param->data_ind.data, strlen(fw_cmd[1])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+VER?");
 
