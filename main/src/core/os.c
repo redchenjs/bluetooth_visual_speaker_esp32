@@ -13,7 +13,7 @@
 #include "freertos/task.h"
 
 #include "core/os.h"
-#include "user/audio_mp3.h"
+#include "user/audio_player.h"
 
 #define TAG "os"
 
@@ -62,6 +62,6 @@ void os_init(void)
     user_event_group = xEventGroupCreate();
 
 #ifdef CONFIG_ENABLE_WAKEUP_KEY
-    audio_mp3_play_file(2);
+    audio_player_play_file(2);
 #endif
 }

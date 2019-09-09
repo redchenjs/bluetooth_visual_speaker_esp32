@@ -15,7 +15,7 @@
 #include "core/os.h"
 #include "user/vfx.h"
 #include "user/bt_app_av.h"
-#include "user/audio_mp3.h"
+#include "user/audio_player.h"
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
 void key_sleep_handle(void)
@@ -29,10 +29,10 @@ void key_sleep_handle(void)
 
     vfx_set_mode(0);
 
-    audio_mp3_play_file(3);
+    audio_player_play_file(3);
     xEventGroupWaitBits(
         user_event_group,
-        AUDIO_MP3_IDLE_BIT,
+        AUDIO_PLAYER_IDLE_BIT,
         pdFALSE,
         pdFALSE,
         portMAX_DELAY

@@ -12,16 +12,16 @@
 #include "freertos/event_groups.h"
 
 typedef enum user_event_group_bits {
-    VFX_RELOAD_BIT       = BIT0,
-    VFX_FFT_EXEC_BIT     = BIT1,
-    VFX_FFT_FULL_BIT     = BIT2,
-    KEY_SCAN_RUN_BIT     = BIT3,
-    BT_A2DP_IDLE_BIT     = BIT4,
-    BT_OTA_LOCKED_BIT    = BIT5,
-    AUDIO_MP3_RUN_BIT    = BIT6,
-    AUDIO_MP3_IDLE_BIT   = BIT7,
-    AUDIO_INPUT_RUN_BIT  = BIT8,
-    AUDIO_INPUT_LOOP_BIT = BIT9,
+    VFX_RELOAD_BIT        = BIT0,
+    VFX_FFT_EXEC_BIT      = BIT1,
+    VFX_FFT_FULL_BIT      = BIT2,
+    KEY_SCAN_RUN_BIT      = BIT3,
+    BT_A2DP_IDLE_BIT      = BIT4,
+    BT_OTA_LOCKED_BIT     = BIT5,
+    AUDIO_INPUT_RUN_BIT   = BIT6,
+    AUDIO_INPUT_LOOP_BIT  = BIT7,
+    AUDIO_PLAYER_RUN_BIT  = BIT8,
+    AUDIO_PLAYER_IDLE_BIT = BIT9,
 } user_event_group_bits_t;
 
 extern EventGroupHandle_t user_event_group;

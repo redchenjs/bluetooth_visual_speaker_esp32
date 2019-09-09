@@ -28,7 +28,7 @@
 #include "user/led.h"
 #include "user/vfx.h"
 #include "user/ble_app.h"
-#include "user/audio_mp3.h"
+#include "user/audio_player.h"
 #include "user/bt_app_av.h"
 #include "user/bt_app_core.h"
 
@@ -85,7 +85,7 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 #endif
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    if (uxBits & BT_A2DP_IDLE_BIT || uxBits & AUDIO_MP3_RUN_BIT) {
+    if (uxBits & BT_A2DP_IDLE_BIT || uxBits & AUDIO_PLAYER_RUN_BIT) {
         return;
     }
 #endif
@@ -182,7 +182,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 
-            audio_mp3_play_file(1);
+            audio_player_play_file(1);
             led_set_mode(3);
 
             xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
@@ -195,7 +195,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
-            audio_mp3_play_file(0);
+            audio_player_play_file(0);
             led_set_mode(2);
         }
         break;

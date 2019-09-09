@@ -18,8 +18,8 @@
 #include "user/bt_app.h"
 #include "user/ble_app.h"
 #include "user/key_scan.h"
-#include "user/audio_mp3.h"
 #include "user/audio_input.h"
+#include "user/audio_player.h"
 
 static void core_init(void)
 {
@@ -69,21 +69,23 @@ static void user_init(void)
     key_scan_init();
 #endif
 
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    audio_mp3_init();
-#endif
-
 #ifndef CONFIG_AUDIO_INPUT_NONE
     audio_input_init();
+#endif
+
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+    audio_player_init();
 #endif
 }
 
 int app_main(void)
 {
     core_init();        // App Core
-    chip_init();        // OnChip Module
-    board_init();       // OnBoard Module
-    user_init();        // User Task
+
+    chip_init();        // OnChip Modules
+    board_init();       // OnBoard Modules
+
+    user_init();        // User Tasks
 
     return 0;
 }
