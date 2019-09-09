@@ -124,7 +124,7 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 static void bt_app_alloc_meta_buffer(esp_avrc_ct_cb_param_t *param)
 {
     esp_avrc_ct_cb_param_t *rc = (esp_avrc_ct_cb_param_t *)(param);
-    uint8_t *attr_text = (uint8_t *) malloc(rc->meta_rsp.attr_length + 1);
+    uint8_t *attr_text = (uint8_t *)malloc(rc->meta_rsp.attr_length + 1);
 
     memcpy(attr_text, rc->meta_rsp.attr_text, rc->meta_rsp.attr_length);
 

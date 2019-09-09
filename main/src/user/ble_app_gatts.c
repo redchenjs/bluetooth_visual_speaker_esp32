@@ -11,6 +11,10 @@
 #include "esp_gatts_api.h"
 #include "esp_gap_ble_api.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+#include "core/os.h"
 #include "user/vfx.h"
 #include "user/ble_app.h"
 #include "user/audio_input.h"
@@ -242,6 +246,8 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_STOP_EVT:
         break;
     case ESP_GATTS_CONNECT_EVT: {
+        xEventGroupSetBits(user_event_group, BLE_OTA_LOCKED_BIT);
+
         esp_ble_gap_stop_advertising();
 
         uint8_t *bda = param->connect.remote_bda;
@@ -261,11 +267,13 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         break;
     }
     case ESP_GATTS_DISCONNECT_EVT: {
-        esp_ble_gap_start_advertising(&adv_params);
-
         uint8_t *bda = param->connect.remote_bda;
         ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[0], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+
+        esp_ble_gap_start_advertising(&adv_params);
+
+        xEventGroupClearBits(user_event_group, BLE_OTA_LOCKED_BIT);
         break;
     }
     case ESP_GATTS_CONF_EVT:

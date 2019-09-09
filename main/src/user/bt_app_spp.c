@@ -137,7 +137,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+UPD:%ld", image_length);
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-                if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT)) {
+                if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT) && !(uxBits & BLE_OTA_LOCKED_BIT)) {
 #ifndef CONFIG_AUDIO_INPUT_NONE
                     audio_input_prev_mode = audio_input_get_mode();
                     audio_input_set_mode(0);
