@@ -39,32 +39,6 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
         }
         break;
     }
-    case ESP_BT_GAP_PIN_REQ_EVT:{
-        if (param->pin_req.min_16_digit) {
-            ESP_LOGI(BT_GAP_TAG, "pin code: 0000 0000 0000 0000");
-            esp_bt_pin_code_t pin_code = {0};
-            esp_bt_gap_pin_reply(param->pin_req.bda, true, 16, pin_code);
-        } else {
-            ESP_LOGI(BT_GAP_TAG, "pin code: 1234");
-            esp_bt_pin_code_t pin_code;
-            pin_code[0] = '1';
-            pin_code[1] = '2';
-            pin_code[2] = '3';
-            pin_code[3] = '4';
-            esp_bt_gap_pin_reply(param->pin_req.bda, true, 4, pin_code);
-        }
-        break;
-    }
-    case ESP_BT_GAP_CFM_REQ_EVT:
-        ESP_LOGI(BT_GAP_TAG, "please compare the numeric value: %d", param->cfm_req.num_val);
-        esp_bt_gap_ssp_confirm_reply(param->cfm_req.bda, true);
-        break;
-    case ESP_BT_GAP_KEY_NOTIF_EVT:
-        ESP_LOGI(BT_GAP_TAG, "passkey: %d", param->key_notif.passkey);
-        break;
-    case ESP_BT_GAP_KEY_REQ_EVT:
-        ESP_LOGI(BT_GAP_TAG, "please enter passkey");
-        break;
     default:
         break;
     }
@@ -119,18 +93,17 @@ void bt_app_init(void)
     /* Bluetooth device name, connection mode and profile set up */
     bt_app_work_dispatch(bt_app_hdl_stack_evt, BT_APP_EVT_STACK_UP, NULL, 0, NULL);
 
-    /* Set default parameters for Secure Simple Pairing */
-    esp_bt_sp_param_t param_type = ESP_BT_SP_IOCAP_MODE;
-    esp_bt_io_cap_t iocap = ESP_BT_IO_CAP_IO;
-    esp_bt_gap_set_security_param(param_type, &iocap, sizeof(uint8_t));
-
     /*
      * Set default parameters for Legacy Pairing
-     * Use variable pin, input pin code when pairing
+     * Use fixed pin code
      */
-    esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_VARIABLE;
+    esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_FIXED;
     esp_bt_pin_code_t pin_code;
-    esp_bt_gap_set_pin(pin_type, 0, pin_code);
+    pin_code[0] = '1';
+    pin_code[1] = '2';
+    pin_code[2] = '3';
+    pin_code[3] = '4';
+    esp_bt_gap_set_pin(pin_type, 4, pin_code);
 
     ESP_LOGI(BT_APP_TAG, "started.");
 }
