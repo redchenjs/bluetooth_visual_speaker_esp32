@@ -166,7 +166,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                     data_recv = 0;
 
                     esp_spp_write(param->write.handle, strlen(rsp_str[0]), (uint8_t *)rsp_str[0]);
-                } else if (uxBits & BT_OTA_LOCKED_BIT) {
+                } else if (uxBits & BT_OTA_LOCKED_BIT || uxBits & BLE_OTA_LOCKED_BIT) {
                     esp_spp_write(param->write.handle, strlen(rsp_str[3]), (uint8_t *)rsp_str[3]);
                 } else {
                     esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
