@@ -21,7 +21,7 @@ config ENABLE_BLE_CONTROL_IF
 
 config BLE_USE_RANDOM_ADDR
     bool "Use Random BLE Address"
-    default y
+    default n
     depends on ENABLE_BLE_CONTROL_IF
     help
         Generate a resolvable random address for BLE Control Interface.
