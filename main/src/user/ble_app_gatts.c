@@ -79,23 +79,30 @@ static void gatts_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *pr
                     status = ESP_GATT_INVALID_ATTR_LEN;
                 }
             }
+
             esp_gatt_rsp_t *gatt_rsp = (esp_gatt_rsp_t *)malloc(sizeof(esp_gatt_rsp_t));
             gatt_rsp->attr_value.len = param->write.len;
             gatt_rsp->attr_value.handle = param->write.handle;
             gatt_rsp->attr_value.offset = param->write.offset;
             gatt_rsp->attr_value.auth_req = ESP_GATT_AUTH_REQ_NONE;
+
             memcpy(gatt_rsp->attr_value.value, param->write.value, param->write.len);
+
             esp_err_t response_err = esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, status, gatt_rsp);
             if (response_err != ESP_OK) {
                ESP_LOGE(BLE_GATTS_TAG, "send response error");
             }
+
             free(gatt_rsp);
+
             if (status != ESP_GATT_OK) {
                 return;
             }
+
             memcpy(prepare_write_env->prepare_buf + param->write.offset,
                    param->write.value,
                    param->write.len);
+
             prepare_write_env->prepare_len += param->write.len;
         } else {
             esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, status, NULL);
@@ -126,22 +133,24 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     switch (event) {
     case ESP_GATTS_REG_EVT:
         // generate a resolvable random address
-#ifdef CONFIG_BLE_USE_RANDOM_ADDR
         esp_ble_gap_config_local_privacy(true);
-#endif
+
         gl_profile_tab[PROFILE_A_APP_ID].service_id.is_primary = true;
         gl_profile_tab[PROFILE_A_APP_ID].service_id.id.inst_id = 0x00;
         gl_profile_tab[PROFILE_A_APP_ID].service_id.id.uuid.len = ESP_UUID_LEN_16;
         gl_profile_tab[PROFILE_A_APP_ID].service_id.id.uuid.uuid.uuid16 = GATTS_SERVICE_UUID_A;
+
         esp_ble_gatts_create_service(gatts_if, &gl_profile_tab[PROFILE_A_APP_ID].service_id, GATTS_NUM_HANDLE_A);
         break;
     case ESP_GATTS_READ_EVT: {
         esp_gatt_rsp_t rsp;
+
         uint8_t vfx_mode = vfx_get_mode();
         uint16_t vfx_scale = vfx_get_scale();
         uint16_t vfx_contrast = vfx_get_contrast();
         uint8_t vfx_backlight = vfx_get_backlight();
         uint8_t audio_input_mode = audio_input_get_mode();
+
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
         rsp.attr_value.len = 7;
@@ -152,6 +161,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         rsp.attr_value.value[4] = vfx_contrast & 0xff;
         rsp.attr_value.value[5] = vfx_backlight;
         rsp.attr_value.value[6] = audio_input_mode;
+
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
         break;
     }
@@ -176,6 +186,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                 ESP_LOGW(BLE_GATTS_TAG, "unknown command");
             }
         }
+
         gatts_write_event_env(gatts_if, &a_prepare_write_env, param);
         break;
     }
@@ -191,7 +202,9 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         gl_profile_tab[PROFILE_A_APP_ID].service_handle = param->create.service_handle;
         gl_profile_tab[PROFILE_A_APP_ID].char_uuid.len = ESP_UUID_LEN_16;
         gl_profile_tab[PROFILE_A_APP_ID].char_uuid.uuid.uuid16 = GATTS_CHAR_UUID_A;
+
         esp_ble_gatts_start_service(gl_profile_tab[PROFILE_A_APP_ID].service_handle);
+
         esp_err_t add_char_ret = esp_ble_gatts_add_char(gl_profile_tab[PROFILE_A_APP_ID].service_handle,
                                                         &gl_profile_tab[PROFILE_A_APP_ID].char_uuid,
                                                         ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
@@ -208,6 +221,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         gl_profile_tab[PROFILE_A_APP_ID].char_handle = param->add_char.attr_handle;
         gl_profile_tab[PROFILE_A_APP_ID].descr_uuid.len = ESP_UUID_LEN_16;
         gl_profile_tab[PROFILE_A_APP_ID].descr_uuid.uuid.uuid16 = GATTS_DESCR_UUID_A;
+
         esp_err_t add_descr_ret = esp_ble_gatts_add_char_descr(gl_profile_tab[PROFILE_A_APP_ID].service_handle,
                                                                &gl_profile_tab[PROFILE_A_APP_ID].descr_uuid,
                                                                ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
