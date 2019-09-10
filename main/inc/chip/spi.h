@@ -1,5 +1,5 @@
 /*
- * spi.c
+ * spi.h
  *
  *  Created on: 2018-02-10 16:37
  *      Author: Jack Chen <redchenjs@live.com>

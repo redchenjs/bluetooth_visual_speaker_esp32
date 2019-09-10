@@ -34,6 +34,8 @@ void hspi_init(void)
         .max_transfer_sz = ST7789_SCREEN_WIDTH*ST7789_SCREEN_HEIGHT*2
 #endif
     };
+    ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &buscfg, 1));
+
     spi_device_interface_config_t devcfg={
         .mode = 0,                                // SPI mode 0
         .spics_io_num = CONFIG_SPI_CS_PIN,        // CS pin
@@ -52,7 +54,6 @@ void hspi_init(void)
 #endif
         .flags = SPI_DEVICE_3WIRE | SPI_DEVICE_HALFDUPLEX
     };
-    ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &buscfg, 1));
     ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &devcfg, &hspi));
 
     ESP_LOGI(HSPI_TAG, "initialized, sclk: %d, mosi: %d, miso: %d, cs: %d",
