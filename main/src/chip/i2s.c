@@ -66,6 +66,7 @@ void i2s0_init(void)
 #endif // #ifdef CONFIG_AUDIO_OUTPUT_I2S0
     };
     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL));
+
     i2s_pin_config_t pin_config = {
 #if defined(CONFIG_AUDIO_OUTPUT_I2S0) || defined(CONFIG_AUDIO_INPUT_I2S0)
         .bck_io_num   = CONFIG_I2S0_BCLK_PIN,
@@ -145,6 +146,7 @@ void i2s1_init(void)
 #endif // #ifdef CONFIG_AUDIO_OUTPUT_I2S1
     };
     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_1, &i2s_config, 0, NULL));
+
     i2s_pin_config_t pin_config = {
         .bck_io_num   = CONFIG_I2S1_BCLK_PIN,
         .ws_io_num    = CONFIG_I2S1_LRCK_PIN,
