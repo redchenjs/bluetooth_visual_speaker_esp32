@@ -139,15 +139,15 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
                 if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT) && !(uxBits & BLE_OTA_LOCKED_BIT)) {
-                    i2s_output_deinit();
-#ifndef CONFIG_AUDIO_INPUT_NONE
-                    audio_input_prev_mode = audio_input_get_mode();
-                    audio_input_set_mode(0);
-#endif
 #ifdef CONFIG_ENABLE_VFX
                     vfx_prev_mode = vfx_get_mode();
                     vfx_set_mode(0);
 #endif
+#ifndef CONFIG_AUDIO_INPUT_NONE
+                    audio_input_prev_mode = audio_input_get_mode();
+                    audio_input_set_mode(0);
+#endif
+                    i2s_output_deinit();
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
                     if (update_partition != NULL) {
