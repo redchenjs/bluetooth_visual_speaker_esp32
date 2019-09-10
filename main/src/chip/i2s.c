@@ -19,56 +19,55 @@ static int i2s_output_bits_per_sample = 16;
 static int i2s_input_sample_rate = 44100;
 static int i2s_input_bits_per_sample = 16;
 
+static i2s_config_t i2s_output_config = {
+    .mode = I2S_MODE_MASTER | I2S_MODE_TX
+#if (CONFIG_AUDIO_OUTPUT_I2S_NUM == CONFIG_AUDIO_INPUT_I2S_NUM)
+          | I2S_MODE_RX
+#endif
+    ,
+    .communication_format = I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB,
+    .use_apll = 1,                                                          // Use APLL
+    .sample_rate = 44100,
+    .bits_per_sample = 16,
+    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL3,
+    .tx_desc_auto_clear = true,                                             // Auto clear tx descriptor on underflow
+    .dma_buf_count = 8,
+    .dma_buf_len = 128,
+    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
+};
+
+static i2s_config_t i2s_input_config = {
+    .mode = I2S_MODE_MASTER | I2S_MODE_RX
+#ifdef CONFIG_AUDIO_INPUT_PDM
+          | I2S_MODE_PDM
+#endif
+    ,
+    .communication_format = I2S_COMM_FORMAT_I2S_MSB | I2S_COMM_FORMAT_I2S,
+    .use_apll = 0,                                                          // Use PLL_D2
+    .sample_rate = 44100,
+    .bits_per_sample = 16,
+    .dma_buf_count = 2,
+    .dma_buf_len = 128,
+#ifdef CONFIG_AUDIO_INPUT_ONLY_LEFT
+    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,                            // left channel only
+#elif defined(CONFIG_AUDIO_INPUT_ONLY_RIGHT)
+    .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,                           // right channel only
+#else
+    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
+#endif
+};
+
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0) || (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
 void i2s0_init(void)
 {
-    i2s_config_t i2s_config = {
-        .mode = I2S_MODE_MASTER
-#ifdef CONFIG_AUDIO_OUTPUT_I2S0
-                | I2S_MODE_TX
-#endif
-#if defined(CONFIG_AUDIO_INPUT_I2S0) || defined(CONFIG_AUDIO_INPUT_PDM)
-                | I2S_MODE_RX
-#endif
-#ifdef CONFIG_AUDIO_INPUT_PDM
-                | I2S_MODE_PDM
-#endif
-        ,
-#ifdef CONFIG_AUDIO_INPUT_PDM
-        .communication_format = I2S_COMM_FORMAT_PCM,
+#if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0)
+    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_output_config, 0, NULL));
 #else
-        .communication_format = I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB,
+    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_input_config, 0, NULL));
 #endif
-#ifdef CONFIG_AUDIO_OUTPUT_I2S0
-        .use_apll = 1,                                                          // Use APLL
-        .sample_rate = i2s_output_sample_rate,
-        .bits_per_sample = i2s_output_bits_per_sample,
-        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL3,
-        .tx_desc_auto_clear = true,                                             // Auto clear tx descriptor on underflow
-        .dma_buf_count = 8,
-        .dma_buf_len = 128,
-        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
-#else
-        .use_apll = 0,                                                          // Use PLL_D2
-        .sample_rate = i2s_input_sample_rate,
-        .bits_per_sample = i2s_input_bits_per_sample,
-        .dma_buf_count = 2,
-        .dma_buf_len = 128,
-
-#ifdef CONFIG_AUDIO_INPUT_ONLY_LEFT
-        .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,                            // left channel only
-#elif defined(CONFIG_AUDIO_INPUT_ONLY_RIGHT)
-        .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,                           // right channel only
-#else
-        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
-#endif
-
-#endif // #ifdef CONFIG_AUDIO_OUTPUT_I2S0
-    };
-    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL));
 
     i2s_pin_config_t pin_config = {
-#if defined(CONFIG_AUDIO_OUTPUT_I2S0) || defined(CONFIG_AUDIO_INPUT_I2S0)
+#ifndef CONFIG_AUDIO_INPUT_PDM
         .bck_io_num   = CONFIG_I2S0_BCLK_PIN,
         .ws_io_num    = CONFIG_I2S0_LRCK_PIN,
 #ifdef CONFIG_AUDIO_OUTPUT_I2S0
@@ -77,15 +76,15 @@ void i2s0_init(void)
         .data_out_num = -1,
 #endif
 #ifdef CONFIG_AUDIO_INPUT_I2S0
-        .data_in_num  = CONFIG_I2S0_DIN_PIN
+        .data_in_num  = CONFIG_I2S0_DIN_PIN,
 #else
-        .data_in_num  = -1
+        .data_in_num  = -1,
 #endif
-#else
+#else // #ifndef CONFIG_AUDIO_INPUT_PDM
         .bck_io_num   = -1,
         .ws_io_num    = CONFIG_PDM_CLK_PIN,
         .data_out_num = -1,
-        .data_in_num  = CONFIG_PDM_DIN_PIN
+        .data_in_num  = CONFIG_PDM_DIN_PIN,
 #endif
     };
     ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_0, &pin_config));
@@ -109,43 +108,11 @@ void i2s0_deinit(void)
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 1) || (CONFIG_AUDIO_INPUT_I2S_NUM == 1)
 void i2s1_init(void)
 {
-    i2s_config_t i2s_config = {
-        .mode = I2S_MODE_MASTER
-#ifdef CONFIG_AUDIO_OUTPUT_I2S1
-                | I2S_MODE_TX
-#endif
-#ifdef CONFIG_AUDIO_INPUT_I2S1
-                | I2S_MODE_RX
-#endif
-        ,
-        .communication_format = I2S_COMM_FORMAT_I2S_MSB | I2S_COMM_FORMAT_I2S,
-#ifdef CONFIG_AUDIO_OUTPUT_I2S1
-        .use_apll = 1,                                                          // Use APLL
-        .sample_rate = i2s_output_sample_rate,
-        .bits_per_sample = i2s_output_bits_per_sample,
-        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL3,
-        .tx_desc_auto_clear = true,                                             // Auto clear tx descriptor on underflow
-        .dma_buf_count = 8,
-        .dma_buf_len = 128,
-        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
+#if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 1)
+    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_1, &i2s_output_config, 0, NULL));
 #else
-        .use_apll = 0,                                                          // Use PLL_D2
-        .sample_rate = i2s_input_sample_rate,
-        .bits_per_sample = i2s_input_bits_per_sample,
-        .dma_buf_count = 2,
-        .dma_buf_len = 128,
-
-#ifdef CONFIG_AUDIO_INPUT_ONLY_LEFT
-        .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,                            // left channel only
-#elif defined(CONFIG_AUDIO_INPUT_ONLY_RIGHT)
-        .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,                           // right channel only
-#else
-        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
+    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_1, &i2s_input_config, 0, NULL));
 #endif
-
-#endif // #ifdef CONFIG_AUDIO_OUTPUT_I2S1
-    };
-    ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_1, &i2s_config, 0, NULL));
 
     i2s_pin_config_t pin_config = {
         .bck_io_num   = CONFIG_I2S1_BCLK_PIN,
@@ -156,9 +123,9 @@ void i2s1_init(void)
         .data_out_num = -1,
 #endif
 #ifdef CONFIG_AUDIO_INPUT_I2S1
-        .data_in_num  = CONFIG_I2S1_DIN_PIN
+        .data_in_num  = CONFIG_I2S1_DIN_PIN,
 #else
-        .data_in_num  = -1
+        .data_in_num  = -1,
 #endif
     };
     ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_1, &pin_config));
