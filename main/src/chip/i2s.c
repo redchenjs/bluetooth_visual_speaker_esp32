@@ -56,9 +56,9 @@ void i2s0_init(void)
         .dma_buf_len = 128,
 
 #ifdef CONFIG_AUDIO_INPUT_ONLY_LEFT
-        .channel_format = I2S_CHANNEL_FMT_ALL_LEFT,                             // left channel only
+        .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,                            // left channel only
 #elif defined(CONFIG_AUDIO_INPUT_ONLY_RIGHT)
-        .channel_format = I2S_CHANNEL_FMT_ALL_RIGHT,                            // right channel only
+        .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,                           // right channel only
 #else
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
 #endif
@@ -135,9 +135,9 @@ void i2s1_init(void)
         .dma_buf_len = 128,
 
 #ifdef CONFIG_AUDIO_INPUT_ONLY_LEFT
-        .channel_format = I2S_CHANNEL_FMT_ALL_LEFT,                             // left channel only
+        .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,                            // left channel only
 #elif defined(CONFIG_AUDIO_INPUT_ONLY_RIGHT)
-        .channel_format = I2S_CHANNEL_FMT_ALL_RIGHT,                            // right channel only
+        .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,                           // right channel only
 #else
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
 #endif
