@@ -79,12 +79,6 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
 #endif
 
-#ifndef CONFIG_AUDIO_INPUT_NONE
-    if (uxBits & AUDIO_INPUT_LOOP_BIT) {
-        return;
-    }
-#endif
-
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
     if (uxBits & BT_A2DP_IDLE_BIT || uxBits & AUDIO_PLAYER_RUN_BIT) {
         return;
@@ -108,14 +102,30 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
     // Copy data to FFT input buffer
     if (vfx_fft_plan) {
         uint32_t idx = 0;
-        int16_t data_l = 0, data_r = 0;
 
-        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-            data_l = data[idx+1] << 8 | data[idx];
-            data_r = data[idx+3] << 8 | data[idx+2];
+#ifdef CONFIG_BT_AUDIO_FFT_ONLY_LEFT
+            int16_t data_l = 0;
+            for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
+                data_l = data[idx+1] << 8 | data[idx];
 
-            vfx_fft_plan->input[k] = (float)((data_l + data_r) / 2);
-        }
+                vfx_fft_plan->input[k] = (float)data_l;
+            }
+#elif defined(CONFIG_BT_AUDIO_FFT_ONLY_RIGHT)
+            int16_t data_r = 0;
+            for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
+                data_r = data[idx+3] << 8 | data[idx+2];
+
+                vfx_fft_plan->input[k] = (float)data_r;
+            }
+#else
+            int16_t data_l = 0, data_r = 0;
+            for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
+                data_l = data[idx+1] << 8 | data[idx];
+                data_r = data[idx+3] << 8 | data[idx+2];
+
+                vfx_fft_plan->input[k] = (float)((data_l + data_r) / 2);
+            }
+#endif
 
         xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
     }
@@ -224,7 +234,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                 sample_rate = 48000;
             }
 
-            i2s_set_output_sample_rate(sample_rate);
+            i2s_output_set_sample_rate(sample_rate);
 
             ESP_LOGI(BT_A2D_TAG, "configure audio player %x-%x-%x-%x",
                      a2d->audio_cfg.mcc.cie.sbc[0],

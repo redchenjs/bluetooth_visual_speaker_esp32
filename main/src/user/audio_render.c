@@ -43,5 +43,5 @@ void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num
 /* Called by the NXP modifications of libmad. Sets the needed output sample rate. */
 void set_dac_sample_rate(int rate)
 {
-    i2s_set_output_sample_rate(rate);
+    i2s_output_set_sample_rate(rate);
 }

@@ -102,9 +102,6 @@ void audio_player_play_file(uint8_t idx)
     }
     mp3_file_index = idx;
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-    if (uxBits & AUDIO_INPUT_LOOP_BIT) {
-        return;
-    }
     if (uxBits & AUDIO_PLAYER_RUN_BIT) {
         // Previous playback is still not complete
         playback_pending = 1;

@@ -69,21 +69,6 @@ choice AUDIO_INPUT
         bool "I2S-1"
 endchoice
 
-choice AUDIO_INPUT_CHANNEL
-    prompt "Audio Input Channel"
-    default AUDIO_INPUT_ONLY_LEFT
-    depends on !AUDIO_INPUT_NONE
-    help
-        Select Audio Input Channel.
-
-    config AUDIO_INPUT_ONLY_LEFT
-        bool "Left Channel"
-    config AUDIO_INPUT_ONLY_RIGHT
-        bool "Right Channel"
-    config AUDIO_INPUT_BOTH
-        bool "Both Channel"
-endchoice
-
 config AUDIO_INPUT_I2S_NUM
     int
     default 0 if AUDIO_INPUT_I2S0 || AUDIO_INPUT_PDM
@@ -180,6 +165,36 @@ config SCREEN_PANEL_OUTPUT_FFT
     bool "Display Audio FFT"
 config SCREEN_PANEL_OUTPUT_MMAP
     bool "Display CUBE0414's Memory Mapping"
+endchoice
+
+choice BT_AUDIO_FFT_CHANNEL
+    prompt "Bluetooth Audio FFT Channel"
+    default BT_AUDIO_FFT_BOTH
+    depends on ENABLE_VFX
+    help
+        Select Bluetooth Audio FFT Channel.
+
+    config BT_AUDIO_FFT_ONLY_LEFT
+        bool "Left Channel"
+    config BT_AUDIO_FFT_ONLY_RIGHT
+        bool "Right Channel"
+    config BT_AUDIO_FFT_BOTH
+        bool "Both Channel"
+endchoice
+
+choice AUDIO_INPUT_FFT_CHANNEL
+    prompt "Audio Input FFT Channel"
+    default AUDIO_INPUT_FFT_ONLY_LEFT
+    depends on ENABLE_VFX && !AUDIO_INPUT_NONE
+    help
+        Select Audio Input FFT Channel.
+
+    config AUDIO_INPUT_FFT_ONLY_LEFT
+        bool "Left Channel"
+    config AUDIO_INPUT_FFT_ONLY_RIGHT
+        bool "Right Channel"
+    config AUDIO_INPUT_FFT_BOTH
+        bool "Both Channel"
 endchoice
 
 config LIGHT_CUBE_DC_PIN

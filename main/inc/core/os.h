@@ -21,9 +21,8 @@ typedef enum user_event_group_bits {
     BT_OTA_RESTART_BIT    = BIT6,
     BLE_OTA_LOCKED_BIT    = BIT7,
     AUDIO_INPUT_RUN_BIT   = BIT8,
-    AUDIO_INPUT_LOOP_BIT  = BIT9,
-    AUDIO_PLAYER_RUN_BIT  = BIT10,
-    AUDIO_PLAYER_IDLE_BIT = BIT11,
+    AUDIO_PLAYER_RUN_BIT  = BIT9,
+    AUDIO_PLAYER_IDLE_BIT = BIT10,
 } user_event_group_bits_t;
 
 extern EventGroupHandle_t user_event_group;

@@ -13,12 +13,6 @@
 #define I2S0_TAG "i2s-0"
 #define I2S1_TAG "i2s-1"
 
-static int i2s_output_sample_rate = 44100;
-static int i2s_output_bits_per_sample = 16;
-
-static int i2s_input_sample_rate = 44100;
-static int i2s_input_bits_per_sample = 16;
-
 static i2s_config_t i2s_output_config = {
     .mode = I2S_MODE_MASTER | I2S_MODE_TX
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == CONFIG_AUDIO_INPUT_I2S_NUM)
@@ -28,7 +22,7 @@ static i2s_config_t i2s_output_config = {
     .communication_format = I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB,
     .use_apll = 1,                                                          // Use APLL
     .sample_rate = 44100,
-    .bits_per_sample = 16,
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
     .intr_alloc_flags = ESP_INTR_FLAG_LEVEL3,
     .tx_desc_auto_clear = true,                                             // Auto clear tx descriptor on underflow
     .dma_buf_count = 8,
@@ -36,6 +30,7 @@ static i2s_config_t i2s_output_config = {
     .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
 };
 
+#if !defined(CONFIG_AUDIO_INPUT_NONE) && (CONFIG_AUDIO_OUTPUT_I2S_NUM != CONFIG_AUDIO_INPUT_I2S_NUM)
 static i2s_config_t i2s_input_config = {
     .mode = I2S_MODE_MASTER | I2S_MODE_RX
 #ifdef CONFIG_AUDIO_INPUT_PDM
@@ -45,17 +40,12 @@ static i2s_config_t i2s_input_config = {
     .communication_format = I2S_COMM_FORMAT_I2S_MSB | I2S_COMM_FORMAT_I2S,
     .use_apll = 0,                                                          // Use PLL_D2
     .sample_rate = 44100,
-    .bits_per_sample = 16,
+    .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
     .dma_buf_count = 2,
     .dma_buf_len = 128,
-#ifdef CONFIG_AUDIO_INPUT_ONLY_LEFT
-    .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,                            // left channel only
-#elif defined(CONFIG_AUDIO_INPUT_ONLY_RIGHT)
-    .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,                           // right channel only
-#else
     .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
-#endif
 };
+#endif
 
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0) || (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
 void i2s0_init(void)
@@ -164,40 +154,10 @@ void i2s_output_deinit(void)
 #endif
 }
 
-void i2s_set_output_sample_rate(int rate)
+void i2s_output_set_sample_rate(int rate)
 {
-    if (rate != i2s_output_sample_rate) {
-        i2s_set_sample_rates(CONFIG_AUDIO_OUTPUT_I2S_NUM, rate);
-        i2s_output_sample_rate = rate;
+    if (rate != i2s_output_config.sample_rate) {
+        i2s_output_config.sample_rate = rate;
+        i2s_set_sample_rates(CONFIG_AUDIO_OUTPUT_I2S_NUM, i2s_output_config.sample_rate);
     }
-}
-
-void i2s_set_input_sample_rate(int rate)
-{
-#if !defined(CONFIG_AUDIO_INPUT_NONE) && (CONFIG_AUDIO_OUTPUT_I2S_NUM != CONFIG_AUDIO_INPUT_I2S_NUM)
-    if (rate != i2s_input_sample_rate) {
-        i2s_set_sample_rates(CONFIG_AUDIO_INPUT_I2S_NUM, rate);
-        i2s_input_sample_rate = rate;
-    }
-#endif
-}
-
-int i2s_get_output_sample_rate(void)
-{
-    return i2s_output_sample_rate;
-}
-
-int i2s_get_input_sample_rate(void)
-{
-    return i2s_input_sample_rate;
-}
-
-int i2s_get_output_bits_per_sample(void)
-{
-    return i2s_output_bits_per_sample;
-}
-
-int i2s_get_input_bits_per_sample(void)
-{
-    return i2s_input_bits_per_sample;
 }

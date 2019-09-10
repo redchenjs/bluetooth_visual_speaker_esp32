@@ -184,7 +184,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                 uint8_t vfx_backlight = param->write.value[1];
                 vfx_set_backlight(vfx_backlight);
             } else if (param->write.value[0] == 0x05 && param->write.len == 2) {
-                uint8_t audio_input_mode = param->write.value[1] % 0x03;
+                uint8_t audio_input_mode = param->write.value[1] % 2;
                 audio_input_set_mode(audio_input_mode);
             } else {
                 ESP_LOGW(BLE_GATTS_TAG, "unknown command");
