@@ -226,6 +226,21 @@ choice AUDIO_INPUT
         bool "I2S-1"
 endchoice
 
+choice AUDIO_INPUT_CHANNEL
+    prompt "Audio Input Channel"
+    default AUDIO_INPUT_ONLY_LEFT
+    depends on !AUDIO_INPUT_NONE
+    help
+        Select Audio Input Channel.
+
+    config AUDIO_INPUT_ONLY_LEFT
+        bool "Left Channel"
+    config AUDIO_INPUT_ONLY_RIGHT
+        bool "Right Channel"
+    config AUDIO_INPUT_BOTH
+        bool "Both Channel"
+endchoice
+
 config AUDIO_INPUT_I2S_NUM
     int
     default 0 if AUDIO_INPUT_I2S0 || AUDIO_INPUT_PDM

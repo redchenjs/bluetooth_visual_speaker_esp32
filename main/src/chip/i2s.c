@@ -47,14 +47,23 @@ void i2s0_init(void)
         .tx_desc_auto_clear = true,                                             // Auto clear tx descriptor on underflow
         .dma_buf_count = 8,
         .dma_buf_len = 128,
+        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
 #else
         .use_apll = 0,                                                          // Use PLL_D2
         .sample_rate = i2s_input_sample_rate,
         .bits_per_sample = i2s_input_bits_per_sample,
         .dma_buf_count = 2,
         .dma_buf_len = 128,
-#endif
+
+#ifdef CONFIG_AUDIO_INPUT_ONLY_LEFT
+        .channel_format = I2S_CHANNEL_FMT_ALL_LEFT,                             // left channel only
+#elif defined(CONFIG_AUDIO_INPUT_ONLY_RIGHT)
+        .channel_format = I2S_CHANNEL_FMT_ALL_RIGHT,                            // right channel only
+#else
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
+#endif
+
+#endif // #ifdef CONFIG_AUDIO_OUTPUT_I2S0
     };
     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL));
     i2s_pin_config_t pin_config = {
@@ -117,14 +126,23 @@ void i2s1_init(void)
         .tx_desc_auto_clear = true,                                             // Auto clear tx descriptor on underflow
         .dma_buf_count = 8,
         .dma_buf_len = 128,
+        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
 #else
         .use_apll = 0,                                                          // Use PLL_D2
         .sample_rate = i2s_input_sample_rate,
         .bits_per_sample = i2s_input_bits_per_sample,
         .dma_buf_count = 2,
         .dma_buf_len = 128,
-#endif
+
+#ifdef CONFIG_AUDIO_INPUT_ONLY_LEFT
+        .channel_format = I2S_CHANNEL_FMT_ALL_LEFT,                             // left channel only
+#elif defined(CONFIG_AUDIO_INPUT_ONLY_RIGHT)
+        .channel_format = I2S_CHANNEL_FMT_ALL_RIGHT,                            // right channel only
+#else
         .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
+#endif
+
+#endif // #ifdef CONFIG_AUDIO_OUTPUT_I2S1
     };
     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_1, &i2s_config, 0, NULL));
     i2s_pin_config_t pin_config = {
