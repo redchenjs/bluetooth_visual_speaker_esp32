@@ -34,6 +34,119 @@ config BLE_ADV_NAME
         Advertising name for BLE Control Interface.
 endmenu
 
+menu "Audio Configuration"
+choice AUDIO_OUTPUT
+    prompt "Audio Output"
+    default AUDIO_OUTPUT_I2S1
+    help
+        Select Audio Output Interface.
+
+    config AUDIO_OUTPUT_I2S0
+        bool "I2S-0"
+        depends on !AUDIO_INPUT_PDM
+    config AUDIO_OUTPUT_I2S1
+        bool "I2S-1"
+endchoice
+
+config AUDIO_OUTPUT_I2S_NUM
+    int
+    default 0 if AUDIO_OUTPUT_I2S0
+    default 1 if AUDIO_OUTPUT_I2S1
+
+choice AUDIO_INPUT
+    prompt "Audio Input"
+    default AUDIO_INPUT_NONE
+    help
+        Select Audio Input Interface.
+
+    config AUDIO_INPUT_NONE
+        bool "None"
+    config AUDIO_INPUT_PDM
+        bool "PDM"
+    config AUDIO_INPUT_I2S0
+        bool "I2S-0"
+    config AUDIO_INPUT_I2S1
+        bool "I2S-1"
+endchoice
+
+choice AUDIO_INPUT_CHANNEL
+    prompt "Audio Input Channel"
+    default AUDIO_INPUT_ONLY_LEFT
+    depends on !AUDIO_INPUT_NONE
+    help
+        Select Audio Input Channel.
+
+    config AUDIO_INPUT_ONLY_LEFT
+        bool "Left Channel"
+    config AUDIO_INPUT_ONLY_RIGHT
+        bool "Right Channel"
+    config AUDIO_INPUT_BOTH
+        bool "Both Channel"
+endchoice
+
+config AUDIO_INPUT_I2S_NUM
+    int
+    default 0 if AUDIO_INPUT_I2S0 || AUDIO_INPUT_PDM
+    default 1 if AUDIO_INPUT_I2S1
+    default 2 if AUDIO_INPUT_NONE
+
+config I2S0_BCLK_PIN
+    int "I2S-0 BCLK Pin"
+    default 12
+    depends on AUDIO_OUTPUT_I2S0 || AUDIO_INPUT_I2S0
+
+config I2S0_LRCK_PIN
+    int "I2S-0 LRCK Pin"
+    default 15
+    depends on AUDIO_OUTPUT_I2S0 || AUDIO_INPUT_I2S0
+
+config I2S0_DOUT_PIN
+    int "I2S-0 DOUT Pin"
+    default 19
+    depends on AUDIO_OUTPUT_I2S0
+
+config I2S0_DIN_PIN
+    int "I2S-0 DIN Pin"
+    default 13
+    depends on AUDIO_INPUT_I2S0
+
+config I2S1_BCLK_PIN
+    int "I2S-1 BCLK Pin"
+    default 22
+    depends on AUDIO_OUTPUT_I2S1 || AUDIO_INPUT_I2S1
+
+config I2S1_LRCK_PIN
+    int "I2S-1 LRCK Pin"
+    default 21
+    depends on AUDIO_OUTPUT_I2S1 || AUDIO_INPUT_I2S1
+
+config I2S1_DOUT_PIN
+    int "I2S-1 DOUT Pin"
+    default 19
+    depends on AUDIO_OUTPUT_I2S1
+
+config I2S1_DIN_PIN
+    int "I2S-1 DIN Pin"
+    default 13
+    depends on AUDIO_INPUT_I2S1
+
+config PDM_CLK_PIN
+    int "PDM CLK Pin"
+    default 13
+    depends on AUDIO_INPUT_PDM
+
+config PDM_DIN_PIN
+    int "PDM DIN Pin"
+    default 15
+    depends on AUDIO_INPUT_PDM
+
+config ENABLE_AUDIO_PROMPT
+    bool "Enable Audio Prompt"
+    default y
+    help
+        Select this to enable Audio Prompt.
+endmenu
+
 menu "VFX Configuration"
 config ENABLE_VFX
     bool "Enable Visual Effects Output"
@@ -189,119 +302,6 @@ config SLEEP_KEY_PIN
     int "Sleep Key Pin"
     default 0
     depends on ENABLE_SLEEP_KEY
-endmenu
-
-menu "Audio Configuration"
-choice AUDIO_OUTPUT
-    prompt "Audio Output"
-    default AUDIO_OUTPUT_I2S1
-    help
-        Select Audio Output Interface.
-
-    config AUDIO_OUTPUT_I2S0
-        bool "I2S-0"
-        depends on !AUDIO_INPUT_PDM
-    config AUDIO_OUTPUT_I2S1
-        bool "I2S-1"
-endchoice
-
-config AUDIO_OUTPUT_I2S_NUM
-    int
-    default 0 if AUDIO_OUTPUT_I2S0
-    default 1 if AUDIO_OUTPUT_I2S1
-
-choice AUDIO_INPUT
-    prompt "Audio Input"
-    default AUDIO_INPUT_NONE
-    help
-        Select Audio Input Interface.
-
-    config AUDIO_INPUT_NONE
-        bool "None"
-    config AUDIO_INPUT_PDM
-        bool "PDM"
-    config AUDIO_INPUT_I2S0
-        bool "I2S-0"
-    config AUDIO_INPUT_I2S1
-        bool "I2S-1"
-endchoice
-
-choice AUDIO_INPUT_CHANNEL
-    prompt "Audio Input Channel"
-    default AUDIO_INPUT_ONLY_LEFT
-    depends on !AUDIO_INPUT_NONE
-    help
-        Select Audio Input Channel.
-
-    config AUDIO_INPUT_ONLY_LEFT
-        bool "Left Channel"
-    config AUDIO_INPUT_ONLY_RIGHT
-        bool "Right Channel"
-    config AUDIO_INPUT_BOTH
-        bool "Both Channel"
-endchoice
-
-config AUDIO_INPUT_I2S_NUM
-    int
-    default 0 if AUDIO_INPUT_I2S0 || AUDIO_INPUT_PDM
-    default 1 if AUDIO_INPUT_I2S1
-    default 2 if AUDIO_INPUT_NONE
-
-config I2S0_BCLK_PIN
-    int "I2S-0 BCLK Pin"
-    default 12
-    depends on AUDIO_OUTPUT_I2S0 || AUDIO_INPUT_I2S0
-
-config I2S0_LRCK_PIN
-    int "I2S-0 LRCK Pin"
-    default 15
-    depends on AUDIO_OUTPUT_I2S0 || AUDIO_INPUT_I2S0
-
-config I2S0_DOUT_PIN
-    int "I2S-0 DOUT Pin"
-    default 19
-    depends on AUDIO_OUTPUT_I2S0
-
-config I2S0_DIN_PIN
-    int "I2S-0 DIN Pin"
-    default 13
-    depends on AUDIO_INPUT_I2S0
-
-config I2S1_BCLK_PIN
-    int "I2S-1 BCLK Pin"
-    default 22
-    depends on AUDIO_OUTPUT_I2S1 || AUDIO_INPUT_I2S1
-
-config I2S1_LRCK_PIN
-    int "I2S-1 LRCK Pin"
-    default 21
-    depends on AUDIO_OUTPUT_I2S1 || AUDIO_INPUT_I2S1
-
-config I2S1_DOUT_PIN
-    int "I2S-1 DOUT Pin"
-    default 19
-    depends on AUDIO_OUTPUT_I2S1
-
-config I2S1_DIN_PIN
-    int "I2S-1 DIN Pin"
-    default 13
-    depends on AUDIO_INPUT_I2S1
-
-config PDM_CLK_PIN
-    int "PDM CLK Pin"
-    default 13
-    depends on AUDIO_INPUT_PDM
-
-config PDM_DIN_PIN
-    int "PDM DIN Pin"
-    default 15
-    depends on AUDIO_INPUT_PDM
-
-config ENABLE_AUDIO_PROMPT
-    bool "Enable Audio Prompt"
-    default y
-    help
-        Select this to enable Audio Prompt.
 endmenu
 
 endmenu
