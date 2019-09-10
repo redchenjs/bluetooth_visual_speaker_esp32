@@ -80,9 +80,11 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (uxBits & BT_OTA_RESTART_BIT) {
-            ESP_LOGW(BT_SPP_TAG, "restart pending...");
+            for (int i=3; i>0; i--) {
+                ESP_LOGW(BT_SPP_TAG, "restart countdown...%d", i);
 
-            vTaskDelay(2000 / portTICK_RATE_MS);
+                vTaskDelay(1000 / portTICK_RATE_MS);
+            }
 
             ESP_LOGW(BT_SPP_TAG, "restart now");
             esp_restart();
