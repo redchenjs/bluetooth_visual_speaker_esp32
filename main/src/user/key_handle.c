@@ -14,7 +14,10 @@
 
 #include "core/os.h"
 #include "user/vfx.h"
-#include "user/bt_app_av.h"
+#include "user/bt_av.h"
+#include "user/bt_spp.h"
+#include "user/ble_gatts.h"
+#include "user/audio_input.h"
 #include "user/audio_player.h"
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
@@ -22,22 +25,32 @@ void key_sleep_handle(void)
 {
     xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
 
+#ifdef CONFIG_ENABLE_VFX
+    vfx_set_mode(0);
+#endif
+#ifndef CONFIG_AUDIO_INPUT_NONE
+    audio_input_set_mode(0);
+#endif
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+    audio_player_play_file(3);
+#endif
+
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
     if (!(uxBits & BT_A2DP_IDLE_BIT)) {
         esp_a2d_sink_disconnect(a2d_remote_bda);
     }
+#ifdef CONFIG_ENABLE_OTA_OVER_SPP
+    if (!(uxBits & BT_SPP_IDLE_BIT)) {
+        esp_spp_disconnect(spp_conn_handle);
+    }
+#endif
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+    if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
+        esp_ble_gatts_close(gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
+                            gl_profile_tab[PROFILE_A_APP_ID].conn_id);
+    }
+#endif
 
-    vfx_set_mode(0);
-
-    audio_player_play_file(3);
-    xEventGroupWaitBits(
-        user_event_group,
-        AUDIO_PLAYER_IDLE_BIT,
-        pdFALSE,
-        pdFALSE,
-        portMAX_DELAY
-    );
-
-    os_enter_sleep_mode();
+    os_power_sleep_wait(BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT | AUDIO_PLAYER_IDLE_BIT);
 }
 #endif // CONFIG_ENABLE_SLEEP_KEY

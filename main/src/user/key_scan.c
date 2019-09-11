@@ -47,8 +47,6 @@ static void key_scan_task_handle(void *pvParameter)
 
     vTaskDelay(2000 / portTICK_RATE_MS);
 
-    xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
-
     ESP_LOGI(TAG, "started.");
 
     while (1) {
@@ -80,5 +78,7 @@ static void key_scan_task_handle(void *pvParameter)
 
 void key_scan_init(void)
 {
-   xTaskCreatePinnedToCore(key_scan_task_handle, "KeyScanT", 2048, NULL, 9, NULL, 1);
+    xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
+
+    xTaskCreatePinnedToCore(key_scan_task_handle, "KeyScanT", 2048, NULL, 9, NULL, 1);
 }

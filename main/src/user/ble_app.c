@@ -13,7 +13,8 @@
 #include "esp_gap_ble_api.h"
 #include "esp_gatt_common_api.h"
 
-#include "user/ble_app_gatts.h"
+#include "core/os.h"
+#include "user/ble_gatts.h"
 
 #define BLE_APP_TAG "ble_app"
 #define BLE_GAP_TAG "ble_gap"
@@ -117,7 +118,7 @@ void ble_app_init(void)
     ESP_ERROR_CHECK(esp_ble_gatts_register_callback(ble_gatts_event_handler));
     ESP_ERROR_CHECK(esp_ble_gap_register_callback(ble_gap_event_handler));
 
-    ESP_ERROR_CHECK(esp_ble_gatts_app_register(0));
+    ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_A_APP_ID));
 
     ESP_ERROR_CHECK(esp_ble_gatt_set_local_mtu(500));
 

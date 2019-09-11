@@ -15,21 +15,26 @@ typedef enum user_event_group_bits {
     VFX_RELOAD_BIT        = BIT0,
     VFX_FFT_EXEC_BIT      = BIT1,
     VFX_FFT_FULL_BIT      = BIT2,
+
     KEY_SCAN_RUN_BIT      = BIT3,
-    BT_A2DP_IDLE_BIT      = BIT4,
-    BT_OTA_LOCKED_BIT     = BIT5,
-    BT_OTA_RESTART_BIT    = BIT6,
-    BLE_OTA_LOCKED_BIT    = BIT7,
-    AUDIO_INPUT_RUN_BIT   = BIT8,
-    AUDIO_PLAYER_RUN_BIT  = BIT9,
-    AUDIO_PLAYER_IDLE_BIT = BIT10,
+
+    BT_SPP_IDLE_BIT       = BIT4,
+    BT_A2DP_IDLE_BIT      = BIT5,
+    BT_OTA_LOCKED_BIT     = BIT6,
+    BLE_GATTS_IDLE_BIT    = BIT7,
+
+    OS_PWR_SLEEP_BIT      = BIT8,
+    OS_PWR_RESTART_BIT    = BIT9,
+
+    AUDIO_INPUT_RUN_BIT   = BIT10,
+    AUDIO_PLAYER_RUN_BIT  = BIT11,
+    AUDIO_PLAYER_IDLE_BIT = BIT12,
 } user_event_group_bits_t;
 
 extern EventGroupHandle_t user_event_group;
 
-#if defined(CONFIG_ENABLE_WAKEUP_KEY) || defined(CONFIG_ENABLE_SLEEP_KEY)
-    extern void os_enter_sleep_mode(void);
-#endif
+extern void os_power_sleep_wait(EventBits_t bits);
+extern void os_power_restart_wait(EventBits_t bits);
 
 extern void os_init(void);
 

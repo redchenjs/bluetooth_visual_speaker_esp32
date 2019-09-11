@@ -18,11 +18,10 @@
 
 #define BUFF_SIZE (FFT_N * 4)
 
-static uint8_t audio_input_mode = 0;
+static uint8_t audio_input_mode = 1;
 
 static void audio_input_task_handle(void *pvParameters)
 {
-#ifndef CONFIG_AUDIO_INPUT_NONE
     size_t bytes_read = 0;
     char data[BUFF_SIZE] = {0};
 
@@ -77,11 +76,11 @@ static void audio_input_task_handle(void *pvParameters)
         }
 #endif // CONFIG_ENABLE_VFX
     }
-#endif // CONFIG_AUDIO_INPUT_NONE
 }
 
 void audio_input_set_mode(uint8_t idx)
 {
+#ifndef CONFIG_AUDIO_INPUT_NONE
     audio_input_mode = idx;
     ESP_LOGI(TAG, "mode %u", audio_input_mode);
 
@@ -92,6 +91,7 @@ void audio_input_set_mode(uint8_t idx)
     }
 
     xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
+#endif
 }
 
 uint8_t audio_input_get_mode(void)
@@ -101,5 +101,7 @@ uint8_t audio_input_get_mode(void)
 
 void audio_input_init(void)
 {
+    xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
+
     xTaskCreatePinnedToCore(audio_input_task_handle, "AudioInputT", 2048, NULL, 8, NULL, 1);
 }

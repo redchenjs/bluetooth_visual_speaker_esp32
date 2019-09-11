@@ -1,5 +1,5 @@
 /*
- * ble_app_gatts.c
+ * ble_gatts.c
  *
  *  Created on: 2018-05-12 22:31
  *      Author: Jack Chen <redchenjs@live.com>
@@ -17,12 +17,10 @@
 #include "core/os.h"
 #include "user/vfx.h"
 #include "user/ble_app.h"
+#include "user/ble_gatts.h"
 #include "user/audio_input.h"
 
 #define BLE_GATTS_TAG "ble_gatts"
-
-#define PROFILE_NUM      1
-#define PROFILE_A_APP_ID 0
 
 #define GATTS_SERVICE_UUID_A 0x00FF
 #define GATTS_CHAR_UUID_A    0xFF01
@@ -31,6 +29,15 @@
 
 #define PREPARE_BUF_MAX_SIZE   1024
 #define GATTS_CHAR_VAL_LEN_MAX 0x40
+
+static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
+/* One gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT */
+gatts_profile_inst_t gl_profile_tab[PROFILE_NUM] = {
+    [PROFILE_A_APP_ID] = {
+        .gatts_cb = profile_a_event_handler,
+        .gatts_if = ESP_GATT_IF_NONE,       /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
+    },
+};
 
 typedef struct {
     uint8_t *prepare_buf;
@@ -46,21 +53,6 @@ static esp_attr_value_t gatts_char1_val = {
     .attr_len     = sizeof(ble_char_value_str),
     .attr_value   = ble_char_value_str,
 };
-
-typedef struct gatts_profile_inst {
-    esp_gatts_cb_t gatts_cb;
-    uint16_t gatts_if;
-    uint16_t app_id;
-    uint16_t conn_id;
-    uint16_t service_handle;
-    esp_gatt_srvc_id_t service_id;
-    uint16_t char_handle;
-    esp_bt_uuid_t char_uuid;
-    esp_gatt_perm_t perm;
-    esp_gatt_char_prop_t property;
-    uint16_t descr_handle;
-    esp_bt_uuid_t descr_uuid;
-} gatts_profile_inst_t;
 
 static const char *s_gatts_conn_state_str[] = {"disconnected", "connected"};
 
@@ -123,15 +115,6 @@ static void gatts_exec_write_event_env(prepare_type_env_t *prepare_write_env, es
     prepare_write_env->prepare_len = 0;
 }
 
-static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
-/* One gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT */
-static gatts_profile_inst_t gl_profile_tab[PROFILE_NUM] = {
-    [PROFILE_A_APP_ID] = {
-        .gatts_cb = profile_a_event_handler,
-        .gatts_if = ESP_GATT_IF_NONE,       /* Not get the gatt_if, so initial is ESP_GATT_IF_NONE */
-    },
-};
-
 static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
     switch (event) {
@@ -149,45 +132,84 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_READ_EVT: {
         esp_gatt_rsp_t rsp;
 
+#ifdef CONFIG_ENABLE_VFX
         uint8_t vfx_mode = vfx_get_mode();
         uint16_t vfx_scale = vfx_get_scale();
         uint16_t vfx_contrast = vfx_get_contrast();
         uint8_t vfx_backlight = vfx_get_backlight();
+#endif
+#ifndef CONFIG_AUDIO_INPUT_NONE
         uint8_t audio_input_mode = audio_input_get_mode();
+#endif
 
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
         rsp.attr_value.len = 7;
+#ifdef CONFIG_ENABLE_VFX
         rsp.attr_value.value[0] = vfx_mode;
         rsp.attr_value.value[1] = vfx_scale >> 8;
         rsp.attr_value.value[2] = vfx_scale & 0xff;
         rsp.attr_value.value[3] = vfx_contrast >> 8;
         rsp.attr_value.value[4] = vfx_contrast & 0xff;
         rsp.attr_value.value[5] = vfx_backlight;
+#endif
+#ifndef CONFIG_AUDIO_INPUT_NONE
         rsp.attr_value.value[6] = audio_input_mode;
+#endif
 
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
         break;
     }
     case ESP_GATTS_WRITE_EVT: {
         if (!param->write.is_prep) {
-            if (param->write.value[0] == 0x01 && param->write.len == 2) {
-                uint8_t vfx_mode = param->write.value[1];
-                vfx_set_mode(vfx_mode);
-            } else if (param->write.value[0] == 0x02 && param->write.len == 3) {
-                uint16_t vfx_scale = (param->write.value[1] << 8 | param->write.value[2]);
-                vfx_set_scale(vfx_scale);
-            } else if (param->write.value[0] == 0x03 && param->write.len == 3) {
-                uint16_t vfx_contrast = (param->write.value[1] << 8 | param->write.value[2]) % 0x0200;
-                vfx_set_contrast(vfx_contrast);
-            } else if (param->write.value[0] == 0x04 && param->write.len == 2) {
-                uint8_t vfx_backlight = param->write.value[1];
-                vfx_set_backlight(vfx_backlight);
-            } else if (param->write.value[0] == 0x05 && param->write.len == 2) {
-                uint8_t audio_input_mode = param->write.value[1] % 2;
-                audio_input_set_mode(audio_input_mode);
-            } else {
-                ESP_LOGW(BLE_GATTS_TAG, "unknown command");
+            switch (param->write.value[0]) {
+#ifdef CONFIG_ENABLE_VFX
+                case 0x01:
+                    if (param->write.len != 2) {
+                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
+                        break;
+                    }
+                    uint8_t vfx_mode = param->write.value[1];
+                    vfx_set_mode(vfx_mode);
+                    break;
+                case 0x02:
+                    if (param->write.len != 3) {
+                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
+                        break;
+                    }
+                    uint16_t vfx_scale = (param->write.value[1] << 8 | param->write.value[2]);
+                    vfx_set_scale(vfx_scale);
+                    break;
+                case 0x03:
+                    if (param->write.len != 3) {
+                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
+                        break;
+                    }
+                    uint16_t vfx_contrast = (param->write.value[1] << 8 | param->write.value[2]) % 0x0200;
+                    vfx_set_contrast(vfx_contrast);
+                    break;
+                case 0x04:
+                    if (param->write.len != 2) {
+                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
+                        break;
+                    }
+                    uint8_t vfx_backlight = param->write.value[1];
+                    vfx_set_backlight(vfx_backlight);
+                    break;
+#endif
+#ifndef CONFIG_AUDIO_INPUT_NONE
+                case 0x05:
+                    if (param->write.len != 2) {
+                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
+                        break;
+                    }
+                    uint8_t audio_input_mode = param->write.value[1] % 2;
+                    audio_input_set_mode(audio_input_mode);
+                    break;
+#endif
+                default:
+                    ESP_LOGW(BLE_GATTS_TAG, "unknown command");
+                    break;
             }
         }
 
@@ -246,7 +268,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_STOP_EVT:
         break;
     case ESP_GATTS_CONNECT_EVT: {
-        xEventGroupSetBits(user_event_group, BLE_OTA_LOCKED_BIT);
+        xEventGroupClearBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
         esp_ble_gap_stop_advertising();
 
@@ -273,7 +295,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
 
         esp_ble_gap_start_advertising(&adv_params);
 
-        xEventGroupClearBits(user_event_group, BLE_OTA_LOCKED_BIT);
+        xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
         break;
     }
     case ESP_GATTS_CONF_EVT:

@@ -1,5 +1,5 @@
 /*
- * bt_app_spp.c
+ * bt_spp.c
  *
  *  Created on: 2019-07-03 15:48
  *      Author: Jack Chen <redchenjs@live.com>
@@ -24,7 +24,9 @@
 #include "chip/i2s.h"
 #include "user/led.h"
 #include "user/vfx.h"
+#include "user/bt_av.h"
 #include "user/ble_app.h"
+#include "user/ble_gatts.h"
 #include "user/audio_input.h"
 
 #define BT_SPP_TAG "bt_spp"
@@ -60,6 +62,7 @@ static const char rsp_str[][24] = {
 
 static const char *s_spp_conn_state_str[] = {"disconnected", "connected"};
 
+uint32_t spp_conn_handle = 0;
 esp_bd_addr_t spp_remote_bda = {0};
 
 void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
@@ -78,19 +81,9 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                  spp_remote_bda[0], spp_remote_bda[1], spp_remote_bda[2],
                  spp_remote_bda[3], spp_remote_bda[4], spp_remote_bda[5]);
 
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (uxBits & BT_OTA_RESTART_BIT) {
-            for (int i=3; i>0; i--) {
-                ESP_LOGW(BT_SPP_TAG, "restart countdown...%d", i);
-
-                vTaskDelay(1000 / portTICK_RATE_MS);
-            }
-
-            ESP_LOGW(BT_SPP_TAG, "restart now");
-            esp_restart();
-        }
-
         memset(&spp_remote_bda, 0x00, sizeof(esp_bd_addr_t));
+
+        spp_conn_handle = 0;
 
         if (update_handle) {
             esp_ota_end(update_handle);
@@ -105,16 +98,20 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 #ifdef CONFIG_ENABLE_VFX
             vfx_set_mode(vfx_prev_mode);
 #endif
+
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+            esp_ble_gap_start_advertising(&adv_params);
+#endif
+            esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+
+            xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
         }
 
+#ifdef CONFIG_ENABLE_LED
         led_set_mode(3);
-
-        esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-        esp_ble_gap_start_advertising(&adv_params);
 #endif
 
-        xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
+        xEventGroupSetBits(user_event_group, BT_SPP_IDLE_BIT);
         break;
     case ESP_SPP_START_EVT:
         break;
@@ -125,7 +122,26 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             if (strncmp(fw_cmd[0], (const char *)param->data_ind.data, strlen(fw_cmd[0])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+RST");
 
-                xEventGroupSetBits(user_event_group, BT_OTA_RESTART_BIT);
+#ifdef CONFIG_ENABLE_VFX
+                vfx_set_mode(0);
+#endif
+#ifndef CONFIG_AUDIO_INPUT_NONE
+                audio_input_set_mode(0);
+#endif
+
+                EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+                if (!(uxBits & BT_A2DP_IDLE_BIT)) {
+                    esp_a2d_sink_disconnect(a2d_remote_bda);
+                }
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+                if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
+                    esp_ble_gatts_close(gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
+                                        gl_profile_tab[PROFILE_A_APP_ID].conn_id);
+                }
+                os_power_restart_wait(BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT);
+#else
+                os_power_restart_wait(BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT);
+#endif
 
                 esp_spp_disconnect(param->write.handle);
             } else if (strncmp(fw_cmd[1], (const char *)param->data_ind.data, strlen(fw_cmd[1])) == 0) {
@@ -140,7 +156,14 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+UPD:%ld", image_length);
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-                if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT) && !(uxBits & BLE_OTA_LOCKED_BIT)) {
+                if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT) && uxBits & BLE_GATTS_IDLE_BIT) {
+                    xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
+
+                    esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+                    esp_ble_gap_stop_advertising();
+#endif
+
 #ifdef CONFIG_ENABLE_VFX
                     vfx_prev_mode = vfx_get_mode();
                     vfx_set_mode(0);
@@ -149,6 +172,13 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                     audio_input_prev_mode = audio_input_get_mode();
                     audio_input_set_mode(0);
 #endif
+                    xEventGroupWaitBits(
+                        user_event_group,
+                        AUDIO_PLAYER_IDLE_BIT,
+                        pdFALSE,
+                        pdFALSE,
+                        portMAX_DELAY
+                    );
                     i2s_output_deinit();
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
@@ -169,7 +199,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                     data_recv = 0;
 
                     esp_spp_write(param->write.handle, strlen(rsp_str[0]), (uint8_t *)rsp_str[0]);
-                } else if (uxBits & BT_OTA_LOCKED_BIT || uxBits & BLE_OTA_LOCKED_BIT) {
+                } else if (uxBits & BT_OTA_LOCKED_BIT || !(uxBits & BLE_GATTS_IDLE_BIT)) {
                     esp_spp_write(param->write.handle, strlen(rsp_str[3]), (uint8_t *)rsp_str[3]);
                 } else {
                     esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
@@ -217,6 +247,13 @@ err0:
 #ifdef CONFIG_ENABLE_VFX
                 vfx_set_mode(vfx_prev_mode);
 #endif
+
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+                esp_ble_gap_start_advertising(&adv_params);
+#endif
+                esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+
+                xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
             }
         }
         break;
@@ -225,12 +262,9 @@ err0:
     case ESP_SPP_WRITE_EVT:
         break;
     case ESP_SPP_SRV_OPEN_EVT:
-        xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
+        xEventGroupClearBits(user_event_group, BT_SPP_IDLE_BIT);
 
-        esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-        esp_ble_gap_stop_advertising();
-#endif
+        spp_conn_handle = param->srv_open.handle;
 
         memcpy(&spp_remote_bda, param->srv_open.rem_bda, sizeof(esp_bd_addr_t));
 
@@ -239,7 +273,10 @@ err0:
                  spp_remote_bda[0], spp_remote_bda[1], spp_remote_bda[2],
                  spp_remote_bda[3], spp_remote_bda[4], spp_remote_bda[5]);
 
+#ifdef CONFIG_ENABLE_LED
         led_set_mode(7);
+#endif
+
         break;
     default:
         break;

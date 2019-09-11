@@ -1,5 +1,5 @@
 /*
- * bt_app_av.c
+ * bt_av.c
  *
  *  Created on: 2019-04-29 12:33
  *      Author: Jack Chen <redchenjs@live.com>
@@ -27,10 +27,10 @@
 #include "chip/i2s.h"
 #include "user/led.h"
 #include "user/vfx.h"
+#include "user/bt_av.h"
 #include "user/ble_app.h"
-#include "user/audio_player.h"
-#include "user/bt_app_av.h"
 #include "user/bt_app_core.h"
+#include "user/audio_player.h"
 
 #define BT_A2D_TAG   "bt_a2d"
 #define BT_RC_CT_TAG "bt_rc_ct"
@@ -193,8 +193,12 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
             audio_player_play_file(1);
+#endif
+#ifdef CONFIG_ENABLE_LED
             led_set_mode(3);
+#endif
 
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
             xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
@@ -205,18 +209,24 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
             audio_player_play_file(0);
+#endif
+#ifdef CONFIG_ENABLE_LED
             led_set_mode(2);
+#endif
         }
         break;
     }
     case ESP_A2D_AUDIO_STATE_EVT: {
         ESP_LOGI(BT_A2D_TAG, "A2DP audio state: %s", s_a2d_audio_state_str[a2d->audio_stat.state]);
+#ifdef CONFIG_ENABLE_LED
         if (a2d->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
             led_set_mode(1);
         } else {
             led_set_mode(2);
         }
+#endif
         break;
     }
     case ESP_A2D_AUDIO_CFG_EVT: {

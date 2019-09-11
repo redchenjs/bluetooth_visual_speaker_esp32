@@ -48,12 +48,6 @@ static void vfx_task_handle(void *pvParameter)
     vfx_contrast = 0x0190;
 #endif
 
-#ifndef CONFIG_AUDIO_INPUT_NONE
-    audio_input_set_mode(1);
-#endif
-
-    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-
     ESP_LOGI(TAG, "started.");
 
     while (1) {
@@ -1804,5 +1798,7 @@ uint8_t vfx_get_backlight(void)
 
 void vfx_init(void)
 {
+    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
+
     xTaskCreatePinnedToCore(vfx_task_handle, "VfxT", 5120, NULL, 7, NULL, 1);
 }

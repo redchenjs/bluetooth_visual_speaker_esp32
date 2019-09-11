@@ -1,12 +1,12 @@
 /*
- * bt_app_av.h
+ * bt_av.h
  *
  *  Created on: 2019-04-29 12:31
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#ifndef INC_USER_BT_APP_AV_H_
-#define INC_USER_BT_APP_AV_H_
+#ifndef INC_USER_BT_AV_H_
+#define INC_USER_BT_AV_H_
 
 #include <stdint.h>
 #include "esp_a2dp_api.h"
@@ -34,4 +34,4 @@ void bt_app_avrc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t *par
  */
 void bt_app_avrc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t *param);
 
-#endif /* INC_USER_BT_APP_AV_H_*/
+#endif /* INC_USER_BT_AV_H_*/

@@ -15,9 +15,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
+#include "core/os.h"
+#include "user/bt_av.h"
+#include "user/bt_spp.h"
 #include "user/bt_app.h"
-#include "user/bt_app_av.h"
-#include "user/bt_app_spp.h"
 #include "user/bt_app_core.h"
 
 #define BT_APP_TAG "bt_app"
@@ -87,6 +88,10 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
 
 void bt_app_init(void)
 {
+    xEventGroupSetBits(user_event_group, BT_SPP_IDLE_BIT);
+    xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
+    xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
+
     /* create application task */
     bt_app_task_start_up();
 
