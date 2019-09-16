@@ -1,17 +1,18 @@
 Bluetooth Speaker
 =================
 
-Bluetooth Speaker based on ESP32 chip with optional visual effects output.
+Bluetooth Speaker based on ESP32 chip with dynamic vision effects output.
 
 ## Main Features
 
 * A2DP Audio Streaming
-* I2S/PDM Input / I2S Output
+* I2S & PDM Input / I2S Output
 * VFX Output (Audio FFT / Rainbow / Stars / ...)
-* BLE Control Interface (for VFX Output)
-* Audio Prompt (Connected / Disconnected / Resume / Sleep)
-* Sleep/Resume (with External Key)
+* BLE Control Interface (for VFX Output & Audio Input)
+* NFC Bluetooth Pairing (with PN532 NFC Chip)
+* Audio Prompt (Connected / Disconnected / WakeUp / Sleep)
 * OTA Firmware Update (via SPP Profile)
+* Sleep & WakeUp Key
 
 ## Obtaining
 
