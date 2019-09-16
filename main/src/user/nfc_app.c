@@ -68,7 +68,7 @@ static void nfc_app_task(void *pvParameter)
         // Close NFC device
         nfc_close(pnd);
         // Reload Delay
-        vTaskDelay(500);
+        vTaskDelay(100);
     }
 
     nfc_exit(context);
