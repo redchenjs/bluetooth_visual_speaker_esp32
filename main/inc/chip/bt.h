@@ -8,6 +8,8 @@
 #ifndef INC_CHIP_BT_H_
 #define INC_CHIP_BT_H_
 
+extern const char *bt_dev_address;
+
 extern void bt_init(void);
 
 #endif /* INC_CHIP_BT_H_ */
