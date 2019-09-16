@@ -180,7 +180,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 #ifdef CONFIG_ENABLE_NFC_BT_PAIRING
                     nfc_app_set_mode(0);
 #endif
-
                     xEventGroupWaitBits(
                         user_event_group,
                         AUDIO_PLAYER_IDLE_BIT,
@@ -189,6 +188,8 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                         portMAX_DELAY
                     );
                     i2s_output_deinit();
+
+                    ESP_LOGI(BT_OTA_TAG, "%u bytes mem left", heap_caps_get_free_size(MALLOC_CAP_32BIT));
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
                     if (update_partition != NULL) {

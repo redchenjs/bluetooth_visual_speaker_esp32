@@ -161,3 +161,23 @@ void i2s_output_set_sample_rate(int rate)
         i2s_set_sample_rates(CONFIG_AUDIO_OUTPUT_I2S_NUM, i2s_output_config.sample_rate);
     }
 }
+
+#ifndef CONFIG_AUDIO_INPUT_NONE
+void i2s_input_init(void)
+{
+#if (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
+    i2s0_init();
+#else
+    i2s1_init();
+#endif
+}
+
+void i2s_input_deinit(void)
+{
+#if (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
+    i2s0_deinit();
+#else
+    i2s1_deinit();
+#endif
+}
+#endif

@@ -13,17 +13,18 @@
 #include "core/os.h"
 #include "chip/i2s.h"
 #include "user/vfx.h"
+#include "user/audio_input.h"
 
 #define TAG "audio_input"
 
-#define BUFF_SIZE (FFT_N * 4)
-
 static uint8_t audio_input_mode = 1;
 
-static void audio_input_task_handle(void *pvParameters)
+static TaskHandle_t audio_input_task_handle = NULL;
+
+static void audio_input_task(void *pvParameters)
 {
     size_t bytes_read = 0;
-    char data[BUFF_SIZE] = {0};
+    char data[FFT_N * 4] = {0};
 
     ESP_LOGI(TAG, "started.");
 
@@ -36,7 +37,7 @@ static void audio_input_task_handle(void *pvParameters)
             portMAX_DELAY
         );
 
-        i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, data, BUFF_SIZE, &bytes_read, portMAX_DELAY);
+        i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, data, FFT_N * 4, &bytes_read, portMAX_DELAY);
 
 #ifdef CONFIG_ENABLE_VFX
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
@@ -85,9 +86,15 @@ void audio_input_set_mode(uint8_t idx)
     ESP_LOGI(TAG, "mode %u", audio_input_mode);
 
     if (audio_input_mode) {
-        xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
+        if (!audio_input_task_handle) {
+            i2s_input_init();
+            audio_input_init();
+        }
     } else {
-        xEventGroupClearBits(user_event_group, AUDIO_INPUT_RUN_BIT);
+        if (audio_input_task_handle) {
+            audio_input_deinit();
+            i2s_input_deinit();
+        }
     }
 
     xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
@@ -103,5 +110,23 @@ void audio_input_init(void)
 {
     xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
 
-    xTaskCreatePinnedToCore(audio_input_task_handle, "AudioInputT", 2048, NULL, 8, NULL, 1);
+    xTaskCreatePinnedToCore(audio_input_task, "AudioInputT", 2048, NULL, 8, &audio_input_task_handle, 1);
+}
+
+void audio_input_deinit(void)
+{
+    xEventGroupClearBits(user_event_group, AUDIO_INPUT_RUN_BIT);
+
+    xEventGroupWaitBits(
+        user_event_group,
+        VFX_FFT_FULL_BIT,
+        pdFALSE,
+        pdFALSE,
+        portMAX_DELAY
+    );
+
+    vTaskDelete(audio_input_task_handle);
+    audio_input_task_handle = NULL;
+
+    ESP_LOGI(TAG, "stopped.");
 }

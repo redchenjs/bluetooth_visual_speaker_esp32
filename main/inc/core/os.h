@@ -16,19 +16,20 @@ typedef enum user_event_group_bits {
     VFX_FFT_EXEC_BIT      = BIT1,
     VFX_FFT_FULL_BIT      = BIT2,
 
-    KEY_SCAN_RUN_BIT      = BIT3,
+    NFC_APP_RUN_BIT       = BIT3,
+    KEY_SCAN_RUN_BIT      = BIT4,
 
-    BT_SPP_IDLE_BIT       = BIT4,
-    BT_A2DP_IDLE_BIT      = BIT5,
-    BT_OTA_LOCKED_BIT     = BIT6,
-    BLE_GATTS_IDLE_BIT    = BIT7,
+    BT_SPP_IDLE_BIT       = BIT5,
+    BT_A2DP_IDLE_BIT      = BIT6,
+    BT_OTA_LOCKED_BIT     = BIT7,
+    BLE_GATTS_IDLE_BIT    = BIT8,
 
-    OS_PWR_SLEEP_BIT      = BIT8,
-    OS_PWR_RESTART_BIT    = BIT9,
+    OS_PWR_SLEEP_BIT      = BIT9,
+    OS_PWR_RESTART_BIT    = BIT10,
 
-    AUDIO_INPUT_RUN_BIT   = BIT10,
-    AUDIO_PLAYER_RUN_BIT  = BIT11,
-    AUDIO_PLAYER_IDLE_BIT = BIT12,
+    AUDIO_INPUT_RUN_BIT   = BIT11,
+    AUDIO_PLAYER_RUN_BIT  = BIT12,
+    AUDIO_PLAYER_IDLE_BIT = BIT13,
 } user_event_group_bits_t;
 
 extern EventGroupHandle_t user_event_group;

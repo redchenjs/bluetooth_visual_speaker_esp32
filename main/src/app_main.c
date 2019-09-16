@@ -12,12 +12,17 @@
 #include "chip/nvs.h"
 #include "chip/spi.h"
 #include "chip/i2s.h"
+#include "chip/i2c.h"
+#include "chip/uart.h"
+
+#include "board/pn532.h"
 
 #include "user/led.h"
 #include "user/vfx.h"
+#include "user/key.h"
 #include "user/bt_app.h"
 #include "user/ble_app.h"
-#include "user/key_scan.h"
+#include "user/nfc_app.h"
 #include "user/audio_input.h"
 #include "user/audio_player.h"
 
@@ -34,6 +39,14 @@ static void chip_init(void)
 
     bt_init();
 
+#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
+    #ifdef CONFIG_PN532_IFCE_UART
+        uart1_init();
+    #else
+        i2c0_init();
+    #endif
+#endif
+
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0) || (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
     i2s0_init();
 #endif
@@ -47,7 +60,12 @@ static void chip_init(void)
 #endif
 }
 
-static void board_init(void) {}
+static void board_init(void)
+{
+#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
+    pn532_init();
+#endif
+}
 
 static void user_init(void)
 {
@@ -55,6 +73,10 @@ static void user_init(void)
 
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
     ble_app_init();
+#endif
+
+#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
+    nfc_app_init();
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
@@ -66,7 +88,7 @@ static void user_init(void)
 #endif
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
-    key_scan_init();
+    key_init();
 #endif
 
 #ifndef CONFIG_AUDIO_INPUT_NONE

@@ -7,13 +7,20 @@ config BT_NAME
     help
         Bluetooth name exposed by the device.
 
-config ENABLE_OTA_OVER_SPP
+menuconfig ENABLE_OTA_OVER_SPP
     bool "Enable OTA over SPP"
     default n
     help
         Enable OTA feature, you can use the SPP profile to upload the new firmware.
 
-config ENABLE_BLE_CONTROL_IF
+config BT_SPP_SERVER_NAME
+    string "SPP Server Name"
+    default "OTA"
+    depends on ENABLE_OTA_OVER_SPP
+    help
+        Bluetooth SPP server name.
+
+menuconfig ENABLE_BLE_CONTROL_IF
     bool "Enable BLE Control Interface"
     default y
     help
@@ -32,6 +39,40 @@ config BLE_ADV_NAME
     depends on ENABLE_BLE_CONTROL_IF && BLE_USE_RANDOM_ADDR
     help
         Advertising name for BLE Control Interface.
+
+menuconfig ENABLE_NFC_BT_PAIRING
+    bool "Enable NFC Bluetooth Pairing"
+    default n
+    help
+        Select this to enable NFC bluetooth pairing.
+
+choice PN532_IFCE
+    prompt "PN532 Interface Type"
+    default PN532_IFCE_UART
+    depends on ENABLE_NFC_BT_PAIRING
+    help
+        Select the interface type to communicate with PN532.
+
+config PN532_IFCE_UART
+    bool "UART"
+config PN532_IFCE_I2C
+    bool "I2C"
+endchoice
+
+config PN532_RST_PIN
+    int "PN532 RST Pin"
+    default 26
+    depends on ENABLE_NFC_BT_PAIRING
+
+config PN532_TX_SDA_PIN
+    int "PN532 TX/SDA Pin"
+    default 17
+    depends on ENABLE_NFC_BT_PAIRING
+
+config PN532_RX_SCL_PIN
+    int "PN532 RX/SCL Pin"
+    default 16
+    depends on ENABLE_NFC_BT_PAIRING
 endmenu
 
 menu "Audio Configuration"
