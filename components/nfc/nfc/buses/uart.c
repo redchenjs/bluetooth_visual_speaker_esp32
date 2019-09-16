@@ -80,12 +80,18 @@ uart_close(const uart_port_t port)
 int
 uart_receive(uart_port_t port, uint8_t *pbtRx, const size_t szRx, void *abort_p, int timeout)
 {
-  int res = uart_read_bytes(port, pbtRx, szRx, timeout / portTICK_RATE_MS);
+  int res = 0;
+  if (timeout) {
+    res = uart_read_bytes(port, pbtRx, szRx, timeout / portTICK_RATE_MS);
+  } else {
+    res = uart_read_bytes(port, pbtRx, szRx, portMAX_DELAY);
+  }
   LOG_HEX(LOG_GROUP, "RX", pbtRx, szRx);
-  if (res == szRx)
+  if (res == szRx) {
     return NFC_SUCCESS;
-  else
+  } else {
     return NFC_EIO;
+  }
 }
 
 int
@@ -94,8 +100,9 @@ uart_send(uart_port_t port, const uint8_t *pbtTx, const size_t szTx, int timeout
   (void) timeout;
   LOG_HEX(LOG_GROUP, "TX", pbtTx, szTx);
   int res = uart_write_bytes(port, (const char *)pbtTx, szTx);
-  if (res == szTx)
+  if (res == szTx) {
     return NFC_SUCCESS;
-  else
+  } else {
     return NFC_EIO;
+  }
 }

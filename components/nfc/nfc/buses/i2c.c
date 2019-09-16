@@ -94,7 +94,12 @@ i2c_receive(i2c_port_t port, uint8_t *pbtRx, const size_t szRx, void *abort_p, i
   if (mode == 0 || mode == 1) {
     vTaskDelayUntil(&xLastWakeTime, PN532_BUS_FREE_TIME / portTICK_PERIOD_MS);
   }
-  int res = i2c_master_cmd_begin(port, cmd, timeout / portTICK_RATE_MS);
+  int res = 0;
+  if (timeout) {
+    res = i2c_master_cmd_begin(port, cmd, timeout / portTICK_RATE_MS);
+  } else {
+    res = i2c_master_cmd_begin(port, cmd, portMAX_DELAY);
+  }
   if (mode == 0 || mode == 3) {
     xLastWakeTime = xTaskGetTickCount();
   }
@@ -127,7 +132,12 @@ i2c_send(i2c_port_t port, const uint8_t *pbtTx, const size_t szTx, int timeout)
   i2c_master_stop(cmd);
 
   vTaskDelayUntil(&xLastWakeTime, PN532_BUS_FREE_TIME / portTICK_PERIOD_MS);
-  int res = i2c_master_cmd_begin(port, cmd, timeout / portTICK_RATE_MS);
+  int res = 0;
+  if (timeout) {
+    res = i2c_master_cmd_begin(port, cmd, timeout / portTICK_RATE_MS);
+  } else {
+    res = i2c_master_cmd_begin(port, cmd, portMAX_DELAY);
+  }
   xLastWakeTime = xTaskGetTickCount();
 
   i2c_cmd_link_delete(cmd);
