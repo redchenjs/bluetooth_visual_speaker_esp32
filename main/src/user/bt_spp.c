@@ -33,11 +33,12 @@
 #define BT_SPP_TAG "bt_spp"
 #define BT_OTA_TAG "bt_ota"
 
-static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
-static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
-
+#ifdef CONFIG_ENABLE_OTA_OVER_SPP
 uint8_t audio_input_prev_mode = 0;
 uint8_t vfx_prev_mode = 0;
+
+uint32_t spp_conn_handle = 0;
+esp_bd_addr_t spp_remote_bda = {0};
 
 static long image_length = 0;
 static long data_recv = 0;
@@ -61,8 +62,8 @@ static const char rsp_str[][24] = {
 
 static const char *s_spp_conn_state_str[] = {"disconnected", "connected"};
 
-uint32_t spp_conn_handle = 0;
-esp_bd_addr_t spp_remote_bda = {0};
+static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
+static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
 
 void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
@@ -295,3 +296,4 @@ err0:
         break;
     }
 }
+#endif
