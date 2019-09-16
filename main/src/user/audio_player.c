@@ -30,7 +30,7 @@ static const char *mp3_file_ptr[][2] = {
 static uint8_t mp3_file_index   = 0;
 static uint8_t playback_pending = 0;
 
-static void audio_player_task_handle(void *pvParameters)
+static void audio_player_task(void *pvParameters)
 {
     // Allocate structs needed for mp3 decoding
     struct mad_stream *stream = malloc(sizeof(struct mad_stream));
@@ -116,5 +116,5 @@ void audio_player_init(void)
 {
     xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
 
-    xTaskCreatePinnedToCore(audio_player_task_handle, "AudioPlayerT", 8448, NULL, 8, NULL, 1);
+    xTaskCreatePinnedToCore(audio_player_task, "AudioPlayerT", 8448, NULL, 8, NULL, 1);
 }

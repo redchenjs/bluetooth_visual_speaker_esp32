@@ -17,7 +17,7 @@
 
 #define TAG "key"
 
-static void key_task_handle(void *pvParameter)
+static void key_task(void *pvParameter)
 {
 #ifdef CONFIG_ENABLE_SLEEP_KEY
     uint16_t count[] = {0};
@@ -80,5 +80,5 @@ void key_init(void)
 {
     xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
 
-    xTaskCreatePinnedToCore(key_task_handle, "KeyScanT", 2048, NULL, 9, NULL, 1);
+    xTaskCreatePinnedToCore(key_task, "KeyT", 2048, NULL, 9, NULL, 1);
 }

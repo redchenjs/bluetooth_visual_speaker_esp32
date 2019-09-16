@@ -19,7 +19,7 @@
 
 #define BT_APP_CORE_TAG "bt_app_core"
 
-static void bt_app_task_handler(void *arg);
+static void bt_app_task(void *pvParameter);
 static bool bt_app_send_msg(bt_app_msg_t *msg);
 static void bt_app_work_dispatched(bt_app_msg_t *msg);
 
@@ -71,7 +71,7 @@ static void bt_app_work_dispatched(bt_app_msg_t *msg)
     }
 }
 
-static void bt_app_task_handler(void *arg)
+static void bt_app_task(void *pvParameter)
 {
     bt_app_msg_t msg;
 
@@ -98,5 +98,5 @@ void bt_app_task_start_up(void)
 {
     s_bt_app_task_queue = xQueueCreate(10, sizeof(bt_app_msg_t));
 
-    xTaskCreatePinnedToCore(bt_app_task_handler, "BtAppT", 2048, NULL, configMAX_PRIORITIES - 3, NULL, 0);
+    xTaskCreatePinnedToCore(bt_app_task, "BtAppT", 2048, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }

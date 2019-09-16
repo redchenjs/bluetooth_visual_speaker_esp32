@@ -34,7 +34,7 @@ static uint16_t vfx_scale = 192;
 static uint16_t vfx_contrast = 0x0100;
 static uint8_t vfx_backlight = 255;
 
-static void vfx_task_handle(void *pvParameter)
+static void vfx_task(void *pvParameter)
 {
     portTickType xLastWakeTime;
 
@@ -1800,5 +1800,5 @@ void vfx_init(void)
 {
     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
 
-    xTaskCreatePinnedToCore(vfx_task_handle, "VfxT", 5120, NULL, 7, NULL, 1);
+    xTaskCreatePinnedToCore(vfx_task, "VfxT", 5120, NULL, 7, NULL, 1);
 }
