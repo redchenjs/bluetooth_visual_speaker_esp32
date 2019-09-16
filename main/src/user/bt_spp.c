@@ -32,8 +32,6 @@
 #define BT_SPP_TAG "bt_spp"
 #define BT_OTA_TAG "bt_ota"
 
-#define SPP_SERVER_NAME "OTA"
-
 static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
 static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
 
@@ -69,7 +67,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
     switch (event) {
     case ESP_SPP_INIT_EVT:
-        esp_spp_start_srv(sec_mask, role_slave, 0, SPP_SERVER_NAME);
+        esp_spp_start_srv(sec_mask, role_slave, 0, CONFIG_BT_SPP_SERVER_NAME);
         break;
     case ESP_SPP_DISCOVERY_COMP_EVT:
         break;
