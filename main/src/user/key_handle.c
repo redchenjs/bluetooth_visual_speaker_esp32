@@ -16,6 +16,7 @@
 #include "user/vfx.h"
 #include "user/bt_av.h"
 #include "user/bt_spp.h"
+#include "user/nfc_app.h"
 #include "user/ble_gatts.h"
 #include "user/audio_input.h"
 #include "user/audio_player.h"
@@ -30,6 +31,9 @@ void key_sleep_handle(void)
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
     audio_input_set_mode(0);
+#endif
+#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
+    nfc_app_set_mode(0);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
     audio_player_play_file(3);
