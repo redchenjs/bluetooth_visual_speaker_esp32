@@ -29,6 +29,7 @@
 #include "user/vfx.h"
 #include "user/bt_av.h"
 #include "user/ble_app.h"
+#include "user/nfc_app.h"
 #include "user/bt_app_core.h"
 #include "user/audio_player.h"
 
@@ -196,6 +197,9 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
             audio_player_play_file(1);
 #endif
+#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
+            nfc_app_set_mode(1);
+#endif
 #ifdef CONFIG_ENABLE_LED
             led_set_mode(3);
 #endif
@@ -211,6 +215,9 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
             audio_player_play_file(0);
+#endif
+#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
+            nfc_app_set_mode(0);
 #endif
 #ifdef CONFIG_ENABLE_LED
             led_set_mode(2);
