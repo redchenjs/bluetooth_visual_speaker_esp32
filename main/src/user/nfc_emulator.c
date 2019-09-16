@@ -60,7 +60,7 @@ static nfcforum_tag4_state_machine_data_t state_machine_data = {
 
 static uint8_t nfcforum_capability_container[] = {
     0x00, 0x0F, /* CCLEN 15 bytes */
-    0x20,       /* Mapping version 2.0, use option -1 to force v1.0 */
+    0x20,       /* Mapping version 2.0 */
     0x00, 0x54, /* MLe Maximum R-ADPU data size */
     0x00, 0xFF, /* MLc Maximum C-ADPU data size */
     0x04,       /* T field of the NDEF File-Control TLV */
@@ -109,6 +109,8 @@ static int nfcforum_tag4_io(struct nfc_emulator *emulator, const uint8_t *data_i
         case ISO7816_SELECT:
             switch (data_in[P1]) {
             case 0x00:  // Select by ID
+                ESP_LOGI(TAG, "select by id");
+
                 if ((data_in[P2] | 0x0C) != 0x0C) {
                     return -ENOTSUP;
                 }
@@ -129,6 +131,8 @@ static int nfcforum_tag4_io(struct nfc_emulator *emulator, const uint8_t *data_i
 
                 break;
             case 0x04:  // Select by name
+                ESP_LOGI(TAG, "select by name");
+
                 if (data_in[P2] != 0x00) {
                     return -ENOTSUP;
                 }
@@ -148,6 +152,8 @@ static int nfcforum_tag4_io(struct nfc_emulator *emulator, const uint8_t *data_i
 
             break;
         case ISO7816_READ_BINARY:
+            ESP_LOGI(TAG, "read binary");
+
             if ((size_t)(data_in[LC] + 2) > data_out_len) {
                 return -ENOSPC;
             }
@@ -175,6 +181,8 @@ static int nfcforum_tag4_io(struct nfc_emulator *emulator, const uint8_t *data_i
 
             break;
         case ISO7816_UPDATE_BINARY:
+            ESP_LOGI(TAG, "update binary");
+
             memcpy(ndef_data->ndef_file + (data_in[P1] << 8) + data_in[P2], data_in + DATA, data_in[LC]);
 
             if ((data_in[P1] << 8) + data_in[P2] == 0) {
