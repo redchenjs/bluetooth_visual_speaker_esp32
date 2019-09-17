@@ -59,7 +59,7 @@ static void nfc_app_task(void *pvParameter)
         }
         // Start Emulator
         if (0 != nfc_emulate_target(pnd, &nfc_app_emulator, 0)) {  // contains already nfc_target_init() call
-            ESP_LOGI(TAG, "transmission success");
+            ESP_LOGI(TAG, "transfer complete");
         }
         // Close NFC device
         nfc_close(pnd);

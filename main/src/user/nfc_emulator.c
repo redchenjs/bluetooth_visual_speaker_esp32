@@ -109,7 +109,7 @@ static int nfcforum_tag4_io(struct nfc_emulator *emulator, const uint8_t *data_i
         case ISO7816_SELECT:
             switch (data_in[P1]) {
             case 0x00:  // Select by ID
-                ESP_LOGI(TAG, "select by id");
+                ESP_LOGD(TAG, "0xA4 0x00 (select by id)");
 
                 if ((data_in[P2] | 0x0C) != 0x0C) {
                     return -ENOTSUP;
@@ -131,7 +131,7 @@ static int nfcforum_tag4_io(struct nfc_emulator *emulator, const uint8_t *data_i
 
                 break;
             case 0x04:  // Select by name
-                ESP_LOGI(TAG, "select by name");
+                ESP_LOGD(TAG, "0xA4 0x04 (select by name)");
 
                 if (data_in[P2] != 0x00) {
                     return -ENOTSUP;
@@ -152,7 +152,7 @@ static int nfcforum_tag4_io(struct nfc_emulator *emulator, const uint8_t *data_i
 
             break;
         case ISO7816_READ_BINARY:
-            ESP_LOGI(TAG, "read binary");
+            ESP_LOGD(TAG, "0xB0 (read binary)");
 
             if ((size_t)(data_in[LC] + 2) > data_out_len) {
                 return -ENOSPC;
@@ -181,7 +181,7 @@ static int nfcforum_tag4_io(struct nfc_emulator *emulator, const uint8_t *data_i
 
             break;
         case ISO7816_UPDATE_BINARY:
-            ESP_LOGI(TAG, "update binary");
+            ESP_LOGD(TAG, "0xD6 (update binary)");
 
             memcpy(ndef_data->ndef_file + (data_in[P1] << 8) + data_in[P2], data_in + DATA, data_in[LC]);
 
@@ -193,7 +193,7 @@ static int nfcforum_tag4_io(struct nfc_emulator *emulator, const uint8_t *data_i
 
             break;
         default: // Unknown
-            ESP_LOGW(TAG, "unknown frame %02X, ignored", data_in[INS]);
+            ESP_LOGW(TAG, "0x%02X (unknown frame)", data_in[INS]);
 
             res = -ENOTSUP;
 
