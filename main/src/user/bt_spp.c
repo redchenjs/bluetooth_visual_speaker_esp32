@@ -48,8 +48,9 @@ static esp_ota_handle_t update_handle = 0;
 
 static const char fw_cmd[][24] = {
     "FW+RST\r\n",       // Reset Device
+    "FW+RAM?\r\n",      // Get RAM Information
     "FW+VER?\r\n",      // Get Firmware Version
-    "FW+UPD:%ld\r\n"    // Update Device Firmware
+    "FW+UPD:%ld\r\n",   // Update Device Firmware
 };
 
 static const char rsp_str[][24] = {
@@ -57,7 +58,8 @@ static const char rsp_str[][24] = {
     "DONE\r\n",         // Done
     "ERROR\r\n",        // Error
     "LOCKED\r\n",       // Locked
-    "VER:%s\r\n",       // Version
+    "RAM:%u\r\n",       // RAM Info
+    "VER:%s\r\n",       // Firmware Ver
 };
 
 static const char *s_spp_conn_state_str[] = {"disconnected", "connected"};
@@ -151,14 +153,21 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
                 esp_spp_disconnect(param->write.handle);
             } else if (strncmp(fw_cmd[1], (const char *)param->data_ind.data, strlen(fw_cmd[1])) == 0) {
+                ESP_LOGI(BT_SPP_TAG, "GET command: FW+RAM?");
+
+                char str_buf[24] = {0};
+                snprintf(str_buf, sizeof(str_buf), rsp_str[4], heap_caps_get_free_size(MALLOC_CAP_DEFAULT));
+
+                esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
+            } else if (strncmp(fw_cmd[2], (const char *)param->data_ind.data, strlen(fw_cmd[2])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+VER?");
 
                 char str_buf[24] = {0};
-                snprintf(str_buf, sizeof(str_buf), rsp_str[4], app_get_version());
+                snprintf(str_buf, sizeof(str_buf), rsp_str[5], app_get_version());
 
                 esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
-            } else if (strncmp(fw_cmd[2], (const char *)param->data_ind.data, 7) == 0) {
-                sscanf((const char *)param->data_ind.data, fw_cmd[2], &image_length);
+            } else if (strncmp(fw_cmd[3], (const char *)param->data_ind.data, 7) == 0) {
+                sscanf((const char *)param->data_ind.data, fw_cmd[3], &image_length);
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+UPD:%ld", image_length);
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
@@ -189,8 +198,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                         portMAX_DELAY
                     );
                     i2s_output_deinit();
-
-                    ESP_LOGI(BT_OTA_TAG, "%u bytes mem left", heap_caps_get_free_size(MALLOC_CAP_32BIT));
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
                     if (update_partition != NULL) {
