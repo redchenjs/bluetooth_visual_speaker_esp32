@@ -73,7 +73,7 @@ int     pn532_uart_wakeup(nfc_device *pnd);
 static void
 pn532_uart_close(nfc_device *pnd)
 {
-    pn53x_idle(pnd);
+    // pn53x_idle(pnd);
 
     // Release UART port
     uart_close(DRIVER_DATA(pnd)->port);
