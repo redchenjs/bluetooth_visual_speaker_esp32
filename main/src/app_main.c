@@ -12,7 +12,6 @@
 #include "chip/nvs.h"
 #include "chip/spi.h"
 #include "chip/i2s.h"
-#include "chip/i2c.h"
 #include "chip/uart.h"
 
 #include "board/pn532.h"
@@ -40,11 +39,7 @@ static void chip_init(void)
     bt_init();
 
 #ifdef CONFIG_ENABLE_NFC_BT_PAIRING
-    #ifdef CONFIG_PN532_IFCE_UART
-        uart1_init();
-    #else
-        i2c0_init();
-    #endif
+    uart1_init();
 #endif
 
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0) || (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
