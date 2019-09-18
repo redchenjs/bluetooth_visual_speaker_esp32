@@ -194,15 +194,18 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 
+            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESTART_BIT)) {
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-            audio_player_play_file(1);
+                audio_player_play_file(1);
 #endif
 #ifdef CONFIG_ENABLE_NFC_BT_PAIRING
-            nfc_app_set_mode(1);
+                nfc_app_set_mode(1);
 #endif
 #ifdef CONFIG_ENABLE_LED
-            led_set_mode(3);
+                led_set_mode(3);
 #endif
+            }
 
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
             xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
