@@ -114,7 +114,10 @@ void audio_player_play_file(uint8_t idx)
 
 void audio_player_init(void)
 {
-    xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
+    EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+    if (!(uxBits & AUDIO_PLAYER_RUN_BIT)) {
+        xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
+    }
 
     xTaskCreatePinnedToCore(audio_player_task, "AudioPlayerT", 8448, NULL, 8, NULL, 1);
 }
