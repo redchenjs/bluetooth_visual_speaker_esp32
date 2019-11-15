@@ -127,6 +127,8 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             if (strncmp(fw_cmd[0], (const char *)param->data_ind.data, strlen(fw_cmd[0])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+RST");
 
+                xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
+
 #ifdef CONFIG_ENABLE_VFX
                 vfx_set_mode(0);
 #endif
