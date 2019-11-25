@@ -158,6 +158,7 @@ void i2s_output_set_sample_rate(int rate)
 {
     if (rate != i2s_output_config.sample_rate) {
         i2s_output_config.sample_rate = rate;
+        i2s_zero_dma_buffer(CONFIG_AUDIO_OUTPUT_I2S_NUM);
         i2s_set_sample_rates(CONFIG_AUDIO_OUTPUT_I2S_NUM, i2s_output_config.sample_rate);
     }
 }

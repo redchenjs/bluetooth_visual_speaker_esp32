@@ -25,6 +25,7 @@
 #include "user/led.h"
 #include "user/vfx.h"
 #include "user/bt_av.h"
+#include "user/bt_app.h"
 #include "user/ble_app.h"
 #include "user/nfc_app.h"
 #include "user/ble_gatts.h"
@@ -129,6 +130,9 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
                 xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
 
+                memset(&last_remote_bda, 0x00, sizeof(esp_bd_addr_t));
+                app_setenv("last_remote_bda", &last_remote_bda, sizeof(esp_bd_addr_t));
+
 #ifdef CONFIG_ENABLE_VFX
                 vfx_set_mode(0);
 #endif
@@ -192,6 +196,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 #ifdef CONFIG_ENABLE_NFC_BT_PAIRING
                     nfc_app_set_mode(0);
 #endif
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
                     xEventGroupWaitBits(
                         user_event_group,
                         AUDIO_PLAYER_IDLE_BIT,
@@ -199,6 +204,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                         pdFALSE,
                         portMAX_DELAY
                     );
+#endif
                     i2s_output_deinit();
 
                     update_partition = esp_ota_get_next_update_partition(NULL);

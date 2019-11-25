@@ -64,16 +64,6 @@ static void board_init(void)
 
 static void user_init(void)
 {
-    bt_app_init();
-
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-    ble_app_init();
-#endif
-
-#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
-    nfc_app_init();
-#endif
-
 #ifdef CONFIG_ENABLE_VFX
     vfx_init();
 #endif
@@ -93,6 +83,16 @@ static void user_init(void)
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
     audio_player_init();
 #endif
+
+#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
+    nfc_app_init();
+#endif
+
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+    ble_app_init();
+#endif
+
+    bt_app_init();
 }
 
 int app_main(void)

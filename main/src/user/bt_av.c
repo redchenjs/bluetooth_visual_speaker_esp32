@@ -24,10 +24,12 @@
 #include "fft.h"
 
 #include "core/os.h"
+#include "core/app.h"
 #include "chip/i2s.h"
 #include "user/led.h"
 #include "user/vfx.h"
 #include "user/bt_av.h"
+#include "user/bt_app.h"
 #include "user/ble_app.h"
 #include "user/nfc_app.h"
 #include "user/bt_app_core.h"
@@ -57,6 +59,8 @@ static const char *s_a2d_audio_state_str[] = {"suspended", "stopped", "started"}
 
 static esp_avrc_rn_evt_cap_mask_t s_avrc_peer_rn_cap;
 
+static int sample_rate = 16000;
+
 esp_bd_addr_t a2d_remote_bda = {0};
 
 /* callback for A2DP sink */
@@ -85,6 +89,8 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
         return;
     }
 #endif
+
+    i2s_output_set_sample_rate(sample_rate);
 
     size_t bytes_written = 0;
     i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, data, len, &bytes_written, portMAX_DELAY);
@@ -212,6 +218,11 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             memcpy(&a2d_remote_bda, a2d->conn_stat.remote_bda, sizeof(esp_bd_addr_t));
 
+            if (memcmp(&last_remote_bda, &a2d_remote_bda, sizeof(esp_bd_addr_t)) != 0) {
+                memcpy(&last_remote_bda, &a2d_remote_bda, sizeof(esp_bd_addr_t));
+                app_setenv("last_remote_bda", &last_remote_bda, sizeof(esp_bd_addr_t));
+            }
+
             xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
@@ -241,7 +252,8 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         ESP_LOGI(BT_A2D_TAG, "A2DP audio stream configuration, codec type %d", a2d->audio_cfg.mcc.type);
         // for now only SBC stream is supported
         if (a2d->audio_cfg.mcc.type == ESP_A2D_MCT_SBC) {
-            int sample_rate = 16000;
+            sample_rate = 16000;
+
             char oct0 = a2d->audio_cfg.mcc.cie.sbc[0];
 
             if (oct0 & (0x01 << 6)) {
@@ -251,8 +263,6 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             } else if (oct0 & (0x01 << 4)) {
                 sample_rate = 48000;
             }
-
-            i2s_output_set_sample_rate(sample_rate);
 
             ESP_LOGI(BT_A2D_TAG, "configure audio player %x-%x-%x-%x",
                      a2d->audio_cfg.mcc.cie.sbc[0],

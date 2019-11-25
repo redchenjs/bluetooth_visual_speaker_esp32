@@ -16,6 +16,7 @@
 #include "freertos/queue.h"
 
 #include "core/os.h"
+#include "core/app.h"
 #include "user/bt_av.h"
 #include "user/bt_spp.h"
 #include "user/bt_app.h"
@@ -23,6 +24,8 @@
 
 #define BT_APP_TAG "bt_app"
 #define BT_GAP_TAG "bt_gap"
+
+esp_bd_addr_t last_remote_bda = {0};
 
 /* event for handler "bt_app_hdl_stack_up */
 enum {
@@ -78,6 +81,7 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
 
         /* set discoverable and connectable mode, wait to be connected */
         esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+
         break;
     }
     default:
@@ -109,6 +113,16 @@ void bt_app_init(void)
     pin_code[2] = '3';
     pin_code[3] = '4';
     esp_bt_gap_set_pin(pin_type, 4, pin_code);
+
+    size_t length = sizeof(esp_bd_addr_t);
+    app_getenv("last_remote_bda", &last_remote_bda, &length);
+
+    if (strlen((const char *)last_remote_bda) != 0) {
+        ESP_LOGI(BT_APP_TAG, "attempting to reconnect [%02x:%02x:%02x:%02x:%02x:%02x]",
+                 last_remote_bda[0], last_remote_bda[1], last_remote_bda[2],
+                 last_remote_bda[3], last_remote_bda[4], last_remote_bda[5]);
+        esp_a2d_sink_connect(last_remote_bda);
+    }
 
     ESP_LOGI(BT_APP_TAG, "started.");
 }
