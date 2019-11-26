@@ -9,7 +9,6 @@ Bluetooth Speaker based on ESP32 chip with dynamic vision effects output.
 * I2S & PDM Input / I2S Output
 * VFX Output (Audio FFT / Rainbow / Stars / ...)
 * BLE Control Interface (for VFX Output & Audio Input)
-* NFC Bluetooth Pairing (with PN532 NFC Chip)
 * Audio Prompt (Connected / Disconnected / WakeUp / Sleep)
 * OTA Firmware Update (via SPP Profile)
 * Sleep & WakeUp Key

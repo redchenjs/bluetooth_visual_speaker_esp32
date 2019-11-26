@@ -27,7 +27,6 @@
 #include "user/bt_av.h"
 #include "user/bt_app.h"
 #include "user/ble_app.h"
-#include "user/nfc_app.h"
 #include "user/ble_gatts.h"
 #include "user/audio_input.h"
 
@@ -95,9 +94,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             image_length = 0;
 
             i2s_output_init();
-#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
-            nfc_app_set_mode(1);
-#endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
             audio_input_set_mode(audio_input_prev_mode);
 #endif
@@ -138,9 +134,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
                 audio_input_set_mode(0);
-#endif
-#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
-                nfc_app_set_mode(0);
 #endif
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
@@ -192,9 +185,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 #ifndef CONFIG_AUDIO_INPUT_NONE
                     audio_input_prev_mode = audio_input_get_mode();
                     audio_input_set_mode(0);
-#endif
-#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
-                    nfc_app_set_mode(0);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
                     xEventGroupWaitBits(
@@ -267,9 +257,6 @@ err0:
                 esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
 
                 i2s_output_init();
-#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
-                nfc_app_set_mode(1);
-#endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
                 audio_input_set_mode(audio_input_prev_mode);
 #endif

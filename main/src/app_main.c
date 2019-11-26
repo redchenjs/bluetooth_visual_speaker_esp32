@@ -12,16 +12,12 @@
 #include "chip/nvs.h"
 #include "chip/spi.h"
 #include "chip/i2s.h"
-#include "chip/uart.h"
-
-#include "board/pn532.h"
 
 #include "user/led.h"
 #include "user/vfx.h"
 #include "user/key.h"
 #include "user/bt_app.h"
 #include "user/ble_app.h"
-#include "user/nfc_app.h"
 #include "user/audio_input.h"
 #include "user/audio_player.h"
 
@@ -38,10 +34,6 @@ static void chip_init(void)
 
     bt_init();
 
-#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
-    uart1_init();
-#endif
-
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0) || (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
     i2s0_init();
 #endif
@@ -55,12 +47,7 @@ static void chip_init(void)
 #endif
 }
 
-static void board_init(void)
-{
-#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
-    pn532_init();
-#endif
-}
+static void board_init(void) {}
 
 static void user_init(void)
 {
@@ -84,10 +71,6 @@ static void user_init(void)
     audio_player_init();
 #endif
 
-#ifdef CONFIG_ENABLE_NFC_BT_PAIRING
-    nfc_app_init();
-#endif
-
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
     ble_app_init();
 #endif
@@ -97,12 +80,12 @@ static void user_init(void)
 
 int app_main(void)
 {
-    core_init();        // App Core
+    core_init();
 
-    chip_init();        // OnChip Modules
-    board_init();       // OnBoard Modules
+    chip_init();
+    board_init();
 
-    user_init();        // User Tasks
+    user_init();
 
     return 0;
 }

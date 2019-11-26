@@ -39,27 +39,6 @@ config BLE_ADV_NAME
     depends on ENABLE_BLE_CONTROL_IF && BLE_USE_RANDOM_ADDR
     help
         Advertising name for BLE Control Interface.
-
-menuconfig ENABLE_NFC_BT_PAIRING
-    bool "Enable NFC Bluetooth Pairing"
-    default n
-    help
-        Select this to enable NFC bluetooth pairing.
-
-config PN532_RST_PIN
-    int "PN532 RST Pin"
-    default 26
-    depends on ENABLE_NFC_BT_PAIRING
-
-config PN532_TX_PIN
-    int "PN532 TX Pin"
-    default 17
-    depends on ENABLE_NFC_BT_PAIRING
-
-config PN532_RX_PIN
-    int "PN532 RX Pin"
-    default 16
-    depends on ENABLE_NFC_BT_PAIRING
 endmenu
 
 menu "Audio Configuration"
