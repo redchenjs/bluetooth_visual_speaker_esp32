@@ -40,9 +40,11 @@ esp_err_t app_getenv(const char *key, void *out_value, size_t *length)
     err = nvs_get_blob(handle, key, out_value, length);
     if (err == ESP_ERR_NVS_NOT_FOUND) {
         ESP_LOGW(TAG, "env \"%s\" not found", key);
+        nvs_close(handle);
         return err;
     } else if (err != ESP_OK) {
         ESP_LOGE(TAG, "read env \"%s\" failed", key);
+        nvs_close(handle);
         return err;
     }
 
@@ -64,18 +66,18 @@ esp_err_t app_setenv(const char *key, const void *value, size_t length)
     err = nvs_set_blob(handle, key, value, length);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "set nvs blob failed");
+        nvs_close(handle);
         return err;
     }
 
     err = nvs_commit(handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "write env \"%s\" failed", key);
+        nvs_close(handle);
         return err;
     }
 
     nvs_close(handle);
-
-    ESP_LOGI(TAG, "env \"%s\" updated", key);
 
     return ESP_OK;
 }
