@@ -25,7 +25,7 @@ static const char *mp3_file_ptr[][2] = {
     {snd0_mp3_ptr, snd0_mp3_end}, // "Connected"
     {snd1_mp3_ptr, snd1_mp3_end}, // "Disconnected"
     {snd2_mp3_ptr, snd2_mp3_end}, // "Resume"
-    {snd3_mp3_ptr, snd3_mp3_end}  // "Sleep"
+    {snd3_mp3_ptr, snd3_mp3_end}, // "Sleep"
 };
 static uint8_t mp3_file_index   = 0;
 static uint8_t playback_pending = 0;
@@ -71,6 +71,8 @@ static void audio_player_task(void *pvParameters)
             }
             mad_synth_frame(synth, frame);
         }
+
+        i2s_zero_dma_buffer(0);
 
         mad_synth_finish(synth);
         mad_frame_finish(frame);

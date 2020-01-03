@@ -37,7 +37,7 @@
  * The order of the file-systems below determines the order
  * that they are searched to find a file.
  */
-static const GFILEVMT const * FsArray[] = {
+static const GFILEVMT * FsArray[] = {
 	#if GFILE_NEED_USERFS
 		&FsUSERVMT,
 	#endif
