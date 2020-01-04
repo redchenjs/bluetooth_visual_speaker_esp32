@@ -48,7 +48,7 @@ static i2s_config_t i2s_input_config = {
 #endif
 
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0) || (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
-void i2s0_init(void)
+static void i2s0_init(void)
 {
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0)
     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_0, &i2s_output_config, 0, NULL));
@@ -87,7 +87,7 @@ void i2s0_init(void)
     );
 }
 
-void i2s0_deinit(void)
+static void i2s0_deinit(void)
 {
     ESP_ERROR_CHECK(i2s_driver_uninstall(I2S_NUM_0));
 
@@ -96,7 +96,7 @@ void i2s0_deinit(void)
 #endif
 
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 1) || (CONFIG_AUDIO_INPUT_I2S_NUM == 1)
-void i2s1_init(void)
+static void i2s1_init(void)
 {
 #if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 1)
     ESP_ERROR_CHECK(i2s_driver_install(I2S_NUM_1, &i2s_output_config, 0, NULL));
@@ -128,7 +128,7 @@ void i2s1_init(void)
     );
 }
 
-void i2s1_deinit(void)
+static void i2s1_deinit(void)
 {
     ESP_ERROR_CHECK(i2s_driver_uninstall(I2S_NUM_1));
 

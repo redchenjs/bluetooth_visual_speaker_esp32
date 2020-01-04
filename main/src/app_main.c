@@ -34,12 +34,10 @@ static void chip_init(void)
 
     bt_init();
 
-#if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 0) || (CONFIG_AUDIO_INPUT_I2S_NUM == 0)
-    i2s0_init();
-#endif
+    i2s_output_init();
 
-#if (CONFIG_AUDIO_OUTPUT_I2S_NUM == 1) || (CONFIG_AUDIO_INPUT_I2S_NUM == 1)
-    i2s1_init();
+#ifndef CONFIG_AUDIO_INPUT_NONE
+    i2s_input_init();
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
@@ -83,6 +81,7 @@ int app_main(void)
     core_init();
 
     chip_init();
+
     board_init();
 
     user_init();

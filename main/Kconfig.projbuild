@@ -42,6 +42,12 @@ config BLE_ADV_NAME
 endmenu
 
 menu "Audio Configuration"
+config ENABLE_AUDIO_PROMPT
+    bool "Enable Audio Prompt"
+    default y
+    help
+        Select this to enable Audio Prompt.
+
 choice AUDIO_OUTPUT
     prompt "Audio Output"
     default AUDIO_OUTPUT_I2S1
@@ -131,12 +137,6 @@ config PDM_DIN_PIN
     int "PDM DIN Pin"
     default 15
     depends on AUDIO_INPUT_PDM
-
-config ENABLE_AUDIO_PROMPT
-    bool "Enable Audio Prompt"
-    default y
-    help
-        Select this to enable Audio Prompt.
 endmenu
 
 menu "VFX Configuration"
