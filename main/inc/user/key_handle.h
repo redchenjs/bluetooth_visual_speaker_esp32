@@ -8,6 +8,6 @@
 #ifndef INC_USER_KEY_HANDLE_H_
 #define INC_USER_KEY_HANDLE_H_
 
-extern void key_sleep_handle(void);
+extern void sleep_key_handle(void);
 
 #endif /* INC_USER_KEY_HANDLE_H_ */

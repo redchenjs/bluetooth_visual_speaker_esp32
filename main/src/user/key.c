@@ -6,7 +6,6 @@
  */
 
 #include "esp_log.h"
-#include "esp_sleep.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -17,22 +16,39 @@
 
 #define TAG "key"
 
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+static const uint8_t gpio_pin[] = {
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+    CONFIG_SLEEP_KEY_PIN,
+#endif
+};
+
+static const uint8_t gpio_val[] = {
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+    #ifdef CONFIG_SLEEP_KEY_ACTIVE_LOW
+        0,
+    #else
+        1,
+    #endif
+#endif
+};
+
+static const uint16_t gpio_hold[] = {
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+    CONFIG_SLEEP_KEY_HOLD_TIME,
+#endif
+};
+
+static void (*key_handle[])(void) = {
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+    sleep_key_handle,
+#endif
+};
+
 static void key_task(void *pvParameter)
 {
-#ifdef CONFIG_ENABLE_SLEEP_KEY
-    uint16_t count[] = {0};
-    uint8_t gpio_pin[] = {CONFIG_SLEEP_KEY_PIN};
-    uint8_t gpio_val[] = {
-#ifdef CONFIG_SLEEP_KEY_ACTIVE_LOW
-        0
-#else
-        1
-#endif
-    };
-    uint16_t gpio_hold[] = {CONFIG_SLEEP_KEY_HOLD_TIME};
-    void (*key_handle[])(void) = {key_sleep_handle};
-
     portTickType xLastWakeTime;
+    uint16_t count[sizeof(gpio_pin)] = {0};
 
     for (int i=0; i<sizeof(gpio_pin); i++) {
         gpio_set_direction(gpio_pin[i], GPIO_MODE_INPUT);
@@ -73,7 +89,6 @@ static void key_task(void *pvParameter)
 
         vTaskDelayUntil(&xLastWakeTime, 10 / portTICK_RATE_MS);
     }
-#endif // CONFIG_ENABLE_SLEEP_KEY
 }
 
 void key_init(void)
@@ -82,3 +97,4 @@ void key_init(void)
 
     xTaskCreatePinnedToCore(key_task, "KeyT", 2048, NULL, 9, NULL, 1);
 }
+#endif

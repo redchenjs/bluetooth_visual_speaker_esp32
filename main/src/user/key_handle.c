@@ -21,7 +21,7 @@
 #include "user/audio_player.h"
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
-void key_sleep_handle(void)
+void sleep_key_handle(void)
 {
     xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
 
