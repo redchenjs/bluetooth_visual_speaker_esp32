@@ -27,6 +27,7 @@ static const uint16_t led_mode_table[][2] = {
     {    25,   100},   // 8,
     {    25,     0}    // 9, Keep on
 };
+
 static uint8_t led_mode_index = 3;
 
 static void led_task(void *pvParameter)
@@ -70,9 +71,9 @@ void led_set_mode(uint8_t idx)
 #endif
 }
 
+#ifdef CONFIG_ENABLE_LED
 void led_init(void)
 {
-#ifdef CONFIG_ENABLE_LED
     xTaskCreatePinnedToCore(led_task, "LedT", 1024, NULL, 9, NULL, 1);
-#endif
 }
+#endif
