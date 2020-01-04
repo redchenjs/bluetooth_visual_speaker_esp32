@@ -93,7 +93,7 @@ void st7735_write_data(uint8_t data)
 void st7735_refresh_gram(uint8_t *gram)
 {
     hspi_trans[0].length = 8;
-    hspi_trans[0].tx_data[0] = 0x2a;    // Set Column Address
+    hspi_trans[0].tx_data[0] = 0x2A;    // Set Column Address
     hspi_trans[0].user = (void*)0;
     hspi_trans[0].flags = SPI_TRANS_USE_TXDATA;
 
@@ -106,7 +106,7 @@ void st7735_refresh_gram(uint8_t *gram)
     hspi_trans[1].flags = SPI_TRANS_USE_TXDATA;
 
     hspi_trans[2].length = 8,
-    hspi_trans[2].tx_data[0] = 0x2b;    // Set Row Address
+    hspi_trans[2].tx_data[0] = 0x2B;    // Set Row Address
     hspi_trans[2].user = (void*)0;
     hspi_trans[2].flags = SPI_TRANS_USE_TXDATA;
 
@@ -119,7 +119,7 @@ void st7735_refresh_gram(uint8_t *gram)
     hspi_trans[3].flags = SPI_TRANS_USE_TXDATA;
 
     hspi_trans[4].length = 8,
-    hspi_trans[4].tx_data[0] = 0x2c;    // Set Write RAM
+    hspi_trans[4].tx_data[0] = 0x2C;    // Set Write RAM
     hspi_trans[4].user = (void*)0;
     hspi_trans[4].flags = SPI_TRANS_USE_TXDATA;
 

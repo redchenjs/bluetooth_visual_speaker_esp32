@@ -23,10 +23,10 @@ spi_transaction_t hspi_trans[2];
 
 void cube0414_init_board(void)
 {
+    memset(hspi_trans, 0, sizeof(hspi_trans));
+
     gpio_set_direction(CONFIG_LIGHT_CUBE_DC_PIN, GPIO_MODE_OUTPUT);
     gpio_set_level(CONFIG_LIGHT_CUBE_DC_PIN, 0);
-
-    memset(hspi_trans, 0, sizeof(hspi_trans));
 
     ESP_LOGI(TAG, "initialized, dc: %d", CONFIG_LIGHT_CUBE_DC_PIN);
 }
@@ -58,11 +58,11 @@ void cube0414_write_data(uint8_t data)
 void cube0414_refresh_gram(uint8_t *gram)
 {
     hspi_trans[0].length = 8,
-    hspi_trans[0].tx_data[0] = 0xda;    // Write Frame Data
+    hspi_trans[0].tx_data[0] = 0xDA;    // Write Frame Data
     hspi_trans[0].user = (void*)0;
     hspi_trans[0].flags = SPI_TRANS_USE_TXDATA;
 
-    hspi_trans[1].length = 8*8*8*24;   // 8x8x8x24bit
+    hspi_trans[1].length = CUBE0414_X*CUBE0414_Y*CUBE0414_Z*3*8;
     hspi_trans[1].tx_buffer = gram;
     hspi_trans[1].user = (void*)1;
 
