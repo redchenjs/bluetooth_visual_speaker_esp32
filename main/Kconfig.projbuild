@@ -19,26 +19,6 @@ config BT_SPP_SERVER_NAME
     depends on ENABLE_OTA_OVER_SPP
     help
         Bluetooth SPP server name.
-
-menuconfig ENABLE_BLE_CONTROL_IF
-    bool "Enable BLE Control Interface"
-    default y
-    help
-        Select this to enable BLE Control Interface.
-
-config BLE_USE_RANDOM_ADDR
-    bool "Use Random BLE Address"
-    default n
-    depends on ENABLE_BLE_CONTROL_IF
-    help
-        Generate a resolvable random address for BLE Control Interface.
-
-config BLE_ADV_NAME
-    string "BLE Advertising Name"
-    default "Bluetooth Speaker Control"
-    depends on ENABLE_BLE_CONTROL_IF && BLE_USE_RANDOM_ADDR
-    help
-        Advertising name for BLE Control Interface.
 endmenu
 
 menu "Audio Configuration"
@@ -145,6 +125,13 @@ config ENABLE_VFX
     default n
     help
         Select this to enable Visual Effects Output.
+
+config ENABLE_BLE_CONTROL_IF
+    bool "Enable BLE Control Interface"
+    default y
+    depends on ENABLE_VFX
+    help
+        Select this to enable BLE Control Interface.
 
 choice VFX_OUTPUT
     prompt "VFX Output Device"

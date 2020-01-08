@@ -10,8 +10,10 @@
 
 #include "esp_gatts_api.h"
 
-#define PROFILE_NUM      1
+#define PROFILE_NUM 2
+
 #define PROFILE_A_APP_ID 0
+#define PROFILE_B_APP_ID 1
 
 typedef struct gatts_profile_inst {
     esp_gatts_cb_t gatts_cb;

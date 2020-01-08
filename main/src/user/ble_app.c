@@ -28,16 +28,11 @@ esp_ble_adv_params_t adv_params = {
     .adv_int_min       = 0x20,
     .adv_int_max       = 0x40,
     .adv_type          = ADV_TYPE_IND,
-#ifdef CONFIG_BLE_USE_RANDOM_ADDR
-    .own_addr_type     = BLE_ADDR_TYPE_RANDOM,
-#else
     .own_addr_type     = BLE_ADDR_TYPE_PUBLIC,
-#endif
     .channel_map       = ADV_CHNL_ALL,
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
 
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
 static void ble_gap_init_adv_data(const char *name)
 {
     int len = strlen(name);
@@ -64,7 +59,6 @@ static void ble_gap_init_adv_data(const char *name)
     }
     adv_config_done |= scan_rsp_config_flag;
 }
-#endif
 
 static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param)
 {
@@ -95,18 +89,6 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
     case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
         break;
     case ESP_GAP_BLE_SET_LOCAL_PRIVACY_COMPLETE_EVT:
-        if (param->local_privacy_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-            ESP_LOGE(BLE_GAP_TAG, "config local privacy failed, error status = %x", param->local_privacy_cmpl.status);
-            break;
-        }
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-        // init BLE adv data and scan response data
-#ifdef CONFIG_BLE_USE_RANDOM_ADDR
-        ble_gap_init_adv_data(CONFIG_BLE_ADV_NAME);
-#else
-        ble_gap_init_adv_data(CONFIG_BT_NAME);
-#endif
-#endif
         break;
     default:
         break;
@@ -115,10 +97,13 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
 
 void ble_app_init(void)
 {
+    ble_gap_init_adv_data(CONFIG_BT_NAME);
+
     ESP_ERROR_CHECK(esp_ble_gatts_register_callback(ble_gatts_event_handler));
     ESP_ERROR_CHECK(esp_ble_gap_register_callback(ble_gap_event_handler));
 
     ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_A_APP_ID));
+    ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_B_APP_ID));
 
     ESP_ERROR_CHECK(esp_ble_gatt_set_local_mtu(500));
 
