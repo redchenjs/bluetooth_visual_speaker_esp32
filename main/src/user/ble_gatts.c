@@ -144,17 +144,29 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
 
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
-        rsp.attr_value.len = 7;
+        rsp.attr_value.len = 8;
+        rsp.attr_value.value[0] = (
+            0
 #ifdef CONFIG_ENABLE_VFX
-        rsp.attr_value.value[0] = vfx_mode;
-        rsp.attr_value.value[1] = vfx_scale >> 8;
-        rsp.attr_value.value[2] = vfx_scale & 0xff;
-        rsp.attr_value.value[3] = vfx_contrast >> 8;
-        rsp.attr_value.value[4] = vfx_contrast & 0xff;
-        rsp.attr_value.value[5] = vfx_backlight;
+            | BIT0
+    #ifdef CONFIG_VFX_OUTPUT_CUBE0414
+            | BIT1
+    #endif
+    #ifndef CONFIG_AUDIO_INPUT_NONE
+            | BIT2
+    #endif
+#endif
+        );
+#ifdef CONFIG_ENABLE_VFX
+        rsp.attr_value.value[1] = vfx_mode;
+        rsp.attr_value.value[2] = vfx_scale >> 8;
+        rsp.attr_value.value[3] = vfx_scale & 0xff;
+        rsp.attr_value.value[4] = vfx_contrast >> 8;
+        rsp.attr_value.value[5] = vfx_contrast & 0xff;
+        rsp.attr_value.value[6] = vfx_backlight;
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-        rsp.attr_value.value[6] = audio_input_mode;
+        rsp.attr_value.value[7] = audio_input_mode;
 #endif
 
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
