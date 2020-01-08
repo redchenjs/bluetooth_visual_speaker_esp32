@@ -154,6 +154,12 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
         rsp.attr_value.len = 8;
+        /*
+            BTT0: VFX Enabled
+            BIT1: Backlight Enabled
+            BIT2: Cube Mode Enabled
+            BIT3: Audio Input Enabled
+        */
         rsp.attr_value.value[0] = (
             0
 #ifdef CONFIG_ENABLE_VFX
@@ -161,8 +167,11 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     #ifndef CONFIG_VFX_OUTPUT_CUBE0414
             | BIT1
     #endif
-    #ifndef CONFIG_AUDIO_INPUT_NONE
+    #ifndef CONFIG_SCREEN_PANEL_OUTPUT_FFT
             | BIT2
+    #endif
+    #ifndef CONFIG_AUDIO_INPUT_NONE
+            | BIT3
     #endif
 #endif
         );
