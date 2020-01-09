@@ -115,7 +115,7 @@ void bt_app_init(void)
     esp_bt_gap_set_pin(pin_type, 4, pin_code);
 
     size_t length = sizeof(esp_bd_addr_t);
-    app_getenv("last_remote_bda", &last_remote_bda, &length);
+    app_getenv("LAST_REMOTE_BDA", &last_remote_bda, &length);
 
     if (strlen((const char *)last_remote_bda) != 0) {
         ESP_LOGI(BT_APP_TAG, "attempting to reconnect [%02x:%02x:%02x:%02x:%02x:%02x]",

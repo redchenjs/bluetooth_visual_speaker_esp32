@@ -127,7 +127,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
 
                 memset(&last_remote_bda, 0x00, sizeof(esp_bd_addr_t));
-                app_setenv("last_remote_bda", &last_remote_bda, sizeof(esp_bd_addr_t));
+                app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
 
 #ifdef CONFIG_ENABLE_VFX
                 vfx_set_mode(0);

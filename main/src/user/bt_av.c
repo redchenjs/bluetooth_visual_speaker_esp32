@@ -216,7 +216,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             if (memcmp(&last_remote_bda, &a2d_remote_bda, sizeof(esp_bd_addr_t)) != 0) {
                 memcpy(&last_remote_bda, &a2d_remote_bda, sizeof(esp_bd_addr_t));
-                app_setenv("last_remote_bda", &last_remote_bda, sizeof(esp_bd_addr_t));
+                app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
             }
 
             xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
