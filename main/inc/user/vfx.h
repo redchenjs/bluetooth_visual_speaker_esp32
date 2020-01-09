@@ -16,18 +16,20 @@
 #define FFT_N 128
 
 #define DEFAULT_VFX_MODE        0x0F
-#define DEFAULT_VFX_SCALE       192
+#define DEFAULT_VFX_SCALE_FACTOR    192
+
 #ifndef CONFIG_VFX_OUTPUT_CUBE0414
-    #define DEFAULT_VFX_CONTRAST    0x0100
+    #define DEFAULT_VFX_COLOR_SCALE 0x0100
 #else
-    #define DEFAULT_VFX_CONTRAST    0x0190
+    #define DEFAULT_VFX_COLOR_SCALE 0x0190
 #endif
+
 #define DEFAULT_VFX_BACKLIGHT   255
 
 struct vfx_conf {
     uint8_t mode;
-    uint16_t scale;
-    uint16_t contrast;
+    uint16_t scale_factor;
+    uint16_t color_scale;
     uint8_t backlight;
 };
 

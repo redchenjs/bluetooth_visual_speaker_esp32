@@ -174,10 +174,10 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         );
 #ifdef CONFIG_ENABLE_VFX
         rsp.attr_value.value[1] = vfx->mode;
-        rsp.attr_value.value[2] = vfx->scale >> 8;
-        rsp.attr_value.value[3] = vfx->scale & 0xFF;
-        rsp.attr_value.value[4] = vfx->contrast >> 8;
-        rsp.attr_value.value[5] = vfx->contrast & 0xFF;
+        rsp.attr_value.value[2] = vfx->scale_factor >> 8;
+        rsp.attr_value.value[3] = vfx->scale_factor & 0xFF;
+        rsp.attr_value.value[4] = vfx->color_scale >> 8;
+        rsp.attr_value.value[5] = vfx->color_scale & 0xFF;
         rsp.attr_value.value[6] = vfx->backlight;
     #ifndef CONFIG_AUDIO_INPUT_NONE
         rsp.attr_value.value[7] = audio_input_mode;
@@ -200,8 +200,8 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                     if (param->write.len == 1) {    // Restore Default Configuration
 #ifdef CONFIG_ENABLE_VFX
                         vfx->mode = DEFAULT_VFX_MODE;
-                        vfx->scale = DEFAULT_VFX_SCALE;
-                        vfx->contrast = DEFAULT_VFX_CONTRAST;
+                        vfx->scale_factor = DEFAULT_VFX_SCALE_FACTOR;
+                        vfx->color_scale = DEFAULT_VFX_COLOR_SCALE;
                         vfx->backlight = DEFAULT_VFX_BACKLIGHT;
                         vfx_set_conf(vfx);
                         app_setenv("VFX_INIT_CFG", vfx, sizeof(struct vfx_conf));
@@ -214,8 +214,8 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                     } else if (param->write.len == 8) { // Update with New Configuration
 #ifdef CONFIG_ENABLE_VFX
                         vfx->mode = param->write.value[1];
-                        vfx->scale = param->write.value[2] << 8 | param->write.value[3];
-                        vfx->contrast = (param->write.value[4] << 8 | param->write.value[5]) % 0x0200;
+                        vfx->scale_factor = param->write.value[2] << 8 | param->write.value[3];
+                        vfx->color_scale = (param->write.value[4] << 8 | param->write.value[5]) % 0x0200;
                         vfx->backlight = param->write.value[6];
                         vfx_set_conf(vfx);
                         app_setenv("VFX_INIT_CFG", vfx, sizeof(struct vfx_conf));
