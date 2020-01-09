@@ -16,7 +16,7 @@
 #include "user/vfx.h"
 #include "user/audio_input.h"
 
-#define TAG "audio_input"
+#define TAG "ain"
 
 static uint8_t audio_input_mode = DEFAULT_AUDIO_INPUT_MODE;
 
