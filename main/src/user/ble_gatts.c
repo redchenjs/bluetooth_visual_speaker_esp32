@@ -142,13 +142,10 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         esp_gatt_rsp_t rsp;
 
 #ifdef CONFIG_ENABLE_VFX
-        uint8_t vfx_mode = vfx_get_mode();
-        uint16_t vfx_scale = vfx_get_scale();
-        uint16_t vfx_contrast = vfx_get_contrast();
-        uint8_t vfx_backlight = vfx_get_backlight();
-#endif
-#ifndef CONFIG_AUDIO_INPUT_NONE
+        struct vfx_conf *vfx = vfx_get_conf();
+    #ifndef CONFIG_AUDIO_INPUT_NONE
         uint8_t audio_input_mode = audio_input_get_mode();
+    #endif
 #endif
 
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
@@ -176,75 +173,72 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
 #endif
         );
 #ifdef CONFIG_ENABLE_VFX
-        rsp.attr_value.value[1] = vfx_mode;
-        rsp.attr_value.value[2] = vfx_scale >> 8;
-        rsp.attr_value.value[3] = vfx_scale & 0xff;
-        rsp.attr_value.value[4] = vfx_contrast >> 8;
-        rsp.attr_value.value[5] = vfx_contrast & 0xff;
-        rsp.attr_value.value[6] = vfx_backlight;
-#endif
-#ifndef CONFIG_AUDIO_INPUT_NONE
+        rsp.attr_value.value[1] = vfx->mode;
+        rsp.attr_value.value[2] = vfx->scale >> 8;
+        rsp.attr_value.value[3] = vfx->scale & 0xFF;
+        rsp.attr_value.value[4] = vfx->contrast >> 8;
+        rsp.attr_value.value[5] = vfx->contrast & 0xFF;
+        rsp.attr_value.value[6] = vfx->backlight;
+    #ifndef CONFIG_AUDIO_INPUT_NONE
         rsp.attr_value.value[7] = audio_input_mode;
+    #endif
 #endif
 
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
         break;
     }
-    case ESP_GATTS_WRITE_EVT:
+    case ESP_GATTS_WRITE_EVT: {
+#ifdef CONFIG_ENABLE_VFX
+        struct vfx_conf *vfx = vfx_get_conf();
+    #ifndef CONFIG_AUDIO_INPUT_NONE
+        uint8_t audio_input_mode = audio_input_get_mode();
+    #endif
+#endif
         if (!param->write.is_prep) {
             switch (param->write.value[0]) {
+                case 0xEF: {
+                    if (param->write.len == 1) {    // Restore Default Configuration
 #ifdef CONFIG_ENABLE_VFX
-                case 0x01:
-                    if (param->write.len != 2) {
-                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
-                        break;
-                    }
-                    uint8_t vfx_mode = param->write.value[1];
-                    vfx_set_mode(vfx_mode);
-                    break;
-                case 0x02:
-                    if (param->write.len != 3) {
-                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
-                        break;
-                    }
-                    uint16_t vfx_scale = (param->write.value[1] << 8 | param->write.value[2]);
-                    vfx_set_scale(vfx_scale);
-                    break;
-                case 0x03:
-                    if (param->write.len != 3) {
-                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
-                        break;
-                    }
-                    uint16_t vfx_contrast = (param->write.value[1] << 8 | param->write.value[2]) % 0x0200;
-                    vfx_set_contrast(vfx_contrast);
-                    break;
-                case 0x04:
-                    if (param->write.len != 2) {
-                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
-                        break;
-                    }
-                    uint8_t vfx_backlight = param->write.value[1];
-                    vfx_set_backlight(vfx_backlight);
-                    break;
+                        vfx->mode = DEFAULT_VFX_MODE;
+                        vfx->scale = DEFAULT_VFX_SCALE;
+                        vfx->contrast = DEFAULT_VFX_CONTRAST;
+                        vfx->backlight = DEFAULT_VFX_BACKLIGHT;
+                        vfx_set_conf(vfx);
+                        app_setenv("VFX_INIT_CFG", vfx, sizeof(struct vfx_conf));
+    #ifndef CONFIG_AUDIO_INPUT_NONE
+                        audio_input_mode = DEFAULT_AUDIO_INPUT_MODE;
+                        audio_input_set_mode(audio_input_mode);
+                        app_setenv("AIN_INIT_CFG", &audio_input_mode, sizeof(uint8_t));
+    #endif
 #endif
-#ifndef CONFIG_AUDIO_INPUT_NONE
-                case 0x05:
-                    if (param->write.len != 2) {
-                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
-                        break;
-                    }
-                    uint8_t audio_input_mode = param->write.value[1] % 2;
-                    audio_input_set_mode(audio_input_mode);
-                    break;
+                    } else if (param->write.len == 8) { // Update with New Configuration
+#ifdef CONFIG_ENABLE_VFX
+                        vfx->mode = param->write.value[1];
+                        vfx->scale = param->write.value[2] << 8 | param->write.value[3];
+                        vfx->contrast = (param->write.value[4] << 8 | param->write.value[5]) % 0x0200;
+                        vfx->backlight = param->write.value[6];
+                        vfx_set_conf(vfx);
+                        app_setenv("VFX_INIT_CFG", vfx, sizeof(struct vfx_conf));
+    #ifndef CONFIG_AUDIO_INPUT_NONE
+                        audio_input_mode = param->write.value[7];
+                        audio_input_set_mode(audio_input_mode);
+                        app_setenv("AIN_INIT_CFG", &audio_input_mode, sizeof(uint8_t));
+    #endif
 #endif
+                    } else {
+                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
+                    }
+                    break;
+                }
                 default:
-                    ESP_LOGW(BLE_GATTS_TAG, "unknown command");
+                    ESP_LOGW(BLE_GATTS_TAG, "unknown command: 0x%02X", param->write.value[0]);
                     break;
             }
         }
 
         gatts_write_event_env(gatts_if, &a_prepare_write_env, param);
         break;
+    }
     case ESP_GATTS_EXEC_WRITE_EVT:
         esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
         gatts_exec_write_event_env(&a_prepare_write_env, param);

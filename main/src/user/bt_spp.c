@@ -34,11 +34,17 @@
 #define BT_OTA_TAG "bt_ota"
 
 #ifdef CONFIG_ENABLE_OTA_OVER_SPP
-uint8_t audio_input_prev_mode = 0;
-uint8_t vfx_prev_mode = 0;
-
 uint32_t spp_conn_handle = 0;
-esp_bd_addr_t spp_remote_bda = {0};
+
+#ifdef CONFIG_ENABLE_VFX
+    static struct vfx_conf *vfx = NULL;
+    static uint8_t vfx_prev_mode = 0;
+#endif
+#ifndef CONFIG_AUDIO_INPUT_NONE
+    static uint8_t audio_input_prev_mode = 0;
+#endif
+
+static esp_bd_addr_t spp_remote_bda = {0};
 
 static long image_length = 0;
 static long data_recv = 0;
@@ -69,6 +75,9 @@ static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
 
 void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
+#ifdef CONFIG_ENABLE_VFX
+    vfx = vfx_get_conf();
+#endif
     switch (event) {
     case ESP_SPP_INIT_EVT:
         esp_spp_start_srv(sec_mask, role_slave, 0, CONFIG_BT_SPP_SERVER_NAME);
@@ -98,7 +107,8 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             audio_input_set_mode(audio_input_prev_mode);
 #endif
 #ifdef CONFIG_ENABLE_VFX
-            vfx_set_mode(vfx_prev_mode);
+            vfx->mode = vfx_prev_mode;
+            vfx_set_conf(vfx);
 #endif
 
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
@@ -130,7 +140,8 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
 
 #ifdef CONFIG_ENABLE_VFX
-                vfx_set_mode(0);
+                vfx->mode = 0;
+                vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
                 audio_input_set_mode(0);
@@ -179,8 +190,9 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-                    vfx_prev_mode = vfx_get_mode();
-                    vfx_set_mode(0);
+                    vfx_prev_mode = vfx->mode;
+                    vfx->mode = 0;
+                    vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
                     audio_input_prev_mode = audio_input_get_mode();
@@ -261,7 +273,8 @@ err0:
                 audio_input_set_mode(audio_input_prev_mode);
 #endif
 #ifdef CONFIG_ENABLE_VFX
-                vfx_set_mode(vfx_prev_mode);
+                vfx->mode = vfx_prev_mode;
+                vfx_set_conf(vfx);
 #endif
 
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF

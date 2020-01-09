@@ -15,20 +15,27 @@
 
 #define FFT_N 128
 
+#define DEFAULT_VFX_MODE        0x0F
+#define DEFAULT_VFX_SCALE       192
+#ifndef CONFIG_VFX_OUTPUT_CUBE0414
+    #define DEFAULT_VFX_CONTRAST    0x0100
+#else
+    #define DEFAULT_VFX_CONTRAST    0x0190
+#endif
+#define DEFAULT_VFX_BACKLIGHT   255
+
+struct vfx_conf {
+    uint8_t mode;
+    uint16_t scale;
+    uint16_t contrast;
+    uint8_t backlight;
+};
+
 extern GDisplay *vfx_gdisp;
 extern fft_config_t *vfx_fft_plan;
 
-extern void vfx_set_mode(uint8_t idx);
-extern uint8_t vfx_get_mode(void);
-
-extern void vfx_set_scale(uint16_t val);
-extern uint16_t vfx_get_scale(void);
-
-extern void vfx_set_contrast(uint16_t val);
-extern uint16_t vfx_get_contrast(void);
-
-extern void vfx_set_backlight(uint8_t val);
-extern uint8_t vfx_get_backlight(void);
+extern void vfx_set_conf(struct vfx_conf *cfg);
+extern struct vfx_conf *vfx_get_conf(void);
 
 extern void vfx_init(void);
 

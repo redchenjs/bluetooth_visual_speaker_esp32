@@ -26,7 +26,9 @@ void sleep_key_handle(void)
     xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
 
 #ifdef CONFIG_ENABLE_VFX
-    vfx_set_mode(0);
+    struct vfx_conf *vfx = vfx_get_conf();
+    vfx->mode = 0;
+    vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
     audio_input_set_mode(0);

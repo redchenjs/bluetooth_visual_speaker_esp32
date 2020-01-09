@@ -14,25 +14,28 @@
 #include "gfx.h"
 
 #include "core/os.h"
-#include "user/audio_input.h"
-#include "user/vfx_bitmap.h"
-#include "user/vfx_core.h"
+#include "core/app.h"
 #include "user/vfx.h"
+#include "user/vfx_core.h"
+#include "user/vfx_bitmap.h"
+#include "user/audio_input.h"
 
 #define TAG "vfx"
 
 #define VFX_PERIOD GDISP_NEED_TIMERFLUSH
+
+static struct vfx_conf vfx = {
+    .mode = DEFAULT_VFX_MODE,
+    .scale = DEFAULT_VFX_SCALE,
+    .contrast = DEFAULT_VFX_CONTRAST,
+    .backlight = DEFAULT_VFX_BACKLIGHT,
+};
 
 GDisplay *vfx_gdisp = NULL;
 fft_config_t *vfx_fft_plan = NULL;
 
 static coord_t vfx_disp_width = 0;
 static coord_t vfx_disp_height = 0;
-
-static uint8_t vfx_mode = 0x0F;
-static uint16_t vfx_scale = 192;
-static uint16_t vfx_contrast = 0x0100;
-static uint8_t vfx_backlight = 255;
 
 static void vfx_task(void *pvParameter)
 {
@@ -44,27 +47,23 @@ static void vfx_task(void *pvParameter)
     vfx_disp_width = gdispGGetWidth(vfx_gdisp);
     vfx_disp_height = gdispGGetHeight(vfx_gdisp);
 
-#ifdef CONFIG_VFX_OUTPUT_CUBE0414
-    vfx_contrast = 0x0190;
-#endif
-
     ESP_LOGI(TAG, "started.");
 
     while (1) {
-        switch (vfx_mode) {
+        switch (vfx.mode) {
 #ifdef CONFIG_SCREEN_PANEL_OUTPUT_FFT
         // LCD Output
         case 0x0C: {   // 音頻FFT(橫排漸變-線性譜)
             uint8_t  color_cnt = 0;
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -88,7 +87,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx_scale;
+                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale;
                     if (fft_out[0] > vfx_disp_height) {
                         fft_out[0] = vfx_disp_height;
                     } else if (fft_out[0] < 1) {
@@ -97,7 +96,7 @@ static void vfx_task(void *pvParameter)
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx_scale;
+                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale;
                         if (fft_out[k] > vfx_disp_height) {
                             fft_out[k] = vfx_disp_height;
                         } else if (fft_out[k] < 1) {
@@ -160,13 +159,13 @@ static void vfx_task(void *pvParameter)
         }
         case 0x0D: {   // 音頻FFT(橫排彩虹-線性譜)
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -190,7 +189,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx_scale;
+                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale;
                     if (fft_out[0] > vfx_disp_height) {
                         fft_out[0] = vfx_disp_height;
                     } else if (fft_out[0] < 1) {
@@ -199,7 +198,7 @@ static void vfx_task(void *pvParameter)
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx_scale;
+                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale;
                         if (fft_out[k] > vfx_disp_height) {
                             fft_out[k] = vfx_disp_height;
                         } else if (fft_out[k] < 1) {
@@ -254,14 +253,14 @@ static void vfx_task(void *pvParameter)
             uint8_t  color_cnt = 0;
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -285,7 +284,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx_scale * 96 / 2;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale * 96 / 2;
                     if (fft_out[0] > center_y) {
                         fft_out[0] = center_y;
                     } else if (fft_out[0] < 0) {
@@ -294,7 +293,7 @@ static void vfx_task(void *pvParameter)
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx_scale * 96 / 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale * 96 / 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
                         } else if (fft_out[k] < 0) {
@@ -360,14 +359,14 @@ static void vfx_task(void *pvParameter)
         }
         case 0x0F: {   // 音頻FFT(居中彩虹-對數譜)
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -391,7 +390,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx_scale * 96 / 2;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale * 96 / 2;
                     if (fft_out[0] > center_y) {
                         fft_out[0] = center_y;
                     } else if (fft_out[0] < 0) {
@@ -400,7 +399,7 @@ static void vfx_task(void *pvParameter)
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx_scale * 96 / 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale * 96 / 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
                         } else if (fft_out[k] < 0) {
@@ -461,11 +460,11 @@ static void vfx_task(void *pvParameter)
             uint8_t y = 0;
             uint8_t z = 0;
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -503,11 +502,11 @@ static void vfx_task(void *pvParameter)
             uint8_t y = 0;
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -547,11 +546,11 @@ static void vfx_task(void *pvParameter)
         }
         case 0x03: {   // 漸變彩燈(體漸變)
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -579,7 +578,7 @@ static void vfx_task(void *pvParameter)
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -592,8 +591,8 @@ static void vfx_task(void *pvParameter)
                 vfx_fill_cube(0, 0, 0, 8, 8, 8, color_idx, color_ctr);
 
                 if (ctr_dir == 0) {     // 暗->明
-                    if (color_ctr-- == vfx_contrast) {
-                        color_ctr = vfx_contrast;
+                    if (color_ctr-- == vfx.contrast) {
+                        color_ctr = vfx.contrast;
                         ctr_dir = 1;
                     }
                 } else {    // 明->暗
@@ -616,14 +615,14 @@ static void vfx_task(void *pvParameter)
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t z = 0;
-            uint16_t led_ctr = vfx_contrast;
+            uint16_t led_ctr = vfx.contrast;
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_idx[512] = {0};
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
@@ -706,14 +705,14 @@ static void vfx_task(void *pvParameter)
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t z = 0;
-            uint16_t led_ctr = vfx_contrast;
+            uint16_t led_ctr = vfx.contrast;
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_idx[512] = {0};
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
@@ -796,14 +795,14 @@ static void vfx_task(void *pvParameter)
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t z = 0;
-            uint16_t led_ctr = vfx_contrast;
+            uint16_t led_ctr = vfx.contrast;
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_idx[512] = {0};
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
@@ -886,11 +885,11 @@ exit:
         case 0x08: {   // 漸變靜態數字
             uint16_t num = 0;
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -923,11 +922,11 @@ exit:
             uint16_t layer0 = 0;
             uint16_t layer1 = 0;
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -983,7 +982,7 @@ exit:
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -993,7 +992,7 @@ exit:
                     break;
                 }
 
-                vfx_draw_cube_bitmap(vfx_bitmap_wave[frame_idx], vfx_contrast);
+                vfx_draw_cube_bitmap(vfx_bitmap_wave[frame_idx], vfx.contrast);
 
                 if (frame_idx++ == 44) {
                     frame_idx = 8;
@@ -1009,7 +1008,7 @@ exit:
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1021,7 +1020,7 @@ exit:
 
                 frame_pre = frame_idx;
                 for (uint8_t i=0; i<8; i++) {
-                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx], vfx_contrast);
+                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx], vfx.contrast);
 
                     if (frame_idx++ == 27) {
                         frame_idx = 0;
@@ -1044,7 +1043,7 @@ exit:
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1056,7 +1055,7 @@ exit:
 
                 frame_pre = frame_idx;
                 for (uint8_t i=0; i<8; i++) {
-                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx], vfx_contrast);
+                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx], vfx.contrast);
 
                     if (frame_idx-- == 0) {
                         frame_idx = 27;
@@ -1077,7 +1076,7 @@ exit:
             uint8_t x = 0;
             uint8_t y = 0;
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
@@ -1085,7 +1084,7 @@ exit:
 
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -1109,7 +1108,7 @@ exit:
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx_scale * 96;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale * 96;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1118,7 +1117,7 @@ exit:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx_scale * 96;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale * 96;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1176,7 +1175,7 @@ exit:
             uint8_t  color_cnt = 0;
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
@@ -1184,7 +1183,7 @@ exit:
 
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -1208,7 +1207,7 @@ exit:
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx_scale * 96;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale * 96;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1217,7 +1216,7 @@ exit:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx_scale * 96;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale * 96;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1283,7 +1282,7 @@ exit:
             uint8_t color_flg = 0;
             uint8_t color_cnt = 0;
             uint16_t color_idx[64] = {0};
-            uint16_t color_ctr[64] = {vfx_contrast};
+            uint16_t color_ctr[64] = {vfx.contrast};
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
             const uint8_t led_idx_table[][64] = {
@@ -1305,11 +1304,11 @@ exit:
 
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<64; i++) {
                 color_idx[i] = i * 8;
-                color_ctr[i] = vfx_contrast;
+                color_ctr[i] = vfx.contrast;
             }
 
             vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
@@ -1334,7 +1333,7 @@ exit:
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx_scale * 96;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale * 96;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1343,7 +1342,7 @@ exit:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx_scale * 96;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale * 96;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1402,7 +1401,7 @@ exit:
             uint8_t x = 0;
             uint8_t y = 0;
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
@@ -1410,7 +1409,7 @@ exit:
 
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -1434,7 +1433,7 @@ exit:
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx_scale;
+                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1443,7 +1442,7 @@ exit:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx_scale;
+                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1501,7 +1500,7 @@ exit:
             uint8_t  color_cnt = 0;
             uint16_t color_tmp = 0;
             uint16_t color_idx = 0;
-            uint16_t color_ctr = vfx_contrast;
+            uint16_t color_ctr = vfx.contrast;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
@@ -1509,7 +1508,7 @@ exit:
 
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
             memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
@@ -1533,7 +1532,7 @@ exit:
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx_scale;
+                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1542,7 +1541,7 @@ exit:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx_scale;
+                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1608,7 +1607,7 @@ exit:
             uint8_t color_flg = 0;
             uint8_t color_cnt = 0;
             uint16_t color_idx[64] = {0};
-            uint16_t color_ctr[64] = {vfx_contrast};
+            uint16_t color_ctr[64] = {vfx.contrast};
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
             const uint8_t led_idx_table[][64] = {
@@ -1630,11 +1629,11 @@ exit:
 
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
-            gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<64; i++) {
                 color_idx[i] = i * 8;
-                color_ctr[i] = vfx_contrast;
+                color_ctr[i] = vfx.contrast;
             }
 
             vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
@@ -1659,7 +1658,7 @@ exit:
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx_scale;
+                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1668,7 +1667,7 @@ exit:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx_scale;
+                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1744,60 +1743,30 @@ exit:
     }
 }
 
-void vfx_set_mode(uint8_t idx)
+void vfx_set_conf(struct vfx_conf *cfg)
 {
-#ifdef CONFIG_ENABLE_VFX
-    vfx_mode = idx;
-    ESP_LOGI(TAG, "mode 0x%02X", vfx_mode);
-
-    xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
-#endif
-}
-
-uint8_t vfx_get_mode(void)
-{
-    return vfx_mode;
-}
-
-void vfx_set_scale(uint16_t val)
-{
-    vfx_scale = val;
-    ESP_LOGI(TAG, "scale %u", vfx_scale);
-}
-
-uint16_t vfx_get_scale(void)
-{
-    return vfx_scale;
-}
-
-void vfx_set_contrast(uint16_t val)
-{
-    vfx_contrast = val;
-    ESP_LOGI(TAG, "contrast 0x%04X", vfx_contrast);
-}
-
-uint16_t vfx_get_contrast(void)
-{
-    return vfx_contrast;
-}
-
-void vfx_set_backlight(uint8_t val)
-{
-    vfx_backlight = val;
-    ESP_LOGI(TAG, "backlight %u", vfx_backlight);
-
+    vfx.mode = cfg->mode;
+    vfx.scale = cfg->scale;
+    vfx.contrast = cfg->contrast;
+    vfx.backlight = cfg->backlight;
     if (vfx_gdisp) {
-        gdispGSetBacklight(vfx_gdisp, vfx_backlight);
+        gdispGSetBacklight(vfx_gdisp, vfx.backlight);
     }
+    xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
+    ESP_LOGI(TAG, "mode: 0x%02X, scale: %u, contrast: 0x%04X, backlight: %u",
+             vfx.mode, vfx.scale, vfx.contrast, vfx.backlight);
 }
 
-uint8_t vfx_get_backlight(void)
+struct vfx_conf *vfx_get_conf(void)
 {
-    return vfx_backlight;
+    return &vfx;
 }
 
 void vfx_init(void)
 {
+    size_t length = sizeof(struct vfx_conf);
+    app_getenv("VFX_INIT_CFG", &vfx, &length);
+
     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
 
     xTaskCreatePinnedToCore(vfx_task, "VfxT", 5120, NULL, 7, NULL, 1);

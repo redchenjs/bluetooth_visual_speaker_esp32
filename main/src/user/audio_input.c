@@ -11,13 +11,14 @@
 #include "driver/i2s.h"
 
 #include "core/os.h"
+#include "core/app.h"
 #include "chip/i2s.h"
 #include "user/vfx.h"
 #include "user/audio_input.h"
 
 #define TAG "audio_input"
 
-static uint8_t audio_input_mode = 1;
+static uint8_t audio_input_mode = DEFAULT_AUDIO_INPUT_MODE;
 
 static TaskHandle_t audio_input_task_handle = NULL;
 
@@ -83,7 +84,7 @@ void audio_input_set_mode(uint8_t idx)
 {
 #ifndef CONFIG_AUDIO_INPUT_NONE
     audio_input_mode = idx;
-    ESP_LOGI(TAG, "mode %u", audio_input_mode);
+    ESP_LOGI(TAG, "mode: %u", audio_input_mode);
 
     if (audio_input_mode) {
         if (!audio_input_task_handle) {
@@ -108,6 +109,9 @@ uint8_t audio_input_get_mode(void)
 
 void audio_input_init(void)
 {
+    size_t length = sizeof(uint8_t);
+    app_getenv("AIN_INIT_CFG", &audio_input_mode, &length);
+
     xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
 
     xTaskCreatePinnedToCore(audio_input_task, "AudioInputT", 2048, NULL, 8, &audio_input_task_handle, 1);
