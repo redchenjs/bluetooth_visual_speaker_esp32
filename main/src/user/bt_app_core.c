@@ -15,6 +15,7 @@
 #include "freertos/queue.h"
 #include "freertos/task.h"
 
+#include "core/os.h"
 #include "user/bt_app_core.h"
 
 #define BT_APP_CORE_TAG "bt_app_core"
@@ -97,6 +98,14 @@ static void bt_app_task(void *pvParameter)
 void bt_app_task_start_up(void)
 {
     s_bt_app_task_queue = xQueueCreate(10, sizeof(bt_app_msg_t));
+
+    xEventGroupWaitBits(
+        user_event_group,
+        AUDIO_PLAYER_IDLE_BIT,
+        pdFALSE,
+        pdFALSE,
+        portMAX_DELAY
+    );
 
     xTaskCreatePinnedToCore(bt_app_task, "BtAppT", 2048, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }

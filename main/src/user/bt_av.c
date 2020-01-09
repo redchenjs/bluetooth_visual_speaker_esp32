@@ -194,15 +194,15 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                  a2d->conn_stat.remote_bda[2], a2d->conn_stat.remote_bda[3],
                  a2d->conn_stat.remote_bda[4], a2d->conn_stat.remote_bda[5]);
 
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
             memset(&a2d_remote_bda, 0x00, sizeof(esp_bd_addr_t));
 
-            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & BT_A2DP_IDLE_BIT)) {
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-            if (!(uxBits & OS_PWR_SLEEP_BIT)) {
                 audio_player_play_file(1);
-            }
 #endif
+            }
             if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESTART_BIT)) {
 #ifdef CONFIG_ENABLE_LED
                 led_set_mode(3);
