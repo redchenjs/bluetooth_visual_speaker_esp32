@@ -47,6 +47,9 @@ static void vfx_task(void *pvParameter)
     vfx_disp_width = gdispGGetWidth(vfx_gdisp);
     vfx_disp_height = gdispGGetHeight(vfx_gdisp);
 
+    size_t length = sizeof(struct vfx_conf);
+    app_getenv("VFX_INIT_CFG", &vfx, &length);
+
     ESP_LOGI(TAG, "started.");
 
     while (1) {
@@ -1764,9 +1767,6 @@ struct vfx_conf *vfx_get_conf(void)
 
 void vfx_init(void)
 {
-    size_t length = sizeof(struct vfx_conf);
-    app_getenv("VFX_INIT_CFG", &vfx, &length);
-
     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
 
     xTaskCreatePinnedToCore(vfx_task, "VfxT", 5120, NULL, 7, NULL, 1);

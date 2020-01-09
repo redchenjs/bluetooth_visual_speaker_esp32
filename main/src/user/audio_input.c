@@ -27,6 +27,9 @@ static void audio_input_task(void *pvParameters)
     size_t bytes_read = 0;
     char data[FFT_N * 4] = {0};
 
+    size_t length = sizeof(uint8_t);
+    app_getenv("AIN_INIT_CFG", &audio_input_mode, &length);
+
     ESP_LOGI(TAG, "started.");
 
     while (1) {
@@ -109,9 +112,6 @@ uint8_t audio_input_get_mode(void)
 
 void audio_input_init(void)
 {
-    size_t length = sizeof(uint8_t);
-    app_getenv("AIN_INIT_CFG", &audio_input_mode, &length);
-
     xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
 
     xTaskCreatePinnedToCore(audio_input_task, "AudioInputT", 2048, NULL, 8, &audio_input_task_handle, 1);
