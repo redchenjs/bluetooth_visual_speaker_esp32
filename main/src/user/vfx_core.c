@@ -17,10 +17,10 @@
 #include "user/vfx_bitmap.h"
 #include "user/vfx_color_table.h"
 
-inline uint32_t vfx_read_color_from_table(uint16_t color_index, uint16_t color_scale)
+inline uint32_t vfx_read_color_from_table(uint16_t color_h, uint16_t color_l)
 {
-    uint16_t table_x = color_index;
-    uint16_t table_y = color_scale;
+    uint16_t table_x = color_h;
+    uint16_t table_y = 511 - color_l;
 
     uint8_t *pixel_addr = (uint8_t *)vfx_color_table_512 + (table_x + table_y * 512) * 3;
     uint32_t pixel_color = *(pixel_addr + 0) << 16 | *(pixel_addr + 1) << 8 | *(pixel_addr + 2);
@@ -29,9 +29,9 @@ inline uint32_t vfx_read_color_from_table(uint16_t color_index, uint16_t color_s
 }
 
 #ifndef CONFIG_SCREEN_PANEL_OUTPUT_FFT
-void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, uint16_t color_index, uint16_t color_scale)
+void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, uint16_t color_h, uint16_t color_l)
 {
-    uint32_t pixel_color = vfx_read_color_from_table(color_index, color_scale);
+    uint32_t pixel_color = vfx_read_color_from_table(color_h, color_l);
     uint8_t pixel_x = x + y * 8;
     uint8_t pixel_y = z;
 
@@ -52,32 +52,32 @@ void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, uint16_t color_index, uint1
 #endif
 }
 
-void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint8_t cz, uint16_t color_index, uint16_t color_scale)
+void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint8_t cz, uint16_t color_h, uint16_t color_l)
 {
     for (uint8_t i=0; i<cx; i++) {
         for (uint8_t j=0; j<cy; j++) {
             for (uint8_t k=0; k<cz; k++) {
-                vfx_draw_pixel(x+i, y+j, z+k, color_index, color_scale);
+                vfx_draw_pixel(x+i, y+j, z+k, color_h, color_l);
             }
         }
     }
 }
 
-void vfx_draw_cube_bitmap(const uint8_t *bitmap, uint16_t color_scale)
+void vfx_draw_cube_bitmap(const uint8_t *bitmap, uint16_t color_l)
 {
     uint8_t x = 0;
     uint8_t y = 0;
     uint8_t z = 0;
     static uint16_t color_pre = 0;
-    static uint16_t color_index = 0;
+    static uint16_t color_h = 0;
 
-    color_pre = color_index;
+    color_pre = color_h;
     for (uint8_t i=0; i<64; i++) {
         uint8_t temp = *(bitmap + i);
 
         for (uint8_t j=0; j<8; j++) {
             if (temp & 0x80) {
-                vfx_draw_pixel(x, y, z, color_index, color_scale);
+                vfx_draw_pixel(x, y, z, color_h, color_l);
             } else {
                 vfx_draw_pixel(x, y, z, 0, 511);
             }
@@ -94,35 +94,35 @@ void vfx_draw_cube_bitmap(const uint8_t *bitmap, uint16_t color_scale)
                     }
                 }
 
-                if (++color_index > 511) {
-                    color_index = 0;
+                if (++color_h > 511) {
+                    color_h = 0;
                 }
             }
         }
     }
 
     if (color_pre == 510) {
-        color_index = 0;
+        color_h = 0;
     } else {
-        color_index = color_pre + 2;
+        color_h = color_pre + 2;
     }
 }
 
-void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, uint16_t color_scale)
+void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, uint16_t color_l)
 {
     uint8_t x = 0;
     uint8_t y = 0;
     uint8_t z = layer;
     static uint16_t color_pre = 0;
-    static uint16_t color_index = 0;
+    static uint16_t color_h = 0;
 
-    color_pre = color_index;
+    color_pre = color_h;
     for (uint8_t i=0; i<8; i++) {
         uint8_t temp = *(bitmap + i);
 
         for (uint8_t j=0; j<8; j++) {
             if (temp & 0x80) {
-                vfx_draw_pixel(x, y, z, color_index, color_scale);
+                vfx_draw_pixel(x, y, z, color_h, color_l);
             } else {
                 vfx_draw_pixel(x, y, z, 0, 511);
             }
@@ -136,20 +136,20 @@ void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, uint16_t color_
                 }
             }
 
-            if (++color_index > 511) {
-                color_index = 0;
+            if (++color_h > 511) {
+                color_h = 0;
             }
         }
     }
 
     if (color_pre == 511) {
-        color_index = 0;
+        color_h = 0;
     } else {
-        color_index = color_pre + 1;
+        color_h = color_pre + 1;
     }
 }
 
-void vfx_draw_layer_number(uint8_t num, uint8_t layer, uint16_t color_index, uint16_t color_scale)
+void vfx_draw_layer_number(uint8_t num, uint8_t layer, uint16_t color_h, uint16_t color_l)
 {
     uint8_t x = 0;
     uint8_t y = layer;
@@ -160,7 +160,7 @@ void vfx_draw_layer_number(uint8_t num, uint8_t layer, uint16_t color_index, uin
 
         for (uint8_t j=0; j<8; j++) {
             if (temp & 0x80) {
-                vfx_draw_pixel(x, y, z, color_index, color_scale);
+                vfx_draw_pixel(x, y, z, color_h, color_l);
             } else {
                 vfx_draw_pixel(x, y, z, 0, 511);
             }

@@ -19,9 +19,9 @@
 #define DEFAULT_VFX_SCALE_FACTOR    192
 
 #ifndef CONFIG_VFX_OUTPUT_CUBE0414
-    #define DEFAULT_VFX_COLOR_SCALE 0x0100
+    #define DEFAULT_VFX_LIGHTNESS 0x00FF
 #else
-    #define DEFAULT_VFX_COLOR_SCALE 0x0190
+    #define DEFAULT_VFX_LIGHTNESS 0x006F
 #endif
 
 #define DEFAULT_VFX_BACKLIGHT   255
@@ -29,7 +29,7 @@
 struct vfx_conf {
     uint8_t mode;
     uint16_t scale_factor;
-    uint16_t color_scale;
+    uint16_t lightness;
     uint8_t backlight;
 };
 
