@@ -19,6 +19,12 @@ config BT_SPP_SERVER_NAME
     depends on ENABLE_OTA_OVER_SPP
     help
         Bluetooth SPP server name.
+
+config ENABLE_BLE_CONTROL_IF
+    bool "Enable BLE Control Interface"
+    default y
+    help
+        Select this to enable BLE Control Interface.
 endmenu
 
 menu "Audio Configuration"
@@ -49,7 +55,6 @@ config AUDIO_OUTPUT_I2S_NUM
 choice AUDIO_INPUT
     prompt "Audio Input"
     default AUDIO_INPUT_NONE
-    depends on ENABLE_VFX
     help
         Select Audio Input Interface.
 
@@ -126,13 +131,6 @@ config ENABLE_VFX
     default n
     help
         Select this to enable Visual Effects Output.
-
-config ENABLE_BLE_CONTROL_IF
-    bool "Enable BLE Control Interface"
-    default y
-    depends on ENABLE_VFX
-    help
-        Select this to enable BLE Control Interface.
 
 choice VFX_OUTPUT
     prompt "VFX Output Device"
