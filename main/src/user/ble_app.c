@@ -33,7 +33,7 @@ esp_ble_adv_params_t adv_params = {
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
 
-static void ble_gap_init_adv_data(const char *name)
+void ble_gap_init_adv_data(const char *name)
 {
     int len = strlen(name);
     uint8_t raw_adv_data[len+5];
@@ -97,7 +97,7 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
 
 void ble_app_init(void)
 {
-    ble_gap_init_adv_data(CONFIG_BT_NAME);
+    xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
     ESP_ERROR_CHECK(esp_ble_gatts_register_callback(ble_gatts_event_handler));
     ESP_ERROR_CHECK(esp_ble_gap_register_callback(ble_gap_event_handler));

@@ -23,14 +23,14 @@
 
 #define BLE_GATTS_TAG "ble_gatts"
 
-#define GATTS_SERVICE_UUID_A 0x00EE
-#define GATTS_CHAR_UUID_A    0xEE01
-#define GATTS_DESCR_UUID_A   0x2222
+#define GATTS_SERVICE_UUID_A 0x00AA
+#define GATTS_CHAR_UUID_A    0xAA01
+#define GATTS_DESCR_UUID_A   0xDEAD
 #define GATTS_NUM_HANDLE_A   4
 
-#define GATTS_SERVICE_UUID_B 0x00FF
-#define GATTS_CHAR_UUID_B    0xFF01
-#define GATTS_DESCR_UUID_B   0x3333
+#define GATTS_SERVICE_UUID_B 0x00BB
+#define GATTS_CHAR_UUID_B    0xBB02
+#define GATTS_DESCR_UUID_B   0xBEEF
 #define GATTS_NUM_HANDLE_B   4
 
 #define PREPARE_BUF_MAX_SIZE   1024
@@ -131,6 +131,8 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
 {
     switch (event) {
     case ESP_GATTS_REG_EVT:
+        ble_gap_init_adv_data(CONFIG_BT_NAME);
+
         gl_profile_tab[PROFILE_A_APP_ID].service_id.is_primary = true;
         gl_profile_tab[PROFILE_A_APP_ID].service_id.id.inst_id = 0x00;
         gl_profile_tab[PROFILE_A_APP_ID].service_id.id.uuid.len = ESP_UUID_LEN_16;
