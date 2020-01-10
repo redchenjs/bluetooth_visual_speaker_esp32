@@ -22,6 +22,12 @@ git clone --recursive https://github.com/redchenjs/bluetooth_speaker_esp32.git
 * Set up the Toolchain: <https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html>
 * Tested toolchain version: `esp32-2019r1`
 
+## Updating
+```
+git pull
+git submodule update --init --recursive
+```
+
 ## Configure
 
 ```
