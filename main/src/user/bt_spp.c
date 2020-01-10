@@ -140,7 +140,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
 
 #ifdef CONFIG_ENABLE_VFX
-                vfx->mode = 0;
+                vfx->mode = VFX_MODE_OFF;
                 vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
@@ -191,7 +191,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
 #ifdef CONFIG_ENABLE_VFX
                     vfx_prev_mode = vfx->mode;
-                    vfx->mode = 0;
+                    vfx->mode = VFX_MODE_OFF;
                     vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE

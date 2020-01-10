@@ -7,8 +7,8 @@ Bluetooth Speaker based on ESP32 chip with dynamic vision effects output.
 
 * A2DP Audio Streaming
 * I2S & PDM Input / I2S Output
-* VFX Output (Audio FFT / Rainbow / Stars / ...)
-* BLE Control Interface (for VFX Output & Audio Input)
+* VFX Output (GIF / Audio FFT / Rainbow / Stars / ...)
+* BLE Control Interface (for VFX Output)
 * Audio Prompt (Connected / Disconnected / WakeUp / Sleep)
 * OTA Firmware Update (via SPP Profile)
 * Sleep & WakeUp Key
@@ -56,6 +56,10 @@ idf.py menuconfig
 ```
 idf.py flash monitor
 ```
+
+## VFX on ST7789 135x240 LCD Panel (GIF)
+
+<img src="docs/st7789gif.png">
 
 ## VFX on ST7735 80x160 LCD Panel (Linear Spectrum)
 

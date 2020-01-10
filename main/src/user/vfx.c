@@ -37,6 +37,18 @@ fft_config_t *vfx_fft_plan = NULL;
 static coord_t vfx_disp_width = 0;
 static coord_t vfx_disp_height = 0;
 
+#ifdef CONFIG_SCREEN_PANEL_OUTPUT_VFX
+static const char *img_file_ptr[][2] = {
+    #ifdef CONFIG_VFX_OUTPUT_ST7735
+        {ani0_160x80_gif_ptr, ani0_160x80_gif_end},     // "Nyan Cat"
+        {ani1_160x80_gif_ptr, ani1_160x80_gif_end},     // "bilibili"
+    #elif defined(CONFIG_VFX_OUTPUT_ST7789)
+        {ani0_240x135_gif_ptr, ani0_240x135_gif_end},   // "Nyan Cat"
+        {ani1_240x135_gif_ptr, ani1_240x135_gif_end},   // "bilibili"
+    #endif
+};
+#endif
+
 static void vfx_task(void *pvParameter)
 {
     portTickType xLastWakeTime;
@@ -51,8 +63,50 @@ static void vfx_task(void *pvParameter)
 
     while (1) {
         switch (vfx.mode) {
-#ifdef CONFIG_SCREEN_PANEL_OUTPUT_FFT
+#ifdef CONFIG_SCREEN_PANEL_OUTPUT_VFX
         // LCD Output
+        case 0x00:
+        case 0x01: {   // 動態貼圖
+            gdispImage gfx_image;
+
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+            if (!(gdispImageOpenMemory(&gfx_image, img_file_ptr[vfx.mode][0]) & GDISP_IMAGE_ERR_UNRECOVERABLE)) {
+                gdispImageSetBgColor(&gfx_image, Black);
+
+                while (1) {
+                    xLastWakeTime = xTaskGetTickCount();
+
+                    if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
+                        xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                        break;
+                    }
+
+                    if (gdispImageDraw(&gfx_image, 0, 0, gfx_image.width, gfx_image.height, 0, 0) != GDISP_IMAGE_ERR_OK) {
+                        ESP_LOGE(TAG, "failed to draw image: %u", vfx.mode);
+                        vfx.mode = VFX_MODE_OFF;
+                        break;
+                    }
+
+                    delaytime_t delay = gdispImageNext(&gfx_image);
+                    if (delay == TIME_INFINITE) {
+                        vfx.mode = VFX_MODE_PAUSE;
+                        break;
+                    }
+
+                    if (delay != TIME_IMMEDIATE) {
+                        vTaskDelayUntil(&xLastWakeTime, delay / portTICK_RATE_MS);
+                    }
+                }
+
+                gdispImageClose(&gfx_image);
+            } else {
+                ESP_LOGE(TAG, "failed to open image: %u", vfx.mode);
+                vfx.mode = VFX_MODE_OFF;
+                break;
+            }
+            break;
+        }
         case 0x0E: {   // 音樂頻譜-漸變-對數
             uint8_t  color_cnt = 0;
             uint16_t color_tmp = 0;
@@ -1722,7 +1776,20 @@ exit:
 
             break;
         }
-#endif // CONFIG_SCREEN_PANEL_OUTPUT_FFT
+#endif // CONFIG_SCREEN_PANEL_OUTPUT_VFX
+        case VFX_MODE_PAUSE:
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+            xEventGroupWaitBits(
+                user_event_group,
+                VFX_RELOAD_BIT,
+                pdTRUE,
+                pdFALSE,
+                portMAX_DELAY
+            );
+
+            break;
+        case VFX_MODE_OFF:
         default:
             gdispGSetBacklight(vfx_gdisp, 0);
 

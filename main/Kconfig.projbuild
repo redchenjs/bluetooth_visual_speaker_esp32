@@ -49,6 +49,7 @@ config AUDIO_OUTPUT_I2S_NUM
 choice AUDIO_INPUT
     prompt "Audio Input"
     default AUDIO_INPUT_NONE
+    depends on ENABLE_VFX
     help
         Select Audio Input Interface.
 
@@ -150,13 +151,13 @@ endchoice
 
 choice SCREEN_PANEL_OUTPUT
     prompt "Screen Panel Output Mode"
-    default SCREEN_PANEL_OUTPUT_FFT
+    default SCREEN_PANEL_OUTPUT_VFX
     depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
     help
         Select Screen Panel Output Mode.
 
-config SCREEN_PANEL_OUTPUT_FFT
-    bool "Display Audio FFT"
+config SCREEN_PANEL_OUTPUT_VFX
+    bool "Display Visual Effects"
 config SCREEN_PANEL_OUTPUT_MMAP
     bool "Display CUBE0414's Memory Mapping"
 endchoice

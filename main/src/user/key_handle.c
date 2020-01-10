@@ -27,7 +27,7 @@ void sleep_key_handle(void)
 
 #ifdef CONFIG_ENABLE_VFX
     struct vfx_conf *vfx = vfx_get_conf();
-    vfx->mode = 0;
+    vfx->mode = VFX_MODE_OFF;
     vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE

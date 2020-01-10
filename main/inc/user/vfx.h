@@ -26,6 +26,11 @@
 
 #define DEFAULT_VFX_BACKLIGHT 0xFF
 
+enum vfx_mode {
+    VFX_MODE_PAUSE = 0xFE,
+    VFX_MODE_OFF   = 0xFF,
+};
+
 struct vfx_conf {
     uint8_t mode;
     uint16_t scale_factor;
@@ -35,6 +40,24 @@ struct vfx_conf {
 
 extern GDisplay *vfx_gdisp;
 extern fft_config_t *vfx_fft_plan;
+
+#ifdef CONFIG_SCREEN_PANEL_OUTPUT_VFX
+    #ifdef CONFIG_VFX_OUTPUT_ST7735
+        // ani0.gif
+        extern const char ani0_160x80_gif_ptr[] asm("_binary_ani0_160x80_gif_start");
+        extern const char ani0_160x80_gif_end[] asm("_binary_ani0_160x80_gif_end");
+        // ani1.gif
+        extern const char ani1_160x80_gif_ptr[] asm("_binary_ani1_160x80_gif_start");
+        extern const char ani1_160x80_gif_end[] asm("_binary_ani1_160x80_gif_end");
+    #elif defined(CONFIG_VFX_OUTPUT_ST7789)
+        // ani0.gif
+        extern const char ani0_240x135_gif_ptr[] asm("_binary_ani0_240x135_gif_start");
+        extern const char ani0_240x135_gif_end[] asm("_binary_ani0_240x135_gif_end");
+        // ani1.gif
+        extern const char ani1_240x135_gif_ptr[] asm("_binary_ani1_240x135_gif_start");
+        extern const char ani1_240x135_gif_end[] asm("_binary_ani1_240x135_gif_end");
+    #endif
+#endif
 
 extern void vfx_set_conf(struct vfx_conf *cfg);
 extern struct vfx_conf *vfx_get_conf(void);

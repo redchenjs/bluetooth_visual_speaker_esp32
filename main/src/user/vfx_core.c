@@ -28,7 +28,7 @@ inline uint32_t vfx_read_color_from_table(uint16_t color_h, uint16_t color_l)
     return pixel_color;
 }
 
-#ifndef CONFIG_SCREEN_PANEL_OUTPUT_FFT
+#ifndef CONFIG_SCREEN_PANEL_OUTPUT_VFX
 void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, uint16_t color_h, uint16_t color_l)
 {
     uint32_t pixel_color = vfx_read_color_from_table(color_h, color_l);
@@ -176,4 +176,4 @@ void vfx_draw_layer_number(uint8_t num, uint8_t layer, uint16_t color_h, uint16_
         }
     }
 }
-#endif // CONFIG_SCREEN_PANEL_OUTPUT_FFT
+#endif // CONFIG_SCREEN_PANEL_OUTPUT_VFX

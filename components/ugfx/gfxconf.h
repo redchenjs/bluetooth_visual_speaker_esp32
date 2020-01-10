@@ -117,10 +117,10 @@
 //    #define GDISP_INCLUDE_FONT_DEJAVUSANSBOLD12_AA   TRUE
 //    #define GDISP_INCLUDE_USER_FONTS                 FALSE
 
-// #define GDISP_NEED_IMAGE                            TRUE
-   // #define GDISP_NEED_IMAGE_NATIVE                  TRUE
-   // #define GDISP_NEED_IMAGE_GIF                     TRUE
-      //  #define GDISP_IMAGE_GIF_BLIT_BUFFER_SIZE     32
+#define GDISP_NEED_IMAGE                            TRUE
+   #define GDISP_NEED_IMAGE_NATIVE                  TRUE
+   #define GDISP_NEED_IMAGE_GIF                     TRUE
+       #define GDISP_IMAGE_GIF_BLIT_BUFFER_SIZE     32
 //    #define GDISP_NEED_IMAGE_BMP                     TRUE
 //        #define GDISP_NEED_IMAGE_BMP_1               TRUE
 //        #define GDISP_NEED_IMAGE_BMP_4               TRUE
@@ -305,7 +305,7 @@
 ///////////////////////////////////////////////////////////////////////////
 // GFILE                                                                 //
 ///////////////////////////////////////////////////////////////////////////
-// #define GFX_USE_GFILE                                TRUE
+#define GFX_USE_GFILE                                TRUE
 
 // #define GFILE_NEED_PRINTG                            TRUE
 // #define GFILE_NEED_SCANG                             TRUE
@@ -315,7 +315,7 @@
 // #define GFILE_NEED_NOAUTOMOUNT                       TRUE
 // #define GFILE_NEED_NOAUTOSYNC                        TRUE
 
-// #define GFILE_NEED_MEMFS                             TRUE
+#define GFILE_NEED_MEMFS                             TRUE
 //#define GFILE_NEED_ROMFS                             FALSE
 //#define GFILE_NEED_RAMFS                             FALSE
 //#define GFILE_NEED_FATFS                             FALSE
