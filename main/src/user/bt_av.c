@@ -212,14 +212,15 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
             xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
+            xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
+            xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
+
             memcpy(&a2d_remote_bda, a2d->conn_stat.remote_bda, sizeof(esp_bd_addr_t));
 
             if (memcmp(&last_remote_bda, &a2d_remote_bda, sizeof(esp_bd_addr_t)) != 0) {
                 memcpy(&last_remote_bda, &a2d_remote_bda, sizeof(esp_bd_addr_t));
                 app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
             }
-
-            xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
             audio_player_play_file(0);
@@ -264,8 +265,6 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                      a2d->audio_cfg.mcc.cie.sbc[3]);
             ESP_LOGI(BT_A2D_TAG, "audio player configured, sample rate=%d", sample_rate);
         }
-
-        xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
 
         break;
     }
@@ -391,7 +390,7 @@ static void bt_av_hdl_avrc_tg_evt(uint16_t event, void *p_param)
         break;
     }
     case ESP_AVRC_TG_SET_ABSOLUTE_VOLUME_CMD_EVT: {
-        ESP_LOGI(BT_RC_TG_TAG, "AVRC set absolute volume: %d%%", (int)rc->set_abs_vol.volume * 100/ 0x7f);
+        ESP_LOGI(BT_RC_TG_TAG, "AVRC set absolute volume: %d%%", (int)rc->set_abs_vol.volume * 100 / 0x7f);
         break;
     }
     case ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT: {
