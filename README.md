@@ -13,33 +13,48 @@ Bluetooth Speaker based on ESP32 chip with dynamic vision effects output.
 * OTA Firmware Update (via SPP Profile)
 * Sleep & WakeUp Key
 
-## Obtaining
+## Preparing
+
+### Obtain the Source
 
 ```
 git clone --recursive https://github.com/redchenjs/bluetooth_speaker_esp32.git
 ```
 
-* Set up the Toolchain: <https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html>
-* Tested toolchain version: `esp32-2019r1`
+### Update an existing repository
 
-## Updating
 ```
 git pull
 git submodule update --init --recursive
 ```
 
-## Configure
+### Setup the Tools
 
 ```
-./esp-idf/tools/idf.py menuconfig
+./esp-idf/install.sh
+```
+
+## Building
+
+### Setup the environment variables
+
+```
+export IDF_PATH=$PWD/esp-idf
+source ./esp-idf/export.sh
+```
+
+### Configure
+
+```
+idf.py menuconfig
 ```
 
 * All project configurations are under the `Bluetooth Speaker` menu.
 
-## Build & Flash & Monitor
+### Flash & Monitor
 
 ```
-./esp-idf/tools/idf.py flash monitor
+idf.py flash monitor
 ```
 
 ## VFX on ST7735 80x160 LCD Panel (Linear Spectrum)
