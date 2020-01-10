@@ -79,22 +79,6 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
         esp_a2d_sink_register_data_callback(bt_app_a2d_data_cb);
         esp_a2d_sink_init();
 
-        if (strlen((const char *)last_remote_bda) != 0) {
-            ESP_LOGI(BT_APP_TAG, "attempting to reconnect [%02x:%02x:%02x:%02x:%02x:%02x]",
-                    last_remote_bda[0], last_remote_bda[1], last_remote_bda[2],
-                    last_remote_bda[3], last_remote_bda[4], last_remote_bda[5]);
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
-            xEventGroupWaitBits(
-                user_event_group,
-                AUDIO_PLAYER_IDLE_BIT,
-                pdFALSE,
-                pdFALSE,
-                portMAX_DELAY
-            );
-#endif
-            esp_a2d_sink_connect(last_remote_bda);
-        }
-
         /* set discoverable and connectable mode, wait to be connected */
         esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 
@@ -133,4 +117,28 @@ void bt_app_init(void)
     esp_bt_gap_set_pin(pin_type, 4, pin_code);
 
     ESP_LOGI(BT_APP_TAG, "started.");
+
+    if (strlen((const char *)last_remote_bda) != 0) {
+        // Reconnecting Delay
+        vTaskDelay(1000 / portTICK_RATE_MS);
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+        xEventGroupWaitBits(
+            user_event_group,
+            AUDIO_PLAYER_IDLE_BIT,
+            pdFALSE,
+            pdFALSE,
+            portMAX_DELAY
+        );
+#endif
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+        if (uxBits & BT_A2DP_IDLE_BIT) {
+            ESP_LOGI(BT_APP_TAG, "reconnect to [%02x:%02x:%02x:%02x:%02x:%02x]",
+                     last_remote_bda[0], last_remote_bda[1], last_remote_bda[2],
+                     last_remote_bda[3], last_remote_bda[4], last_remote_bda[5]);
+
+            esp_a2d_sink_connect(last_remote_bda);
+        } else {
+            ESP_LOGW(BT_APP_TAG, "reconnecting aborted");
+        }
+    }
 }
