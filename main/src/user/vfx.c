@@ -142,7 +142,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 96 / 2;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 64 / 2;
                     if (fft_out[0] > center_y) {
                         fft_out[0] = center_y;
                     } else if (fft_out[0] < 0) {
@@ -151,7 +151,7 @@ static void vfx_task(void *pvParameter)
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 96 / 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 64 / 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
                         } else if (fft_out[k] < 0) {
@@ -248,7 +248,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 96 / 2;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 64 / 2;
                     if (fft_out[0] > center_y) {
                         fft_out[0] = center_y;
                     } else if (fft_out[0] < 0) {
@@ -257,7 +257,7 @@ static void vfx_task(void *pvParameter)
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 96 / 2;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 64 / 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
                         } else if (fft_out[k] < 0) {
@@ -628,7 +628,7 @@ static void vfx_task(void *pvParameter)
             uint8_t scale_dir = 0;
             uint8_t color_cnt = 0;
             uint16_t color_h = 0;
-            uint16_t color_l = 511;
+            uint16_t color_l = 0;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
@@ -645,13 +645,13 @@ static void vfx_task(void *pvParameter)
                 vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, color_l);
 
                 if (scale_dir == 0) {   // 暗->明
-                    if (color_l-- == vfx.lightness) {
+                    if (color_l++ == vfx.lightness) {
                         color_l = vfx.lightness;
                         scale_dir = 1;
                     }
                 } else {                // 明->暗
-                    if (++color_l > 511) {
-                        color_l = 511;
+                    if (color_l-- == 0) {
+                        color_l = 0;
                         scale_dir = 0;
                     }
                 }
@@ -700,27 +700,27 @@ static void vfx_task(void *pvParameter)
             uint16_t i=0;
             while (1) {
                 for (; i<512; i++) {
-                    uint16_t j = 511;
+                    uint16_t j = 0;
                     uint16_t k = color_l;
 
-                    for (uint16_t n=color_l; n<511; n++) {
+                    for (uint16_t n=0; n<color_l; n++) {
                         xLastWakeTime = xTaskGetTickCount();
 
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], --j);
+                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
 
                         if (i >= led_num - 1) {
                             x = (led_idx[i-(led_num-1)] % 64) % 8;
                             y = (led_idx[i-(led_num-1)] % 64) / 8;
                             z = led_idx[i-(led_num-1)] / 64;
-                            vfx_draw_pixel(x, y, z, color_h[i-(led_num-1)], ++k);
+                            vfx_draw_pixel(x, y, z, color_h[i-(led_num-1)], --k);
                         }
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto exit;
+                            goto stars_exit;
                         }
 
                         vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
@@ -728,25 +728,25 @@ static void vfx_task(void *pvParameter)
                 }
 
                 for (i=0; i<led_num; i++) {
-                    uint16_t j = 511;
+                    uint16_t j = 0;
                     uint16_t k = color_l;
 
-                    for (uint16_t n=color_l; n<511; n++) {
+                    for (uint16_t n=0; n<color_l; n++) {
                         xLastWakeTime = xTaskGetTickCount();
 
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], --j);
+                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
 
                         x = (led_idx[(512-(led_num-1))+i] % 64) % 8;
                         y = (led_idx[(512-(led_num-1))+i] % 64) / 8;
                         z = led_idx[(512-(led_num-1))+i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[(512-(led_num-1))+i], ++k);
+                        vfx_draw_pixel(x, y, z, color_h[(512-(led_num-1))+i], --k);
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto exit;
+                            goto stars_exit;
                         }
 
                         vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
@@ -790,27 +790,27 @@ static void vfx_task(void *pvParameter)
             uint16_t i=0;
             while (1) {
                 for (; i<512; i++) {
-                    uint16_t j = 511;
+                    uint16_t j = 0;
                     uint16_t k = color_l;
 
-                    for (uint16_t n=color_l; n<511; n++) {
+                    for (uint16_t n=0; n<color_l; n++) {
                         xLastWakeTime = xTaskGetTickCount();
 
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], --j);
+                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
 
                         if (i >= led_num - 1) {
                             x = (led_idx[i-(led_num-1)] % 64) % 8;
                             y = (led_idx[i-(led_num-1)] % 64) / 8;
                             z = led_idx[i-(led_num-1)] / 64;
-                            vfx_draw_pixel(x, y, z, color_h[i-(led_num-1)], ++k);
+                            vfx_draw_pixel(x, y, z, color_h[i-(led_num-1)], --k);
                         }
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto exit;
+                            goto stars_exit;
                         }
 
                         vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
@@ -818,25 +818,25 @@ static void vfx_task(void *pvParameter)
                 }
 
                 for (i=0; i<led_num; i++) {
-                    uint16_t j = 511;
+                    uint16_t j = 0;
                     uint16_t k = color_l;
 
-                    for (uint16_t n=color_l; n<511; n++) {
+                    for (uint16_t n=0; n<color_l; n++) {
                         xLastWakeTime = xTaskGetTickCount();
 
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], --j);
+                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
 
                         x = (led_idx[(512-(led_num-1))+i] % 64) % 8;
                         y = (led_idx[(512-(led_num-1))+i] % 64) / 8;
                         z = led_idx[(512-(led_num-1))+i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[(512-(led_num-1))+i], ++k);
+                        vfx_draw_pixel(x, y, z, color_h[(512-(led_num-1))+i], --k);
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto exit;
+                            goto stars_exit;
                         }
 
                         vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
@@ -880,27 +880,27 @@ static void vfx_task(void *pvParameter)
             uint16_t i=0;
             while (1) {
                 for (; i<512; i++) {
-                    uint16_t j = 511;
+                    uint16_t j = 0;
                     uint16_t k = color_l;
 
-                    for (uint16_t n=color_l; n<511; n++) {
+                    for (uint16_t n=0; n<color_l; n++) {
                         xLastWakeTime = xTaskGetTickCount();
 
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], --j);
+                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
 
                         if (i >= led_num - 1) {
                             x = (led_idx[i-(led_num-1)] % 64) % 8;
                             y = (led_idx[i-(led_num-1)] % 64) / 8;
                             z = led_idx[i-(led_num-1)] / 64;
-                            vfx_draw_pixel(x, y, z, color_h[i-(led_num-1)], ++k);
+                            vfx_draw_pixel(x, y, z, color_h[i-(led_num-1)], --k);
                         }
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto exit;
+                            goto stars_exit;
                         }
 
                         vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
@@ -908,32 +908,32 @@ static void vfx_task(void *pvParameter)
                 }
 
                 for (i=0; i<led_num; i++) {
-                    uint16_t j = 511;
+                    uint16_t j = 0;
                     uint16_t k = color_l;
 
-                    for (uint16_t n=color_l; n<511; n++) {
+                    for (uint16_t n=0; n<color_l; n++) {
                         xLastWakeTime = xTaskGetTickCount();
 
                         x = (led_idx[i] % 64) % 8;
                         y = (led_idx[i] % 64) / 8;
                         z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], --j);
+                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
 
                         x = (led_idx[(512-(led_num-1))+i] % 64) % 8;
                         y = (led_idx[(512-(led_num-1))+i] % 64) / 8;
                         z = led_idx[(512-(led_num-1))+i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[(512-(led_num-1))+i], ++k);
+                        vfx_draw_pixel(x, y, z, color_h[(512-(led_num-1))+i], --k);
 
                         if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                             xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto exit;
+                            goto stars_exit;
                         }
 
                         vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                     }
                 }
             }
-exit:
+stars_exit:
             break;
         }
         case 0x08: {   // 數字-固定
@@ -1162,7 +1162,7 @@ exit:
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 96;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1171,7 +1171,7 @@ exit:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 96;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1198,7 +1198,7 @@ exit:
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
                                   clear_cx, clear_cy, clear_cz,
-                                  0, 511);
+                                  0, 0);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
                                   fill_cx, fill_cy, fill_cz,
                                   color_h, color_l);
@@ -1261,7 +1261,7 @@ exit:
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 96;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1270,7 +1270,7 @@ exit:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 96;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1297,7 +1297,7 @@ exit:
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
                                   clear_cx, clear_cy, clear_cz,
-                                  0, 511);
+                                  0, 0);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
                                   fill_cx, fill_cy, fill_cz,
                                   color_h, color_l);
@@ -1387,7 +1387,7 @@ exit:
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
-                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 96;
+                    fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1396,7 +1396,7 @@ exit:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 96;
+                        fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1425,7 +1425,7 @@ exit:
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
                                   clear_cx, clear_cy, clear_cz,
-                                  0, 511);
+                                  0, 0);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
                                   fill_cx, fill_cy, fill_cz,
                                   color_h[i], color_l[i]);
@@ -1523,7 +1523,7 @@ exit:
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
                                   clear_cx, clear_cy, clear_cz,
-                                  0, 511);
+                                  0, 0);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
                                   fill_cx, fill_cy, fill_cz,
                                   color_h, color_l);
@@ -1622,7 +1622,7 @@ exit:
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
                                   clear_cx, clear_cy, clear_cz,
-                                  0, 511);
+                                  0, 0);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
                                   fill_cx, fill_cy, fill_cz,
                                   color_h, color_l);
@@ -1750,7 +1750,7 @@ exit:
 
                     vfx_fill_cube(clear_x, clear_y, clear_z,
                                   clear_cx, clear_cy, clear_cz,
-                                  0, 511);
+                                  0, 0);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
                                   fill_cx, fill_cy, fill_cz,
                                   color_h[i], color_l[i]);
