@@ -40,7 +40,7 @@ static void os_power_task_handle(void *pvParameters)
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (uxBits & OS_PWR_SLEEP_BIT) {
             for (int i=3; i>0; i--) {
-                ESP_LOGW(OS_PWR_TAG, "sleep countdown...%d", i);
+                ESP_LOGW(OS_PWR_TAG, "sleeping in %ds", i);
                 vTaskDelay(1000 / portTICK_RATE_MS);
             }
 
@@ -70,7 +70,7 @@ static void os_power_task_handle(void *pvParameters)
             esp_deep_sleep_start();
         } else if (uxBits & OS_PWR_RESTART_BIT) {
             for (int i=3; i>0; i--) {
-                ESP_LOGW(OS_PWR_TAG, "restart countdown...%d", i);
+                ESP_LOGW(OS_PWR_TAG, "restarting in %ds", i);
                 vTaskDelay(1000 / portTICK_RATE_MS);
             }
 
@@ -140,7 +140,7 @@ void os_init(void)
 #endif
             ESP_LOGW(OS_PWR_TAG, "resuming from sleep mode");
         } else {
-            ESP_LOGW(OS_PWR_TAG, "resume aborted");
+            ESP_LOGW(OS_PWR_TAG, "resuming aborted");
 
             os_power_sleep_wait(0);
         }
@@ -154,6 +154,6 @@ void os_init(void)
 #endif // CONFIG_ENABLE_WAKEUP_KEY
 
 #if defined(CONFIG_ENABLE_WAKEUP_KEY) || defined(CONFIG_ENABLE_SLEEP_KEY) || defined(CONFIG_ENABLE_OTA_OVER_SPP)
-    xTaskCreatePinnedToCore(os_power_task_handle, "OsPowerT", 2048, NULL, 5, NULL, 0);
+    xTaskCreatePinnedToCore(os_power_task_handle, "osPowerT", 2048, NULL, 5, NULL, 0);
 #endif
 }
