@@ -22,7 +22,7 @@ config BT_SPP_SERVER_NAME
 
 config ENABLE_BLE_CONTROL_IF
     bool "Enable BLE Control Interface"
-    default y
+    default n
     help
         Select this to enable BLE Control Interface.
 endmenu
