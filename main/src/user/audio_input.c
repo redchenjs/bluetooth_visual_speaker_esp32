@@ -119,7 +119,7 @@ void audio_input_init(void)
 
     xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
 
-    xTaskCreatePinnedToCore(audio_input_task, "AudioInputT", 2048, NULL, 8, &audio_input_task_handle, 1);
+    xTaskCreatePinnedToCore(audio_input_task, "audioInputT", 2048, NULL, 8, &audio_input_task_handle, 1);
 }
 
 void audio_input_deinit(void)

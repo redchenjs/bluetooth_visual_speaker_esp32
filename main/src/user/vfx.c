@@ -1836,5 +1836,5 @@ void vfx_init(void)
 
     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
 
-    xTaskCreatePinnedToCore(vfx_task, "VfxT", 5120, NULL, 7, NULL, 1);
+    xTaskCreatePinnedToCore(vfx_task, "vfxT", 5120, NULL, 7, NULL, 1);
 }
