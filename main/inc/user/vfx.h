@@ -15,8 +15,8 @@
 
 #define FFT_N 128
 
-#define DEFAULT_VFX_MODE        0x0F
-#define DEFAULT_VFX_SCALE_FACTOR    192
+#define DEFAULT_VFX_MODE 0x0F
+#define DEFAULT_VFX_SCALE_FACTOR 0xFF
 
 #ifndef CONFIG_VFX_OUTPUT_CUBE0414
     #define DEFAULT_VFX_LIGHTNESS 0x00FF
@@ -24,7 +24,7 @@
     #define DEFAULT_VFX_LIGHTNESS 0x006F
 #endif
 
-#define DEFAULT_VFX_BACKLIGHT   255
+#define DEFAULT_VFX_BACKLIGHT 0xFF
 
 struct vfx_conf {
     uint8_t mode;
