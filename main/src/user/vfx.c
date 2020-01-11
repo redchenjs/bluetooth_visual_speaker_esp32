@@ -24,7 +24,7 @@
 
 #define VFX_PERIOD GDISP_NEED_TIMERFLUSH
 
-static struct vfx_conf vfx = {
+static vfx_config_t vfx = {
     .mode = DEFAULT_VFX_MODE,
     .scale_factor = DEFAULT_VFX_SCALE_FACTOR,
     .lightness = DEFAULT_VFX_LIGHTNESS,
@@ -32,7 +32,9 @@ static struct vfx_conf vfx = {
 };
 
 GDisplay *vfx_gdisp = NULL;
-fft_config_t *vfx_fft_plan = NULL;
+
+float vfx_fft_input[FFT_N] = {0.0};
+float vfx_fft_output[FFT_N] = {0.0};
 
 static coord_t vfx_disp_width = 0;
 static coord_t vfx_disp_height = 0;
@@ -112,6 +114,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_tmp = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            fft_config_t *fft = NULL;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
@@ -120,15 +123,14 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
-            memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
                 }
 
@@ -137,11 +139,11 @@ static void vfx_task(void *pvParameter)
 
                     xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_execute(vfx_fft_plan);
+                    fft_execute(fft);
 
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
+                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 64 / 2;
                     if (fft_out[0] > center_y) {
                         fft_out[0] = center_y;
@@ -150,7 +152,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
                         fft_out[k] = log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 64 / 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
@@ -210,14 +212,14 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            fft_destroy(vfx_fft_plan);
-            vfx_fft_plan = NULL;
+            fft_destroy(fft);
 
             break;
         }
         case 0x0F: {   // 音樂頻譜-彩虹-對數
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            fft_config_t *fft = NULL;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
@@ -226,15 +228,14 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
-            memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
                 }
 
@@ -243,11 +244,11 @@ static void vfx_task(void *pvParameter)
 
                     xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_execute(vfx_fft_plan);
+                    fft_execute(fft);
 
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
+                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 64 / 2;
                     if (fft_out[0] > center_y) {
                         fft_out[0] = center_y;
@@ -256,7 +257,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
                         fft_out[k] = log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 64 / 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
@@ -306,8 +307,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            fft_destroy(vfx_fft_plan);
-            vfx_fft_plan = NULL;
+            fft_destroy(fft);
 
             break;
         }
@@ -316,6 +316,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_tmp = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
 
@@ -323,15 +324,14 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
-            memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
                 }
 
@@ -340,11 +340,11 @@ static void vfx_task(void *pvParameter)
 
                     xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_execute(vfx_fft_plan);
+                    fft_execute(fft);
 
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
+                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor;
                     if (fft_out[0] > vfx_disp_height) {
                         fft_out[0] = vfx_disp_height;
@@ -353,7 +353,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor;
                         if (fft_out[k] > vfx_disp_height) {
                             fft_out[k] = vfx_disp_height;
@@ -410,14 +410,14 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            fft_destroy(vfx_fft_plan);
-            vfx_fft_plan = NULL;
+            fft_destroy(fft);
 
             break;
         }
         case 0x11: {   // 音樂頻譜-彩虹-線性
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
 
@@ -425,15 +425,14 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
-            memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
                 }
 
@@ -442,11 +441,11 @@ static void vfx_task(void *pvParameter)
 
                     xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_execute(vfx_fft_plan);
+                    fft_execute(fft);
 
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
+                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor;
                     if (fft_out[0] > vfx_disp_height) {
                         fft_out[0] = vfx_disp_height;
@@ -455,7 +454,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor;
                         if (fft_out[k] > vfx_disp_height) {
                             fft_out[k] = vfx_disp_height;
@@ -502,8 +501,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            fft_destroy(vfx_fft_plan);
-            vfx_fft_plan = NULL;
+            fft_destroy(fft);
 
             break;
         }
@@ -1052,6 +1050,7 @@ static void vfx_task(void *pvParameter)
             uint8_t y = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            fft_config_t *fft = NULL;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
@@ -1061,15 +1060,14 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
-            memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
                 }
 
@@ -1078,11 +1076,11 @@ static void vfx_task(void *pvParameter)
 
                     xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_execute(vfx_fft_plan);
+                    fft_execute(fft);
 
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
+                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
@@ -1091,7 +1089,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
                         fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1139,8 +1137,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            fft_destroy(vfx_fft_plan);
-            vfx_fft_plan = NULL;
+            fft_destroy(fft);
 
             break;
         }
@@ -1151,6 +1148,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_tmp = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            fft_config_t *fft = NULL;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
@@ -1160,15 +1158,14 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
-            memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
                 }
 
@@ -1177,11 +1174,11 @@ static void vfx_task(void *pvParameter)
 
                     xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_execute(vfx_fft_plan);
+                    fft_execute(fft);
 
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
+                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
@@ -1190,7 +1187,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
                         fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1246,8 +1243,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            fft_destroy(vfx_fft_plan);
-            vfx_fft_plan = NULL;
+            fft_destroy(fft);
 
             break;
         }
@@ -1258,6 +1254,7 @@ static void vfx_task(void *pvParameter)
             uint8_t color_cnt = 0;
             uint16_t color_h[64] = {0};
             uint16_t color_l[64] = {vfx.lightness};
+            fft_config_t *fft = NULL;
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
             const uint8_t led_idx_table[][64] = {
@@ -1286,15 +1283,14 @@ static void vfx_task(void *pvParameter)
                 color_l[i] = vfx.lightness;
             }
 
-            vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
-            memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
                 }
 
@@ -1303,11 +1299,11 @@ static void vfx_task(void *pvParameter)
 
                     xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_execute(vfx_fft_plan);
+                    fft_execute(fft);
 
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
+                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
@@ -1316,7 +1312,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
                         fft_out[k] = log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 64;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1367,8 +1363,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            fft_destroy(vfx_fft_plan);
-            vfx_fft_plan = NULL;
+            fft_destroy(fft);
 
             break;
         }
@@ -1377,6 +1372,7 @@ static void vfx_task(void *pvParameter)
             uint8_t y = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
@@ -1386,15 +1382,14 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
-            memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
                 }
 
@@ -1403,11 +1398,11 @@ static void vfx_task(void *pvParameter)
 
                     xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_execute(vfx_fft_plan);
+                    fft_execute(fft);
 
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
+                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
@@ -1416,7 +1411,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1464,8 +1459,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            fft_destroy(vfx_fft_plan);
-            vfx_fft_plan = NULL;
+            fft_destroy(fft);
 
             break;
         }
@@ -1476,6 +1470,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_tmp = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
@@ -1485,15 +1480,14 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
-            memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
                 }
 
@@ -1502,11 +1496,11 @@ static void vfx_task(void *pvParameter)
 
                     xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_execute(vfx_fft_plan);
+                    fft_execute(fft);
 
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
+                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
@@ -1515,7 +1509,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1571,8 +1565,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            fft_destroy(vfx_fft_plan);
-            vfx_fft_plan = NULL;
+            fft_destroy(fft);
 
             break;
         }
@@ -1583,6 +1576,7 @@ static void vfx_task(void *pvParameter)
             uint8_t color_cnt = 0;
             uint16_t color_h[64] = {0};
             uint16_t color_l[64] = {vfx.lightness};
+            fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             uint8_t fft_out[64] = {0};
             const uint8_t led_idx_table[][64] = {
@@ -1611,15 +1605,14 @@ static void vfx_task(void *pvParameter)
                 color_l[i] = vfx.lightness;
             }
 
-            vfx_fft_plan = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, NULL, NULL);
-            memset(vfx_fft_plan->input, 0x00, FFT_N * sizeof(float));
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                     xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
                     break;
                 }
 
@@ -1628,11 +1621,11 @@ static void vfx_task(void *pvParameter)
 
                     xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_execute(vfx_fft_plan);
+                    fft_execute(fft);
 
                     xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
 
-                    fft_amp[0] = sqrt(pow(vfx_fft_plan->output[0], 2) + pow(vfx_fft_plan->output[1], 2)) / FFT_N;
+                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
@@ -1641,7 +1634,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_plan->output[2*k], 2) + pow(vfx_fft_plan->output[2*k+1], 2)) / FFT_N * 2;
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1692,8 +1685,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            fft_destroy(vfx_fft_plan);
-            vfx_fft_plan = NULL;
+            fft_destroy(fft);
 
             break;
         }
@@ -1731,7 +1723,7 @@ loop_break:
     }
 }
 
-void vfx_set_conf(struct vfx_conf *cfg)
+void vfx_set_conf(vfx_config_t *cfg)
 {
     vfx.mode = cfg->mode;
     vfx.scale_factor = cfg->scale_factor;
@@ -1745,14 +1737,14 @@ void vfx_set_conf(struct vfx_conf *cfg)
              vfx.mode, vfx.scale_factor, vfx.lightness, vfx.backlight);
 }
 
-struct vfx_conf *vfx_get_conf(void)
+vfx_config_t *vfx_get_conf(void)
 {
     return &vfx;
 }
 
 void vfx_init(void)
 {
-    size_t length = sizeof(struct vfx_conf);
+    size_t length = sizeof(vfx_config_t);
     app_getenv("VFX_INIT_CFG", &vfx, &length);
 
     xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);

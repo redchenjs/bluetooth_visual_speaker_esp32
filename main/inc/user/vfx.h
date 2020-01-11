@@ -31,15 +31,17 @@ enum vfx_mode {
     VFX_MODE_OFF   = 0xFF,
 };
 
-struct vfx_conf {
+typedef struct {
     uint8_t mode;
     uint16_t scale_factor;
     uint16_t lightness;
     uint8_t backlight;
-};
+} vfx_config_t;
 
 extern GDisplay *vfx_gdisp;
-extern fft_config_t *vfx_fft_plan;
+
+extern float vfx_fft_input[FFT_N];
+extern float vfx_fft_output[FFT_N];
 
 #ifdef CONFIG_SCREEN_PANEL_OUTPUT_VFX
     #ifdef CONFIG_VFX_OUTPUT_ST7735
@@ -59,8 +61,8 @@ extern fft_config_t *vfx_fft_plan;
     #endif
 #endif
 
-extern void vfx_set_conf(struct vfx_conf *cfg);
-extern struct vfx_conf *vfx_get_conf(void);
+extern void vfx_set_conf(vfx_config_t *cfg);
+extern vfx_config_t *vfx_get_conf(void);
 
 extern void vfx_init(void);
 

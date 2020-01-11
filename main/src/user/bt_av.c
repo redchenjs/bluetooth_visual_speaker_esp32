@@ -101,40 +101,38 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-    if (uxBits & VFX_FFT_EXEC_BIT || uxBits & VFX_RELOAD_BIT) {
+    if (uxBits & VFX_FFT_FULL_BIT || uxBits & VFX_FFT_EXEC_BIT || uxBits & VFX_RELOAD_BIT) {
         return;
     }
 
     // Copy data to FFT input buffer
-    if (vfx_fft_plan) {
-        uint32_t idx = 0;
+    uint32_t idx = 0;
 
 #ifdef CONFIG_BT_AUDIO_FFT_ONLY_LEFT
-            int16_t data_l = 0;
-            for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-                data_l = data[idx+1] << 8 | data[idx];
+    int16_t data_l = 0;
+    for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
+        data_l = data[idx+1] << 8 | data[idx];
 
-                vfx_fft_plan->input[k] = (float)data_l;
-            }
+        vfx_fft_input[k] = (float)data_l;
+    }
 #elif defined(CONFIG_BT_AUDIO_FFT_ONLY_RIGHT)
-            int16_t data_r = 0;
-            for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-                data_r = data[idx+3] << 8 | data[idx+2];
+    int16_t data_r = 0;
+    for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
+        data_r = data[idx+3] << 8 | data[idx+2];
 
-                vfx_fft_plan->input[k] = (float)data_r;
-            }
+        vfx_fft_input[k] = (float)data_r;
+    }
 #else
-            int16_t data_l = 0, data_r = 0;
-            for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-                data_l = data[idx+1] << 8 | data[idx];
-                data_r = data[idx+3] << 8 | data[idx+2];
+    int16_t data_l = 0, data_r = 0;
+    for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
+        data_l = data[idx+1] << 8 | data[idx];
+        data_r = data[idx+3] << 8 | data[idx+2];
 
-                vfx_fft_plan->input[k] = (float)((data_l + data_r) / 2);
-            }
+        vfx_fft_input[k] = (float)((data_l + data_r) / 2);
+    }
 #endif
 
-        xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-    }
+    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
 #endif
 }
 

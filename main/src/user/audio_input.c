@@ -18,9 +18,7 @@
 
 #define TAG "ain"
 
-static uint8_t audio_input_mode = DEFAULT_AUDIO_INPUT_MODE;
-
-static TaskHandle_t audio_input_task_handle = NULL;
+static uint8_t ain_mode = DEFAULT_AIN_MODE;
 
 static void audio_input_task(void *pvParameters)
 {
@@ -42,40 +40,38 @@ static void audio_input_task(void *pvParameters)
 
 #ifdef CONFIG_ENABLE_VFX
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (uxBits & VFX_FFT_EXEC_BIT || uxBits & VFX_RELOAD_BIT) {
+        if (uxBits & VFX_FFT_FULL_BIT || uxBits & VFX_FFT_EXEC_BIT || uxBits & VFX_RELOAD_BIT) {
             continue;
         }
 
         // Copy data to FFT input buffer
-        if (vfx_fft_plan) {
-            uint32_t idx = 0;
+        uint32_t idx = 0;
 
 #ifdef CONFIG_AUDIO_INPUT_FFT_ONLY_LEFT
-            int16_t data_l = 0;
-            for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-                data_l = data[idx+1] << 8 | data[idx];
+        int16_t data_l = 0;
+        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
+            data_l = data[idx+1] << 8 | data[idx];
 
-                vfx_fft_plan->input[k] = (float)data_l;
-            }
+            vfx_fft_input[k] = (float)data_l;
+        }
 #elif defined(CONFIG_AUDIO_INPUT_FFT_ONLY_RIGHT)
-            int16_t data_r = 0;
-            for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-                data_r = data[idx+3] << 8 | data[idx+2];
+        int16_t data_r = 0;
+        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
+            data_r = data[idx+3] << 8 | data[idx+2];
 
-                vfx_fft_plan->input[k] = (float)data_r;
-            }
+            vfx_fft_input[k] = (float)data_r;
+        }
 #else
-            int16_t data_l = 0, data_r = 0;
-            for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-                data_l = data[idx+1] << 8 | data[idx];
-                data_r = data[idx+3] << 8 | data[idx+2];
+        int16_t data_l = 0, data_r = 0;
+        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
+            data_l = data[idx+1] << 8 | data[idx];
+            data_r = data[idx+3] << 8 | data[idx+2];
 
-                vfx_fft_plan->input[k] = (float)((data_l + data_r) / 2);
-            }
+            vfx_fft_input[k] = (float)((data_l + data_r) / 2);
+        }
 #endif
 
-            xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
-        }
+        xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
 #endif // CONFIG_ENABLE_VFX
     }
 }
@@ -83,59 +79,28 @@ static void audio_input_task(void *pvParameters)
 void audio_input_set_mode(uint8_t idx)
 {
 #ifndef CONFIG_AUDIO_INPUT_NONE
-    audio_input_mode = idx;
-    ESP_LOGI(TAG, "mode: %u", audio_input_mode);
+    ain_mode = idx;
+    ESP_LOGI(TAG, "mode: %u", ain_mode);
 
-    if (audio_input_mode) {
-        if (!audio_input_task_handle) {
-            i2s_input_init();
-            audio_input_init();
-        }
+    if (ain_mode) {
+        xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
     } else {
-        if (audio_input_task_handle) {
-            audio_input_deinit();
-            i2s_input_deinit();
-        }
+        xEventGroupClearBits(user_event_group, AUDIO_INPUT_RUN_BIT);
     }
-
-    xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
 #endif
 }
 
 uint8_t audio_input_get_mode(void)
 {
-    return audio_input_mode;
+    return ain_mode;
 }
 
 void audio_input_init(void)
 {
-    static uint8_t first_time = 1;
-
-    if (first_time) {
-        first_time = 0;
-        size_t length = sizeof(uint8_t);
-        app_getenv("AIN_INIT_CFG", &audio_input_mode, &length);
-    }
+    size_t length = sizeof(uint8_t);
+    app_getenv("AIN_INIT_CFG", &ain_mode, &length);
 
     xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
 
-    xTaskCreatePinnedToCore(audio_input_task, "audioInputT", 2048, NULL, 8, &audio_input_task_handle, 1);
-}
-
-void audio_input_deinit(void)
-{
-    xEventGroupClearBits(user_event_group, AUDIO_INPUT_RUN_BIT);
-
-    xEventGroupWaitBits(
-        user_event_group,
-        VFX_FFT_FULL_BIT,
-        pdFALSE,
-        pdFALSE,
-        portMAX_DELAY
-    );
-
-    vTaskDelete(audio_input_task_handle);
-    audio_input_task_handle = NULL;
-
-    ESP_LOGI(TAG, "stopped.");
+    xTaskCreatePinnedToCore(audio_input_task, "audioInputT", 2048, NULL, 8, NULL, 1);
 }

@@ -144,9 +144,9 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         esp_gatt_rsp_t rsp;
 
 #ifdef CONFIG_ENABLE_VFX
-        struct vfx_conf *vfx = vfx_get_conf();
+        vfx_config_t *vfx = vfx_get_conf();
     #ifndef CONFIG_AUDIO_INPUT_NONE
-        uint8_t audio_input_mode = audio_input_get_mode();
+        uint8_t ain_mode = audio_input_get_mode();
     #endif
 #endif
 
@@ -182,7 +182,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         rsp.attr_value.value[5] = vfx->lightness & 0xFF;
         rsp.attr_value.value[6] = vfx->backlight;
     #ifndef CONFIG_AUDIO_INPUT_NONE
-        rsp.attr_value.value[7] = audio_input_mode;
+        rsp.attr_value.value[7] = ain_mode;
     #endif
 #endif
 
@@ -191,9 +191,9 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     }
     case ESP_GATTS_WRITE_EVT: {
 #ifdef CONFIG_ENABLE_VFX
-        struct vfx_conf *vfx = vfx_get_conf();
+        vfx_config_t *vfx = vfx_get_conf();
     #ifndef CONFIG_AUDIO_INPUT_NONE
-        uint8_t audio_input_mode = audio_input_get_mode();
+        uint8_t ain_mode = audio_input_get_mode();
     #endif
 #endif
         if (!param->write.is_prep) {
@@ -206,11 +206,11 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                         vfx->lightness = DEFAULT_VFX_LIGHTNESS;
                         vfx->backlight = DEFAULT_VFX_BACKLIGHT;
                         vfx_set_conf(vfx);
-                        app_setenv("VFX_INIT_CFG", vfx, sizeof(struct vfx_conf));
+                        app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
     #ifndef CONFIG_AUDIO_INPUT_NONE
-                        audio_input_mode = DEFAULT_AUDIO_INPUT_MODE;
-                        audio_input_set_mode(audio_input_mode);
-                        app_setenv("AIN_INIT_CFG", &audio_input_mode, sizeof(uint8_t));
+                        ain_mode = DEFAULT_AIN_MODE;
+                        audio_input_set_mode(ain_mode);
+                        app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
     #endif
 #endif
                     } else if (param->write.len == 8) { // Update with New Configuration
@@ -220,11 +220,11 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
                         vfx->lightness = (param->write.value[4] << 8 | param->write.value[5]) % 0x0200;
                         vfx->backlight = param->write.value[6];
                         vfx_set_conf(vfx);
-                        app_setenv("VFX_INIT_CFG", vfx, sizeof(struct vfx_conf));
+                        app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
     #ifndef CONFIG_AUDIO_INPUT_NONE
-                        audio_input_mode = param->write.value[7];
-                        audio_input_set_mode(audio_input_mode);
-                        app_setenv("AIN_INIT_CFG", &audio_input_mode, sizeof(uint8_t));
+                        ain_mode = param->write.value[7];
+                        audio_input_set_mode(ain_mode);
+                        app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
     #endif
 #endif
                     } else {

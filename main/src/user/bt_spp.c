@@ -37,11 +37,11 @@
 uint32_t spp_conn_handle = 0;
 
 #ifdef CONFIG_ENABLE_VFX
-    static struct vfx_conf *vfx = NULL;
+    static vfx_config_t *vfx = NULL;
     static uint8_t vfx_prev_mode = 0;
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-    static uint8_t audio_input_prev_mode = 0;
+    static uint8_t ain_prev_mode = 0;
 #endif
 
 static esp_bd_addr_t spp_remote_bda = {0};
@@ -104,7 +104,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
             i2s_output_init();
 #ifndef CONFIG_AUDIO_INPUT_NONE
-            audio_input_set_mode(audio_input_prev_mode);
+            audio_input_set_mode(ain_prev_mode);
 #endif
 #ifdef CONFIG_ENABLE_VFX
             vfx->mode = vfx_prev_mode;
@@ -195,7 +195,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                     vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-                    audio_input_prev_mode = audio_input_get_mode();
+                    ain_prev_mode = audio_input_get_mode();
                     audio_input_set_mode(0);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
@@ -270,7 +270,7 @@ err0:
 
                 i2s_output_init();
 #ifndef CONFIG_AUDIO_INPUT_NONE
-                audio_input_set_mode(audio_input_prev_mode);
+                audio_input_set_mode(ain_prev_mode);
 #endif
 #ifdef CONFIG_ENABLE_VFX
                 vfx->mode = vfx_prev_mode;
