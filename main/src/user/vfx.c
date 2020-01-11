@@ -678,79 +678,53 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i=0; i<=511; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 80;
             }
 
-            for (uint16_t i=0; i<511; i++) {
-                uint16_t rnd = esp_random() % (512 - i - 1);
+            for (uint16_t i=0; i<=511; i++) {
+                uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
-                led_idx[rnd] = led_idx[512 - i - 1];
-                led_idx[512 - i - 1] = tmp;
+                led_idx[rnd] = led_idx[i];
+                led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<511; i++) {
-                uint16_t rnd = esp_random() % (512 - i - 1);
+            for (uint16_t i=0; i<=511; i++) {
+                uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
-                color_h[rnd] = color_h[512 - i - 1];
-                color_h[512 - i - 1] = tmp;
+                color_h[rnd] = color_h[i];
+                color_h[i] = tmp;
             }
 
-            uint16_t i=0;
+            int16_t idx_base = -led_num;
             while (1) {
-                for (; i<512; i++) {
-                    uint16_t j = 0;
-                    uint16_t k = color_l;
+                for (uint16_t i=0; i<=color_l; i++) {
+                    xLastWakeTime = xTaskGetTickCount();
 
-                    for (uint16_t n=0; n<color_l; n++) {
-                        xLastWakeTime = xTaskGetTickCount();
-
-                        x = (led_idx[i] % 64) % 8;
-                        y = (led_idx[i] % 64) / 8;
-                        z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
-
-                        if (i >= led_num - 1) {
-                            x = (led_idx[i-(led_num-1)] % 64) % 8;
-                            y = (led_idx[i-(led_num-1)] % 64) / 8;
-                            z = led_idx[i-(led_num-1)] / 64;
-                            vfx_draw_pixel(x, y, z, color_h[i-(led_num-1)], --k);
-                        }
-
-                        if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                            xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto stars_exit;
-                        }
-
-                        vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                    if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
+                        xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                        goto loop_break;
                     }
+
+                    if (idx_base >= 0) {
+                        x = (led_idx[idx_base] % 64) % 8;
+                        y = (led_idx[idx_base] % 64) / 8;
+                        z = led_idx[idx_base] / 64;
+                        vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
+                    }
+
+                    if ((idx_base + led_num) <= 511) {
+                        x = (led_idx[idx_base + led_num] % 64) % 8;
+                        y = (led_idx[idx_base + led_num] % 64) / 8;
+                        z = led_idx[idx_base + led_num] / 64;
+                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i);
+                    }
+
+                    vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
-
-                for (i=0; i<led_num; i++) {
-                    uint16_t j = 0;
-                    uint16_t k = color_l;
-
-                    for (uint16_t n=0; n<color_l; n++) {
-                        xLastWakeTime = xTaskGetTickCount();
-
-                        x = (led_idx[i] % 64) % 8;
-                        y = (led_idx[i] % 64) / 8;
-                        z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
-
-                        x = (led_idx[(512-(led_num-1))+i] % 64) % 8;
-                        y = (led_idx[(512-(led_num-1))+i] % 64) / 8;
-                        z = led_idx[(512-(led_num-1))+i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[(512-(led_num-1))+i], --k);
-
-                        if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                            xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto stars_exit;
-                        }
-
-                        vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
-                    }
+                if (idx_base++ == 511) {
+                    idx_base = -led_num;
                 }
             }
             break;
@@ -768,79 +742,53 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i=0; i<=511; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 80 + 170;
             }
 
-            for (uint16_t i=0; i<511; i++) {
-                uint16_t rnd = esp_random() % (512 - i - 1);
+            for (uint16_t i=0; i<=511; i++) {
+                uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
-                led_idx[rnd] = led_idx[512 - i - 1];
-                led_idx[512 - i - 1] = tmp;
+                led_idx[rnd] = led_idx[i];
+                led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<511; i++) {
-                uint16_t rnd = esp_random() % (512 - i - 1);
+            for (uint16_t i=0; i<=511; i++) {
+                uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
-                color_h[rnd] = color_h[512 - i - 1];
-                color_h[512 - i - 1] = tmp;
+                color_h[rnd] = color_h[i];
+                color_h[i] = tmp;
             }
 
-            uint16_t i=0;
+            int16_t idx_base = -led_num;
             while (1) {
-                for (; i<512; i++) {
-                    uint16_t j = 0;
-                    uint16_t k = color_l;
+                for (uint16_t i=0; i<=color_l; i++) {
+                    xLastWakeTime = xTaskGetTickCount();
 
-                    for (uint16_t n=0; n<color_l; n++) {
-                        xLastWakeTime = xTaskGetTickCount();
-
-                        x = (led_idx[i] % 64) % 8;
-                        y = (led_idx[i] % 64) / 8;
-                        z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
-
-                        if (i >= led_num - 1) {
-                            x = (led_idx[i-(led_num-1)] % 64) % 8;
-                            y = (led_idx[i-(led_num-1)] % 64) / 8;
-                            z = led_idx[i-(led_num-1)] / 64;
-                            vfx_draw_pixel(x, y, z, color_h[i-(led_num-1)], --k);
-                        }
-
-                        if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                            xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto stars_exit;
-                        }
-
-                        vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                    if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
+                        xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                        goto loop_break;
                     }
+
+                    if (idx_base >= 0) {
+                        x = (led_idx[idx_base] % 64) % 8;
+                        y = (led_idx[idx_base] % 64) / 8;
+                        z = led_idx[idx_base] / 64;
+                        vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
+                    }
+
+                    if ((idx_base + led_num) <= 511) {
+                        x = (led_idx[idx_base + led_num] % 64) % 8;
+                        y = (led_idx[idx_base + led_num] % 64) / 8;
+                        z = led_idx[idx_base + led_num] / 64;
+                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i);
+                    }
+
+                    vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
-
-                for (i=0; i<led_num; i++) {
-                    uint16_t j = 0;
-                    uint16_t k = color_l;
-
-                    for (uint16_t n=0; n<color_l; n++) {
-                        xLastWakeTime = xTaskGetTickCount();
-
-                        x = (led_idx[i] % 64) % 8;
-                        y = (led_idx[i] % 64) / 8;
-                        z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
-
-                        x = (led_idx[(512-(led_num-1))+i] % 64) % 8;
-                        y = (led_idx[(512-(led_num-1))+i] % 64) / 8;
-                        z = led_idx[(512-(led_num-1))+i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[(512-(led_num-1))+i], --k);
-
-                        if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                            xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto stars_exit;
-                        }
-
-                        vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
-                    }
+                if (idx_base++ == 511) {
+                    idx_base = -led_num;
                 }
             }
             break;
@@ -858,82 +806,55 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i=0; i<=511; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 85 + 345;
             }
 
-            for (uint16_t i=0; i<511; i++) {
-                uint16_t rnd = esp_random() % (512 - i - 1);
+            for (uint16_t i=0; i<=511; i++) {
+                uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
-                led_idx[rnd] = led_idx[512 - i - 1];
-                led_idx[512 - i - 1] = tmp;
+                led_idx[rnd] = led_idx[i];
+                led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<511; i++) {
-                uint16_t rnd = esp_random() % (512 - i - 1);
+            for (uint16_t i=0; i<=511; i++) {
+                uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
-                color_h[rnd] = color_h[512 - i - 1];
-                color_h[512 - i - 1] = tmp;
+                color_h[rnd] = color_h[i];
+                color_h[i] = tmp;
             }
 
-            uint16_t i=0;
+            int16_t idx_base = -led_num;
             while (1) {
-                for (; i<512; i++) {
-                    uint16_t j = 0;
-                    uint16_t k = color_l;
+                for (uint16_t i=0; i<=color_l; i++) {
+                    xLastWakeTime = xTaskGetTickCount();
 
-                    for (uint16_t n=0; n<color_l; n++) {
-                        xLastWakeTime = xTaskGetTickCount();
-
-                        x = (led_idx[i] % 64) % 8;
-                        y = (led_idx[i] % 64) / 8;
-                        z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
-
-                        if (i >= led_num - 1) {
-                            x = (led_idx[i-(led_num-1)] % 64) % 8;
-                            y = (led_idx[i-(led_num-1)] % 64) / 8;
-                            z = led_idx[i-(led_num-1)] / 64;
-                            vfx_draw_pixel(x, y, z, color_h[i-(led_num-1)], --k);
-                        }
-
-                        if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                            xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto stars_exit;
-                        }
-
-                        vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                    if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
+                        xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                        goto loop_break;
                     }
+
+                    if (idx_base >= 0) {
+                        x = (led_idx[idx_base] % 64) % 8;
+                        y = (led_idx[idx_base] % 64) / 8;
+                        z = led_idx[idx_base] / 64;
+                        vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
+                    }
+
+                    if ((idx_base + led_num) <= 511) {
+                        x = (led_idx[idx_base + led_num] % 64) % 8;
+                        y = (led_idx[idx_base + led_num] % 64) / 8;
+                        z = led_idx[idx_base + led_num] / 64;
+                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i);
+                    }
+
+                    vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
-
-                for (i=0; i<led_num; i++) {
-                    uint16_t j = 0;
-                    uint16_t k = color_l;
-
-                    for (uint16_t n=0; n<color_l; n++) {
-                        xLastWakeTime = xTaskGetTickCount();
-
-                        x = (led_idx[i] % 64) % 8;
-                        y = (led_idx[i] % 64) / 8;
-                        z = led_idx[i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[i], ++j);
-
-                        x = (led_idx[(512-(led_num-1))+i] % 64) % 8;
-                        y = (led_idx[(512-(led_num-1))+i] % 64) / 8;
-                        z = led_idx[(512-(led_num-1))+i] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[(512-(led_num-1))+i], --k);
-
-                        if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                            xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                            goto stars_exit;
-                        }
-
-                        vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
-                    }
+                if (idx_base++ == 511) {
+                    idx_base = -led_num;
                 }
             }
-stars_exit:
             break;
         }
         case 0x08: {   // 數字-固定
@@ -1804,7 +1725,7 @@ stars_exit:
                 pdFALSE,
                 portMAX_DELAY
             );
-
+loop_break:
             break;
         }
     }
