@@ -165,14 +165,14 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             } else if (strncmp(fw_cmd[1], (const char *)param->data_ind.data, strlen(fw_cmd[1])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+RAM?");
 
-                char str_buf[32] = {0};
+                char str_buf[40] = {0};
                 snprintf(str_buf, sizeof(str_buf), rsp_str[4], heap_caps_get_free_size(MALLOC_CAP_DEFAULT));
 
                 esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
             } else if (strncmp(fw_cmd[2], (const char *)param->data_ind.data, strlen(fw_cmd[2])) == 0) {
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+VER?");
 
-                char str_buf[32] = {0};
+                char str_buf[40] = {0};
                 snprintf(str_buf, sizeof(str_buf), rsp_str[5], app_get_version());
 
                 esp_spp_write(param->write.handle, strlen(str_buf), (uint8_t *)str_buf);
