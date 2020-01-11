@@ -79,7 +79,7 @@ void vfx_draw_cube_bitmap(const uint8_t *bitmap, uint16_t color_l)
             if (temp & 0x80) {
                 vfx_draw_pixel(x, y, z, color_h, color_l);
             } else {
-                vfx_draw_pixel(x, y, z, 0, 511);
+                vfx_draw_pixel(x, y, z, 0, 0);
             }
 
             temp <<= 1;
@@ -94,7 +94,7 @@ void vfx_draw_cube_bitmap(const uint8_t *bitmap, uint16_t color_l)
                     }
                 }
 
-                if (++color_h > 511) {
+                if (color_h++ == 511) {
                     color_h = 0;
                 }
             }
@@ -124,7 +124,7 @@ void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, uint16_t color_
             if (temp & 0x80) {
                 vfx_draw_pixel(x, y, z, color_h, color_l);
             } else {
-                vfx_draw_pixel(x, y, z, 0, 511);
+                vfx_draw_pixel(x, y, z, 0, 0);
             }
 
             temp <<= 1;
@@ -136,7 +136,7 @@ void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, uint16_t color_
                 }
             }
 
-            if (++color_h > 511) {
+            if (color_h++ == 511) {
                 color_h = 0;
             }
         }
@@ -162,7 +162,7 @@ void vfx_draw_layer_number(uint8_t num, uint8_t layer, uint16_t color_h, uint16_
             if (temp & 0x80) {
                 vfx_draw_pixel(x, y, z, color_h, color_l);
             } else {
-                vfx_draw_pixel(x, y, z, 0, 511);
+                vfx_draw_pixel(x, y, z, 0, 0);
             }
 
             temp <<= 1;

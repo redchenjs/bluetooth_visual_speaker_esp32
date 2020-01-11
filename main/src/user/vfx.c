@@ -192,7 +192,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, 0x000000);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (++color_h > 511) {
+                    if (color_h++ == 511) {
                         color_h = 0;
                     }
                 }
@@ -392,7 +392,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (++color_h > 511) {
+                    if (color_h++ == 511) {
                         color_h = 0;
                     }
                 }
@@ -542,7 +542,7 @@ static void vfx_task(void *pvParameter)
                         }
                     }
 
-                    if (++color_h > 511) {
+                    if (color_h++ == 511) {
                         color_h = 0;
                     }
                 }
@@ -584,7 +584,7 @@ static void vfx_task(void *pvParameter)
                         }
                     }
 
-                    if (++color_h > 511) {
+                    if (color_h++ == 511) {
                         color_h = 0;
                     }
                 }
@@ -616,7 +616,7 @@ static void vfx_task(void *pvParameter)
 
                 vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, color_l);
 
-                if (++color_h > 511) {
+                if (color_h++ == 511) {
                     color_h = 0;
                 }
 
@@ -656,7 +656,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
                 if (++color_cnt % 16 == 0) {
-                    if (++color_h > 511) {
+                    if (color_h++ == 511) {
                         color_h = 0;
                     }
                 }
@@ -884,7 +884,7 @@ static void vfx_task(void *pvParameter)
                     color_h = 0;
                 }
 
-                if (++num > 9) {
+                if (num++ == 9) {
                     num = 0;
                 }
 
@@ -916,13 +916,13 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (layer1 != 7 && layer0 != 0) {
-                    vfx_draw_layer_number(num, layer0, 0, 511);
+                    vfx_draw_layer_number(num, layer0, 0, 0);
 
                     layer1++;
                     layer0++;
                 } else if (layer1 == 7) {
                     if (layer0++ == 7) {
-                        vfx_draw_layer_number(num, 7, 0, 511);
+                        vfx_draw_layer_number(num, 7, 0, 0);
 
                         layer0 = 0;
                         layer1 = 0;
@@ -931,20 +931,20 @@ static void vfx_task(void *pvParameter)
                             num = 0;
                         }
                     } else {
-                        vfx_draw_layer_number(num, layer0 - 1, 0, 511);
+                        vfx_draw_layer_number(num, layer0 - 1, 0, 0);
                     }
                 } else {
                     if ((layer1 - layer0) != 4) {
                         layer1++;
                     } else {
-                        vfx_draw_layer_number(num, 0, 0, 511);
+                        vfx_draw_layer_number(num, 0, 0, 0);
 
                         layer1++;
                         layer0++;
                     }
                 }
 
-                if (++color_h > 511) {
+                if (color_h++ == 511) {
                     color_h = 0;
                 }
 
