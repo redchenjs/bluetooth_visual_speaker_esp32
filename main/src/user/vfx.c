@@ -853,6 +853,7 @@ static void vfx_task(void *pvParameter)
                     idx_base = -led_num;
                 }
             }
+loop_break:
             break;
         }
         case 0x08: {   // 數字-固定
@@ -1717,7 +1718,7 @@ static void vfx_task(void *pvParameter)
                 pdFALSE,
                 portMAX_DELAY
             );
-loop_break:
+
             break;
         }
     }
