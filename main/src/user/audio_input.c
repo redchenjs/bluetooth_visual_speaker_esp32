@@ -100,7 +100,7 @@ void audio_input_init(void)
     size_t length = sizeof(uint8_t);
     app_getenv("AIN_INIT_CFG", &ain_mode, &length);
 
-    xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
+    audio_input_set_mode(ain_mode);
 
     xTaskCreatePinnedToCore(audio_input_task, "audioInputT", 2048, NULL, 8, NULL, 1);
 }
