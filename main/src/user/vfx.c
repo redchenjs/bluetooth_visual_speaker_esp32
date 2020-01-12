@@ -1748,7 +1748,7 @@ void vfx_init(void)
     size_t length = sizeof(vfx_config_t);
     app_getenv("VFX_INIT_CFG", &vfx, &length);
 
-    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
+    vfx_set_conf(&vfx);
 
     xTaskCreatePinnedToCore(vfx_task, "vfxT", 5120, NULL, 7, NULL, 1);
 }
