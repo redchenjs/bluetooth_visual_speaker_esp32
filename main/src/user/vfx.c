@@ -71,10 +71,10 @@ static void vfx_task(void *pvParameter)
         case 0x01: {   // 動態貼圖
             gdispImage gfx_image;
 
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             if (!(gdispImageOpenMemory(&gfx_image, img_file_ptr[vfx.mode][0]) & GDISP_IMAGE_ERR_UNRECOVERABLE)) {
                 gdispImageSetBgColor(&gfx_image, Black);
+
+                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
                 while (1) {
                     xLastWakeTime = xTaskGetTickCount();
