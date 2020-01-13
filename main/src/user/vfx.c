@@ -119,6 +119,8 @@ static void vfx_task(void *pvParameter)
             int8_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -126,7 +128,7 @@ static void vfx_task(void *pvParameter)
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -136,14 +138,11 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-
-                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
 
                     fft_execute(fft);
 
-                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 64 / 2;
@@ -214,7 +213,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             fft_destroy(fft);
 
@@ -228,6 +227,8 @@ static void vfx_task(void *pvParameter)
             int8_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -235,7 +236,7 @@ static void vfx_task(void *pvParameter)
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -245,14 +246,11 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-
-                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
 
                     fft_execute(fft);
 
-                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 64 / 2;
@@ -313,7 +311,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             fft_destroy(fft);
 
@@ -328,6 +326,8 @@ static void vfx_task(void *pvParameter)
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -335,7 +335,7 @@ static void vfx_task(void *pvParameter)
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -345,14 +345,11 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-
-                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
 
                     fft_execute(fft);
 
-                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor;
@@ -420,7 +417,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             fft_destroy(fft);
 
@@ -433,6 +430,8 @@ static void vfx_task(void *pvParameter)
             float  fft_amp[64] = {0};
             int8_t fft_out[64] = {0};
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -440,7 +439,7 @@ static void vfx_task(void *pvParameter)
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -450,14 +449,11 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-
-                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
 
                     fft_execute(fft);
 
-                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor;
@@ -515,7 +511,7 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             fft_destroy(fft);
 
@@ -1070,6 +1066,8 @@ loop_break:
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -1077,7 +1075,7 @@ loop_break:
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1087,14 +1085,11 @@ loop_break:
                     break;
                 }
 
-                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-
-                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
 
                     fft_execute(fft);
 
-                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 64;
@@ -1153,7 +1148,7 @@ loop_break:
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             fft_destroy(fft);
 
@@ -1172,6 +1167,8 @@ loop_break:
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -1179,7 +1176,7 @@ loop_break:
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1189,14 +1186,11 @@ loop_break:
                     break;
                 }
 
-                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-
-                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
 
                     fft_execute(fft);
 
-                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 64;
@@ -1263,7 +1257,7 @@ loop_break:
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             fft_destroy(fft);
 
@@ -1296,6 +1290,8 @@ loop_break:
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -1308,7 +1304,7 @@ loop_break:
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1318,14 +1314,11 @@ loop_break:
                     break;
                 }
 
-                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-
-                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
 
                     fft_execute(fft);
 
-                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 64;
@@ -1387,7 +1380,7 @@ loop_break:
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             fft_destroy(fft);
 
@@ -1404,6 +1397,8 @@ loop_break:
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -1411,7 +1406,7 @@ loop_break:
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1421,14 +1416,11 @@ loop_break:
                     break;
                 }
 
-                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-
-                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
 
                     fft_execute(fft);
 
-                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor;
@@ -1487,7 +1479,7 @@ loop_break:
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             fft_destroy(fft);
 
@@ -1506,6 +1498,8 @@ loop_break:
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -1513,7 +1507,7 @@ loop_break:
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1523,14 +1517,11 @@ loop_break:
                     break;
                 }
 
-                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-
-                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
 
                     fft_execute(fft);
 
-                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor;
@@ -1597,7 +1588,7 @@ loop_break:
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             fft_destroy(fft);
 
@@ -1630,6 +1621,8 @@ loop_break:
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+
             gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -1642,7 +1635,7 @@ loop_break:
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1652,14 +1645,11 @@ loop_break:
                     break;
                 }
 
-                if (xEventGroupGetBits(user_event_group) & VFX_FFT_FULL_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_FFT_FULL_BIT);
-
-                    xEventGroupSetBits(user_event_group, VFX_FFT_EXEC_BIT);
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
 
                     fft_execute(fft);
 
-                    xEventGroupClearBits(user_event_group, VFX_FFT_EXEC_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
                     fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor;
@@ -1721,7 +1711,7 @@ loop_break:
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             fft_destroy(fft);
 
@@ -1768,7 +1758,7 @@ void vfx_set_conf(vfx_config_t *cfg)
     vfx.lightness = cfg->lightness;
     vfx.backlight = cfg->backlight;
 
-    xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
+    xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
 
     ESP_LOGI(TAG, "mode: 0x%02X, scale-factor: %u, lightness: 0x%04X, backlight: %u",
              vfx.mode, vfx.scale_factor, vfx.lightness, vfx.backlight);

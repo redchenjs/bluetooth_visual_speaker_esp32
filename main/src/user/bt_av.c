@@ -100,7 +100,7 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-    if (uxBits & VFX_FFT_FULL_BIT || uxBits & VFX_FFT_EXEC_BIT || uxBits & VFX_RELOAD_BIT) {
+    if (!(uxBits & VFX_FFT_NULL_BIT)) {
         return;
     }
 
@@ -131,7 +131,7 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
     }
 #endif
 
-    xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
+    xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 #endif
 }
 
@@ -201,9 +201,9 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                     audio_player_play_file(1);
 #endif
 #ifdef CONFIG_ENABLE_VFX
-                    if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_READY_BIT)) {
+                    if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
                         memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-                        xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
+                        xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
                     }
 #endif
                 }

@@ -5,6 +5,8 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
+#include <string.h>
+
 #include "esp_log.h"
 
 #include "freertos/FreeRTOS.h"
@@ -30,7 +32,7 @@ static void audio_input_task(void *pvParameters)
     while (1) {
         xEventGroupWaitBits(
             user_event_group,
-            AUDIO_INPUT_RUN_BIT | AUDIO_INPUT_READY_BIT,
+            AUDIO_INPUT_RUN_BIT | AUDIO_INPUT_FFT_BIT,
             pdFALSE,
             pdTRUE,
             portMAX_DELAY
@@ -40,7 +42,7 @@ static void audio_input_task(void *pvParameters)
 
 #ifdef CONFIG_ENABLE_VFX
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (uxBits & VFX_FFT_FULL_BIT || uxBits & VFX_FFT_EXEC_BIT || uxBits & VFX_RELOAD_BIT) {
+        if (!(uxBits & VFX_FFT_NULL_BIT)) {
             continue;
         }
 
@@ -71,7 +73,12 @@ static void audio_input_task(void *pvParameters)
         }
 #endif
 
-        xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
+        uxBits = xEventGroupGetBits(user_event_group);
+        if (!(uxBits & AUDIO_INPUT_RUN_BIT)) {
+            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+        }
+
+        xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 #endif // CONFIG_ENABLE_VFX
     }
 }
