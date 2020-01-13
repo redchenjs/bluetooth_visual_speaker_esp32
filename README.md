@@ -7,7 +7,7 @@ Bluetooth Speaker based on ESP32 chip with dynamic vision effects output.
 
 * A2DP Audio Streaming
 * I2S & PDM Input / I2S Output
-* VFX Output (GIF / Audio FFT / Rainbow / Stars / ...)
+* VFX Output (GIF / Audio FFT / Rainbow / Star Sky / ...)
 * BLE Control Interface (for VFX Output)
 * Audio Prompt (Connected / Disconnected / WakeUp / Sleep)
 * OTA Firmware Update (via SPP Profile)

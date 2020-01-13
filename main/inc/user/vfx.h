@@ -13,9 +13,44 @@
 #include "gfx.h"
 #include "fft.h"
 
+typedef enum {
+    VFX_MODE_IDX_RANDOM = 0x00,
+
+    VFX_MODE_IDX_RAINBOW      = 0x01,
+    VFX_MODE_IDX_RIBBON       = 0x02,
+    VFX_MODE_IDX_GRADUAL      = 0x03,
+    VFX_MODE_IDX_BREATHING    = 0x04,
+    VFX_MODE_IDX_STAR_SKY_R   = 0x05,
+    VFX_MODE_IDX_STAR_SKY_G   = 0x06,
+    VFX_MODE_IDX_STAR_SKY_B   = 0x07,
+    VFX_MODE_IDX_NUMBERS_S    = 0x08,
+    VFX_MODE_IDX_NUMBERS_D    = 0x09,
+    VFX_MODE_IDX_MAGIC_CARPET = 0x0A,
+    VFX_MODE_IDX_ROTATING_F   = 0x0B,
+    VFX_MODE_IDX_ROTATING_B   = 0x0C,
+    VFX_MODE_IDX_FOUNTAIN_S_L = 0x0D,
+    VFX_MODE_IDX_FOUNTAIN_G_L = 0x0E,
+    VFX_MODE_IDX_FOUNTAIN_H_L = 0x0F,
+    VFX_MODE_IDX_FOUNTAIN_S_N = 0x10,
+    VFX_MODE_IDX_FOUNTAIN_G_N = 0x11,
+    VFX_MODE_IDX_FOUNTAIN_H_N = 0x12,
+
+    VFX_MODE_IDX_MAX,
+
+    VFX_MODE_IDX_PAUSE = 0xFE,
+    VFX_MODE_IDX_OFF   = 0xFF,
+} vfx_mode_t;
+
+typedef struct {
+    vfx_mode_t mode;
+    uint16_t scale_factor;
+    uint16_t lightness;
+    uint8_t backlight;
+} vfx_config_t;
+
 #define FFT_N 128
 
-#define DEFAULT_VFX_MODE 0x0F
+#define DEFAULT_VFX_MODE VFX_MODE_IDX_FOUNTAIN_H_L
 #define DEFAULT_VFX_SCALE_FACTOR 0xFF
 
 #ifndef CONFIG_VFX_OUTPUT_CUBE0414
@@ -25,18 +60,6 @@
 #endif
 
 #define DEFAULT_VFX_BACKLIGHT 0xFF
-
-enum vfx_mode {
-    VFX_MODE_PAUSE = 0xFE,
-    VFX_MODE_OFF   = 0xFF,
-};
-
-typedef struct {
-    uint8_t mode;
-    uint16_t scale_factor;
-    uint16_t lightness;
-    uint8_t backlight;
-} vfx_config_t;
 
 extern GDisplay *vfx_gdisp;
 

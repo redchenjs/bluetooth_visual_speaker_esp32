@@ -86,13 +86,13 @@ static void vfx_task(void *pvParameter)
 
                     if (gdispImageDraw(&gfx_image, 0, 0, gfx_image.width, gfx_image.height, 0, 0) != GDISP_IMAGE_ERR_OK) {
                         ESP_LOGE(TAG, "failed to draw image: %u", vfx.mode);
-                        vfx.mode = VFX_MODE_OFF;
+                        vfx.mode = VFX_MODE_IDX_OFF;
                         break;
                     }
 
                     delaytime_t delay = gdispImageNext(&gfx_image);
                     if (delay == TIME_INFINITE) {
-                        vfx.mode = VFX_MODE_PAUSE;
+                        vfx.mode = VFX_MODE_IDX_PAUSE;
                         break;
                     }
 
@@ -104,7 +104,7 @@ static void vfx_task(void *pvParameter)
                 gdispImageClose(&gfx_image);
             } else {
                 ESP_LOGE(TAG, "failed to open image: %u", vfx.mode);
-                vfx.mode = VFX_MODE_OFF;
+                vfx.mode = VFX_MODE_IDX_OFF;
                 break;
             }
             break;
@@ -507,14 +507,17 @@ static void vfx_task(void *pvParameter)
         }
 #else
         // Light Cube Output
-        case 0x01: {   // 漸變-點
+        case VFX_MODE_IDX_RANDOM: {   // 隨機
+            vfx.mode = esp_random() % VFX_MODE_IDX_MAX;
+
+            break;
+        }
+        case VFX_MODE_IDX_RAINBOW: {   // 彩虹
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t z = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
-
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -549,14 +552,12 @@ static void vfx_task(void *pvParameter)
             }
             break;
         }
-        case 0x02: {   // 漸變-面
+        case VFX_MODE_IDX_RIBBON: {   // 彩帶
             uint8_t x = 0;
             uint8_t y = 0;
             uint16_t color_tmp = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
-
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -596,11 +597,9 @@ static void vfx_task(void *pvParameter)
             }
             break;
         }
-        case 0x03: {   // 漸變-體
+        case VFX_MODE_IDX_GRADUAL: {   // 漸變
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
-
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -622,13 +621,11 @@ static void vfx_task(void *pvParameter)
             }
             break;
         }
-        case 0x04: {   // 呼吸-體
+        case VFX_MODE_IDX_BREATHING: {   // 呼吸
             uint8_t scale_dir = 0;
             uint8_t color_cnt = 0;
             uint16_t color_h = 0;
             uint16_t color_l = 0;
-
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -663,7 +660,7 @@ static void vfx_task(void *pvParameter)
             }
             break;
         }
-        case 0x05: {   // 星空-紫紅
+        case VFX_MODE_IDX_STAR_SKY_R: {   // 星空-紫紅
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t z = 0;
@@ -727,71 +724,7 @@ static void vfx_task(void *pvParameter)
             }
             break;
         }
-        case 0x06: {   // 星空-靑藍
-            uint8_t x = 0;
-            uint8_t y = 0;
-            uint8_t z = 0;
-            uint16_t led_num = 32;
-            uint16_t led_idx[512] = {0};
-            uint16_t color_h[512] = {0};
-            uint16_t color_l = vfx.lightness;
-
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
-            for (uint16_t i=0; i<=511; i++) {
-                led_idx[i] = i;
-                color_h[i] = i % 80 + 170;
-            }
-
-            for (uint16_t i=0; i<=511; i++) {
-                uint16_t rnd = esp_random() % 512;
-                uint16_t tmp = led_idx[rnd];
-                led_idx[rnd] = led_idx[i];
-                led_idx[i] = tmp;
-            }
-
-            for (uint16_t i=0; i<=511; i++) {
-                uint16_t rnd = esp_random() % 512;
-                uint16_t tmp = color_h[rnd];
-                color_h[rnd] = color_h[i];
-                color_h[i] = tmp;
-            }
-
-            int16_t idx_base = -led_num;
-            while (1) {
-                for (uint16_t i=0; i<=color_l; i++) {
-                    xLastWakeTime = xTaskGetTickCount();
-
-                    if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                        xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                        goto loop_break;
-                    }
-
-                    if (idx_base >= 0) {
-                        x = (led_idx[idx_base] % 64) % 8;
-                        y = (led_idx[idx_base] % 64) / 8;
-                        z = led_idx[idx_base] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
-                    }
-
-                    if ((idx_base + led_num) <= 511) {
-                        x = (led_idx[idx_base + led_num] % 64) % 8;
-                        y = (led_idx[idx_base + led_num] % 64) / 8;
-                        z = led_idx[idx_base + led_num] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i);
-                    }
-
-                    vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
-                }
-                if (idx_base++ == 511) {
-                    idx_base = -led_num;
-                }
-            }
-            break;
-        }
-        case 0x07: {   // 星空-黃綠
+        case VFX_MODE_IDX_STAR_SKY_G: {   // 星空-黃綠
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t z = 0;
@@ -853,10 +786,74 @@ static void vfx_task(void *pvParameter)
                     idx_base = -led_num;
                 }
             }
+            break;
+        }
+        case VFX_MODE_IDX_STAR_SKY_B: {   // 星空-靑藍
+            uint8_t x = 0;
+            uint8_t y = 0;
+            uint8_t z = 0;
+            uint16_t led_num = 32;
+            uint16_t led_idx[512] = {0};
+            uint16_t color_h[512] = {0};
+            uint16_t color_l = vfx.lightness;
+
+            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+            for (uint16_t i=0; i<=511; i++) {
+                led_idx[i] = i;
+                color_h[i] = i % 80 + 170;
+            }
+
+            for (uint16_t i=0; i<=511; i++) {
+                uint16_t rnd = esp_random() % 512;
+                uint16_t tmp = led_idx[rnd];
+                led_idx[rnd] = led_idx[i];
+                led_idx[i] = tmp;
+            }
+
+            for (uint16_t i=0; i<=511; i++) {
+                uint16_t rnd = esp_random() % 512;
+                uint16_t tmp = color_h[rnd];
+                color_h[rnd] = color_h[i];
+                color_h[i] = tmp;
+            }
+
+            int16_t idx_base = -led_num;
+            while (1) {
+                for (uint16_t i=0; i<=color_l; i++) {
+                    xLastWakeTime = xTaskGetTickCount();
+
+                    if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
+                        xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                        goto loop_break;
+                    }
+
+                    if (idx_base >= 0) {
+                        x = (led_idx[idx_base] % 64) % 8;
+                        y = (led_idx[idx_base] % 64) / 8;
+                        z = led_idx[idx_base] / 64;
+                        vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
+                    }
+
+                    if ((idx_base + led_num) <= 511) {
+                        x = (led_idx[idx_base + led_num] % 64) % 8;
+                        y = (led_idx[idx_base + led_num] % 64) / 8;
+                        z = led_idx[idx_base + led_num] / 64;
+                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i);
+                    }
+
+                    vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                }
+                if (idx_base++ == 511) {
+                    idx_base = -led_num;
+                }
+            }
 loop_break:
             break;
         }
-        case 0x08: {   // 數字-固定
+        case VFX_MODE_IDX_NUMBERS_S: {   // 數字-固定
             uint16_t num = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
@@ -891,7 +888,7 @@ loop_break:
             }
             break;
         }
-        case 0x09: {   // 數字-滾動
+        case VFX_MODE_IDX_NUMBERS_D: {   // 數字-滾動
             uint16_t num = 0;
             uint16_t layer0 = 0;
             uint16_t layer1 = 0;
@@ -951,7 +948,7 @@ loop_break:
             }
             break;
         }
-        case 0x0A: {   // 跳躍飛毯
+        case VFX_MODE_IDX_MAGIC_CARPET: {   // 魔毯
             uint16_t frame_idx = 0;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
@@ -976,7 +973,7 @@ loop_break:
             }
             break;
         }
-        case 0x0B: {   // 旋轉曲面-正
+        case VFX_MODE_IDX_ROTATING_F: {   // 旋轉曲面-正
             uint16_t frame_pre = 0;
             uint16_t frame_idx = 0;
 
@@ -1011,7 +1008,7 @@ loop_break:
             }
             break;
         }
-        case 0x0C: {   // 旋轉曲面-反
+        case VFX_MODE_IDX_ROTATING_B: {   // 旋轉曲面-反
             uint16_t frame_pre = 0;
             uint16_t frame_idx = 0;
 
@@ -1046,7 +1043,7 @@ loop_break:
             }
             break;
         }
-        case 0x0D: {   // 音樂噴泉-靜態-對數
+        case VFX_MODE_IDX_FOUNTAIN_S_L: {   // 音樂噴泉-靜態-對數
             uint8_t x = 0;
             uint8_t y = 0;
             uint16_t color_h = 0;
@@ -1142,7 +1139,7 @@ loop_break:
 
             break;
         }
-        case 0x0E: {   // 音樂噴泉-漸變-對數
+        case VFX_MODE_IDX_FOUNTAIN_G_L: {   // 音樂噴泉-漸變-對數
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t  color_cnt = 0;
@@ -1248,7 +1245,7 @@ loop_break:
 
             break;
         }
-        case 0x0F: {   // 音樂噴泉-螺旋-對數
+        case VFX_MODE_IDX_FOUNTAIN_H_L: {   // 音樂噴泉-螺旋-對數
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t color_flg = 0;
@@ -1368,7 +1365,7 @@ loop_break:
 
             break;
         }
-        case 0x10: {   // 音樂噴泉-靜態-線性
+        case VFX_MODE_IDX_FOUNTAIN_S_N: {   // 音樂噴泉-靜態-線性
             uint8_t x = 0;
             uint8_t y = 0;
             uint16_t color_h = 0;
@@ -1464,7 +1461,7 @@ loop_break:
 
             break;
         }
-        case 0x11: {   // 音樂噴泉-漸變-線性
+        case VFX_MODE_IDX_FOUNTAIN_G_N: {   // 音樂噴泉-漸變-線性
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t  color_cnt = 0;
@@ -1570,7 +1567,7 @@ loop_break:
 
             break;
         }
-        case 0x12: {   // 音樂噴泉-螺旋-線性
+        case VFX_MODE_IDX_FOUNTAIN_H_N: {   // 音樂噴泉-螺旋-線性
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t color_flg = 0;
@@ -1691,7 +1688,7 @@ loop_break:
             break;
         }
 #endif // CONFIG_SCREEN_PANEL_OUTPUT_VFX
-        case VFX_MODE_PAUSE:
+        case VFX_MODE_IDX_PAUSE:
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             xEventGroupWaitBits(
@@ -1703,7 +1700,7 @@ loop_break:
             );
 
             break;
-        case VFX_MODE_OFF:
+        case VFX_MODE_IDX_OFF:
         default:
             gdispGSetBacklight(vfx_gdisp, 0);
 
