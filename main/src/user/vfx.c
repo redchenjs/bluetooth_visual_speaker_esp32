@@ -317,8 +317,8 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            uint8_t fft_out[64] = {0};
+            float  fft_amp[64] = {0};
+            int8_t fft_out[64] = {0};
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
@@ -418,8 +418,8 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            uint8_t fft_out[64] = {0};
+            float  fft_amp[64] = {0};
+            int8_t fft_out[64] = {0};
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
@@ -1374,8 +1374,8 @@ loop_break:
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            uint8_t fft_out[64] = {0};
+            float  fft_amp[64] = {0};
+            int8_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
@@ -1472,8 +1472,8 @@ loop_break:
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            uint8_t fft_out[64] = {0};
+            float  fft_amp[64] = {0};
+            int8_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
@@ -1578,8 +1578,8 @@ loop_break:
             uint16_t color_h[64] = {0};
             uint16_t color_l[64] = {vfx.lightness};
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            uint8_t fft_out[64] = {0};
+            float  fft_amp[64] = {0};
+            int8_t fft_out[64] = {0};
             const uint8_t led_idx_table[][64] = {
                 {
                     3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
@@ -1730,10 +1730,9 @@ void vfx_set_conf(vfx_config_t *cfg)
     vfx.scale_factor = cfg->scale_factor;
     vfx.lightness = cfg->lightness;
     vfx.backlight = cfg->backlight;
-    if (vfx_gdisp) {
-        gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-    }
+
     xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
+
     ESP_LOGI(TAG, "mode: 0x%02X, scale-factor: %u, lightness: 0x%04X, backlight: %u",
              vfx.mode, vfx.scale_factor, vfx.lightness, vfx.backlight);
 }
