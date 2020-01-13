@@ -21,8 +21,6 @@
 #include "freertos/task.h"
 #include "driver/i2s.h"
 
-#include "fft.h"
-
 #include "core/os.h"
 #include "core/app.h"
 #include "chip/i2s.h"
@@ -32,6 +30,7 @@
 #include "user/bt_app.h"
 #include "user/ble_app.h"
 #include "user/bt_app_core.h"
+#include "user/audio_input.h"
 #include "user/audio_player.h"
 
 #define BT_A2D_TAG   "bt_a2d"
@@ -201,6 +200,12 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
                     audio_player_play_file(1);
 #endif
+#ifdef CONFIG_ENABLE_VFX
+                    if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_READY_BIT)) {
+                        memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+                        xEventGroupSetBits(user_event_group, VFX_FFT_FULL_BIT);
+                    }
+#endif
                 }
                 if (!(uxBits & OS_PWR_RESTART_BIT)) {
 #ifdef CONFIG_ENABLE_LED
@@ -210,7 +215,6 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             }
 
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
-            xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT | VFX_FFT_FULL_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
             xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);

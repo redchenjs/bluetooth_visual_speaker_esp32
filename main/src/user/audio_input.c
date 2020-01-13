@@ -30,9 +30,9 @@ static void audio_input_task(void *pvParameters)
     while (1) {
         xEventGroupWaitBits(
             user_event_group,
-            AUDIO_INPUT_RUN_BIT,
+            AUDIO_INPUT_RUN_BIT | AUDIO_INPUT_READY_BIT,
             pdFALSE,
-            pdFALSE,
+            pdTRUE,
             portMAX_DELAY
         );
 

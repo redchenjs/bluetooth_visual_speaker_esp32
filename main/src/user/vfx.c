@@ -126,6 +126,8 @@ static void vfx_task(void *pvParameter)
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -212,6 +214,8 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+
             fft_destroy(fft);
 
             break;
@@ -230,6 +234,8 @@ static void vfx_task(void *pvParameter)
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -306,6 +312,8 @@ static void vfx_task(void *pvParameter)
 
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
+
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
 
             fft_destroy(fft);
 
@@ -327,6 +335,8 @@ static void vfx_task(void *pvParameter)
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -410,6 +420,8 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+
             fft_destroy(fft);
 
             break;
@@ -427,6 +439,8 @@ static void vfx_task(void *pvParameter)
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -500,6 +514,8 @@ static void vfx_task(void *pvParameter)
 
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
+
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
 
             fft_destroy(fft);
 
@@ -1061,6 +1077,8 @@ loop_break:
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -1135,6 +1153,8 @@ loop_break:
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+
             fft_destroy(fft);
 
             break;
@@ -1158,6 +1178,8 @@ loop_break:
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1240,6 +1262,8 @@ loop_break:
 
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
+
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
 
             fft_destroy(fft);
 
@@ -1284,6 +1308,8 @@ loop_break:
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
+
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -1361,6 +1387,8 @@ loop_break:
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+
             fft_destroy(fft);
 
             break;
@@ -1382,6 +1410,8 @@ loop_break:
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1457,6 +1487,8 @@ loop_break:
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+
             fft_destroy(fft);
 
             break;
@@ -1480,6 +1512,8 @@ loop_break:
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1563,6 +1597,8 @@ loop_break:
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
+
             fft_destroy(fft);
 
             break;
@@ -1605,6 +1641,8 @@ loop_break:
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_READY_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1682,6 +1720,8 @@ loop_break:
 
                 vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
             }
+
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_READY_BIT);
 
             fft_destroy(fft);
 
