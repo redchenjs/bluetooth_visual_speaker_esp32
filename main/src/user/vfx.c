@@ -22,7 +22,7 @@
 
 #define TAG "vfx"
 
-#define VFX_PERIOD GDISP_NEED_TIMERFLUSH
+#define VFX_PERIOD 16
 
 static vfx_config_t vfx = {
     .mode = DEFAULT_VFX_MODE,
@@ -201,7 +201,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                if (++color_cnt % (16 / VFX_PERIOD) == 0) {
+                if (++color_cnt % (16 / GDISP_NEED_TIMERFLUSH) == 0) {
                     color_h = ++color_tmp;
                 } else {
                     color_h = color_tmp;
@@ -407,7 +407,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                if (++color_cnt % (16 / VFX_PERIOD) == 0) {
+                if (++color_cnt % (16 / GDISP_NEED_TIMERFLUSH) == 0) {
                     color_h = ++color_tmp;
                 } else {
                     color_h = color_tmp;
@@ -1253,7 +1253,7 @@ loop_break:
                     }
                 }
 
-                if (++color_cnt % (128 / VFX_PERIOD) == 0) {
+                if (++color_cnt % (128 / GDISP_NEED_TIMERFLUSH) == 0) {
                     color_tmp += 8;
                     if (color_tmp > 511) {
                         color_tmp = 0;
@@ -1378,7 +1378,7 @@ loop_break:
                     }
                 }
 
-                if (++color_cnt % (32 / VFX_PERIOD) == 0) {
+                if (++color_cnt % (32 / GDISP_NEED_TIMERFLUSH) == 0) {
                     color_flg = 1;
                 } else {
                     color_flg = 0;
@@ -1587,7 +1587,7 @@ loop_break:
                     }
                 }
 
-                if (++color_cnt % (128 / VFX_PERIOD) == 0) {
+                if (++color_cnt % (128 / GDISP_NEED_TIMERFLUSH) == 0) {
                     color_tmp += 8;
                     if (color_tmp > 511) {
                         color_tmp = 0;
@@ -1712,7 +1712,7 @@ loop_break:
                     }
                 }
 
-                if (++color_cnt % (32 / VFX_PERIOD) == 0) {
+                if (++color_cnt % (32 / GDISP_NEED_TIMERFLUSH) == 0) {
                     color_flg = 1;
                 } else {
                     color_flg = 0;
