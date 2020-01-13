@@ -84,7 +84,7 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 #endif
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    if (uxBits & BT_A2DP_IDLE_BIT || uxBits & AUDIO_PLAYER_RUN_BIT) {
+    if (uxBits & AUDIO_PLAYER_RUN_BIT) {
         return;
     }
 #endif
@@ -196,15 +196,17 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
             memset(&a2d_remote_bda, 0x00, sizeof(esp_bd_addr_t));
 
-            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & BT_A2DP_IDLE_BIT)) {
+            if (!(uxBits & OS_PWR_SLEEP_BIT)) {
+                if (!(uxBits & BT_A2DP_IDLE_BIT)) {
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-                audio_player_play_file(1);
+                    audio_player_play_file(1);
 #endif
-            }
-            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESTART_BIT)) {
+                }
+                if (!(uxBits & OS_PWR_RESTART_BIT)) {
 #ifdef CONFIG_ENABLE_LED
-                led_set_mode(3);
+                    led_set_mode(3);
 #endif
+                }
             }
 
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
