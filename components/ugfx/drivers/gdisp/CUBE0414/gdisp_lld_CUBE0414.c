@@ -44,8 +44,7 @@
 
 #define GDISP_FLG_NEEDFLUSH         (GDISP_FLG_DRIVER<<0)
 
-// Some common routines and macros
-#define write_reg(g, reg, data)     { write_cmd(g, reg); write_data(g, data); }
+#include "CUBE0414.h"
 
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     g->priv = gfxAlloc(GDISP_SCREEN_HEIGHT * GDISP_SCREEN_WIDTH * 3);
@@ -53,12 +52,16 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         gfxHalt("GDISP CUBE0414: Failed to allocate private memory");
     }
 
-    for(int i=0; i<GDISP_SCREEN_HEIGHT*GDISP_SCREEN_WIDTH*3; i++) {
+    for (int i=0; i<GDISP_SCREEN_HEIGHT*GDISP_SCREEN_WIDTH*3; i++) {
         *((uint8_t *)g->priv + i) = 0x00;
     }
 
     // Initialise the board interface
     init_board(g);
+
+    // Refresh GRAM
+    write_cmd(g, CUBE0414_RAMWR);
+    write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_HEIGHT*GDISP_SCREEN_WIDTH*3);
 
     /* Initialise the GDISP structure */
     g->g.Height = GDISP_SCREEN_HEIGHT;

@@ -13,6 +13,7 @@
 #define init_board(g)           cube0414_init_board()
 #define write_cmd(g, cmd)       cube0414_write_cmd(cmd)
 #define write_data(g, data)     cube0414_write_data(data)
+#define write_buff(g, buff, n)  cube0414_write_buff(buff, n)
 #define refresh_gram(g, gram)   cube0414_refresh_gram(gram)
 
 #endif /* _GDISP_LLD_BOARD_H */

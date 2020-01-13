@@ -46,9 +46,6 @@
 
 #include "ST7735.h"
 
-// Some common routines and macros
-#define write_reg(g, reg, data)     { write_cmd(g, reg); write_data(g, data); }
-
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     g->priv = gfxAlloc(GDISP_SCREEN_HEIGHT * GDISP_SCREEN_WIDTH * 2);
     if (g->priv == NULL) {
@@ -146,7 +143,19 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         write_data(g, 0x05);
         write_data(g, 0x10);
     write_cmd(g, ST7735_NORON);     // 18: Normal display on, no args, no delay
-    write_cmd(g, ST7735_DISPON);    // 19: Main screen turn on, no args, no delay
+    write_cmd(g, ST7735_CASET);     // 19: Set column address, 4 args, no delay:
+        write_data(g, 0x00);
+        write_data(g, 0x01);
+        write_data(g, 0x00);
+        write_data(g, 0xA0);
+    write_cmd(g, ST7735_RASET);     // 20: Set row address, 4 args, no delay:
+        write_data(g, 0x00);
+        write_data(g, 0x1A);
+        write_data(g, 0x00);
+        write_data(g, 0x69);
+    write_cmd(g, ST7735_RAMWR);     // 21: Set write ram, N args, no delay:
+        write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_HEIGHT*GDISP_SCREEN_WIDTH*2);
+    write_cmd(g, ST7735_DISPON);    // 22: Main screen turn on, no args, no delay
 
     /* Initialise the GDISP structure */
     g->g.Width  = GDISP_SCREEN_HEIGHT;

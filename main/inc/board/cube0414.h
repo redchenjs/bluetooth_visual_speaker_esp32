@@ -22,6 +22,7 @@ extern void cube0414_setpin_dc(spi_transaction_t *);
 
 extern void cube0414_write_cmd(uint8_t cmd);
 extern void cube0414_write_data(uint8_t data);
+extern void cube0414_write_buff(uint8_t *buff, uint32_t n);
 extern void cube0414_refresh_gram(uint8_t *gram);
 
 #endif /* INC_BOARD_CUBE0414_H_ */

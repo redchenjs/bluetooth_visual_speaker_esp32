@@ -23,6 +23,7 @@ extern void st7735_setpin_reset(uint8_t val);
 
 extern void st7735_write_cmd(uint8_t cmd);
 extern void st7735_write_data(uint8_t data);
+extern void st7735_write_buff(uint8_t *buff, uint32_t n);
 extern void st7735_refresh_gram(uint8_t *gram);
 
 #endif /* INC_BOARD_ST7735_H_ */

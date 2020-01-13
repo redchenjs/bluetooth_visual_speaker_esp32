@@ -23,6 +23,7 @@ extern void st7789_setpin_reset(uint8_t val);
 
 extern void st7789_write_cmd(uint8_t cmd);
 extern void st7789_write_data(uint8_t data);
+extern void st7789_write_buff(uint8_t *buff, uint32_t n);
 extern void st7789_refresh_gram(uint8_t *gram);
 
 #endif /* INC_BOARD_ST7789_H_ */

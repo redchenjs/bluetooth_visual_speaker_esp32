@@ -15,6 +15,7 @@
 #define setpin_reset(g, val)    st7789_setpin_reset(val)
 #define write_cmd(g, cmd)       st7789_write_cmd(cmd)
 #define write_data(g, data)     st7789_write_data(data)
+#define write_buff(g, buff, n)  st7789_write_buff(buff, n)
 #define refresh_gram(g, gram)   st7789_refresh_gram(gram)
 
 #endif /* _GDISP_LLD_BOARD_H */

@@ -20,11 +20,11 @@
 
 #define TAG "st7735"
 
-spi_transaction_t hspi_trans[6];
+static spi_transaction_t hspi_trans[2];
 
 void st7735_init_board(void)
 {
-    memset(hspi_trans, 0, sizeof(hspi_trans));
+    memset(hspi_trans, 0x00, sizeof(hspi_trans));
 
     gpio_set_direction(CONFIG_SCREEN_PANEL_DC_PIN,  GPIO_MODE_OUTPUT);
     gpio_set_direction(CONFIG_SCREEN_PANEL_RST_PIN, GPIO_MODE_OUTPUT);
@@ -90,45 +90,28 @@ void st7735_write_data(uint8_t data)
     spi_device_transmit(hspi, &hspi_trans[0]);
 }
 
+void st7735_write_buff(uint8_t *buff, uint32_t n)
+{
+    hspi_trans[0].length = n * 8;
+    hspi_trans[0].tx_buffer = buff;
+    hspi_trans[0].user = (void*)1;
+
+    spi_device_transmit(hspi, &hspi_trans[0]);
+}
+
 void st7735_refresh_gram(uint8_t *gram)
 {
-    hspi_trans[0].length = 8;
-    hspi_trans[0].tx_data[0] = 0x2A;    // Set Column Address
+    hspi_trans[0].length = 8,
+    hspi_trans[0].tx_data[0] = 0x2C;    // Set Write RAM
     hspi_trans[0].user = (void*)0;
     hspi_trans[0].flags = SPI_TRANS_USE_TXDATA;
 
-    hspi_trans[1].length = 4*8;
-    hspi_trans[1].tx_data[0] = 0x00;    // startx high byte
-    hspi_trans[1].tx_data[1] = 0x01;    // startx low byte
-    hspi_trans[1].tx_data[2] = 0x00;    // endx high byte
-    hspi_trans[1].tx_data[3] = 0xA0;    // endx low byte
+    hspi_trans[1].length = ST7735_SCREEN_WIDTH*ST7735_SCREEN_HEIGHT*2*8;
+    hspi_trans[1].tx_buffer = gram;
     hspi_trans[1].user = (void*)1;
-    hspi_trans[1].flags = SPI_TRANS_USE_TXDATA;
-
-    hspi_trans[2].length = 8,
-    hspi_trans[2].tx_data[0] = 0x2B;    // Set Row Address
-    hspi_trans[2].user = (void*)0;
-    hspi_trans[2].flags = SPI_TRANS_USE_TXDATA;
-
-    hspi_trans[3].length = 4*8,
-    hspi_trans[3].tx_data[0] = 0x00;    // starty high byte
-    hspi_trans[3].tx_data[1] = 0x1A;    // starty low byte
-    hspi_trans[3].tx_data[2] = 0x00;    // endy high byte
-    hspi_trans[3].tx_data[3] = 0x69;    // endy low byte
-    hspi_trans[3].user = (void*)1;
-    hspi_trans[3].flags = SPI_TRANS_USE_TXDATA;
-
-    hspi_trans[4].length = 8,
-    hspi_trans[4].tx_data[0] = 0x2C;    // Set Write RAM
-    hspi_trans[4].user = (void*)0;
-    hspi_trans[4].flags = SPI_TRANS_USE_TXDATA;
-
-    hspi_trans[5].length = ST7735_SCREEN_WIDTH*ST7735_SCREEN_HEIGHT*2*8;
-    hspi_trans[5].tx_buffer = gram;
-    hspi_trans[5].user = (void*)1;
 
     // Queue all transactions.
-    for (int x=0; x<6; x++) {
+    for (int x=0; x<2; x++) {
         spi_device_queue_trans(hspi, &hspi_trans[x], portMAX_DELAY);
     }
 }

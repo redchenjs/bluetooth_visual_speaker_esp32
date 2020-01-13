@@ -19,11 +19,11 @@
 
 #define TAG "cube0414"
 
-spi_transaction_t hspi_trans[2];
+static spi_transaction_t hspi_trans[2];
 
 void cube0414_init_board(void)
 {
-    memset(hspi_trans, 0, sizeof(hspi_trans));
+    memset(hspi_trans, 0x00, sizeof(hspi_trans));
 
     gpio_set_direction(CONFIG_LIGHT_CUBE_DC_PIN, GPIO_MODE_OUTPUT);
     gpio_set_level(CONFIG_LIGHT_CUBE_DC_PIN, 0);
@@ -50,6 +50,15 @@ void cube0414_write_data(uint8_t data)
 {
     hspi_trans[0].length = 8;
     hspi_trans[0].tx_buffer = &data;
+    hspi_trans[0].user = (void*)1;
+
+    spi_device_transmit(hspi, &hspi_trans[0]);
+}
+
+void cube0414_write_buff(uint8_t *buff, uint32_t n)
+{
+    hspi_trans[0].length = n * 8;
+    hspi_trans[0].tx_buffer = buff;
     hspi_trans[0].user = (void*)1;
 
     spi_device_transmit(hspi, &hspi_trans[0]);
