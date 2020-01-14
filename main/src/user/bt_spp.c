@@ -155,6 +155,8 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
                     esp_ble_gatts_close(gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
                                         gl_profile_tab[PROFILE_A_APP_ID].conn_id);
+                    esp_ble_gatts_close(gl_profile_tab[PROFILE_B_APP_ID].gatts_if,
+                                        gl_profile_tab[PROFILE_B_APP_ID].conn_id);
                 }
                 os_power_restart_wait(BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT);
 #else
@@ -181,7 +183,11 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 ESP_LOGI(BT_SPP_TAG, "GET command: FW+UPD:%ld", image_length);
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-                if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT) && uxBits & BLE_GATTS_IDLE_BIT) {
+                if (image_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT)
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+                    && (uxBits & BLE_GATTS_IDLE_BIT)
+#endif
+                ) {
                     xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
 
                     esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
@@ -227,7 +233,11 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                     data_recv = 0;
 
                     esp_spp_write(param->write.handle, strlen(rsp_str[0]), (uint8_t *)rsp_str[0]);
-                } else if (uxBits & BT_OTA_LOCKED_BIT || !(uxBits & BLE_GATTS_IDLE_BIT)) {
+                } else if (uxBits & BT_OTA_LOCKED_BIT
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+                    || !(uxBits & BLE_GATTS_IDLE_BIT)
+#endif
+                ) {
                     esp_spp_write(param->write.handle, strlen(rsp_str[3]), (uint8_t *)rsp_str[3]);
                 } else {
                     esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
