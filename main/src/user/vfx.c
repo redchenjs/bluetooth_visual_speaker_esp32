@@ -22,8 +22,6 @@
 
 #define TAG "vfx"
 
-#define VFX_PERIOD GDISP_NEED_TIMERFLUSH
-
 static vfx_config_t vfx = {
     .mode = DEFAULT_VFX_MODE,
     .scale_factor = DEFAULT_VFX_SCALE_FACTOR,
@@ -110,7 +108,6 @@ static void vfx_task(void *pvParameter)
             break;
         }
         case 0x0E: {   // 音樂頻譜-漸變-對數
-            uint8_t  color_cnt = 0;
             uint16_t color_tmp = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
@@ -200,17 +197,13 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                if (++color_cnt % (16 / VFX_PERIOD) == 0) {
-                    color_h = ++color_tmp;
+                if (color_tmp++ == 511) {
+                    color_h = 0;
                 } else {
                     color_h = color_tmp;
                 }
 
-                if (color_h > 511) {
-                    color_h = 0;
-                }
-
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -308,7 +301,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -318,7 +311,6 @@ static void vfx_task(void *pvParameter)
             break;
         }
         case 0x10: {   // 音樂頻譜-漸變-線性
-            uint8_t  color_cnt = 0;
             uint16_t color_tmp = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
@@ -404,17 +396,13 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                if (++color_cnt % (16 / VFX_PERIOD) == 0) {
-                    color_h = ++color_tmp;
+                if (color_tmp++ == 511) {
+                    color_h = 0;
                 } else {
                     color_h = color_tmp;
                 }
 
-                if (color_h > 511) {
-                    color_h = 0;
-                }
-
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -508,7 +496,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -560,7 +548,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
             break;
         }
@@ -600,12 +588,13 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                color_h = ++color_tmp;
-                if (color_h > 511) {
+                if (color_tmp++ == 511) {
                     color_h = 0;
+                } else {
+                    color_h = color_tmp;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
             break;
         }
@@ -629,14 +618,13 @@ static void vfx_task(void *pvParameter)
                     color_h = 0;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
             break;
         }
         case VFX_MODE_IDX_BREATHING: {   // 呼吸
             uint8_t scale_dir = 0;
-            uint8_t color_cnt = 0;
-            uint16_t color_h = 0;
+            uint16_t color_h = esp_random() % 512;
             uint16_t color_l = 0;
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -660,15 +648,11 @@ static void vfx_task(void *pvParameter)
                     if (color_l-- == 0) {
                         color_l = 0;
                         scale_dir = 0;
-                    }
-                }
-                if (++color_cnt % 16 == 0) {
-                    if (color_h++ == 511) {
-                        color_h = 0;
+                        color_h = esp_random() % 512;
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
             break;
         }
@@ -730,6 +714,7 @@ static void vfx_task(void *pvParameter)
 
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
+
                 if (idx_base++ == 511) {
                     idx_base = -led_num;
                 }
@@ -794,6 +779,7 @@ static void vfx_task(void *pvParameter)
 
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
+
                 if (idx_base++ == 511) {
                     idx_base = -led_num;
                 }
@@ -858,6 +844,7 @@ static void vfx_task(void *pvParameter)
 
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
+
                 if (idx_base++ == 511) {
                     idx_base = -led_num;
                 }
@@ -887,8 +874,7 @@ loop_break:
                 vfx_draw_layer_number(num, 4, color_h, color_l);
                 vfx_draw_layer_number(num, 5, color_h, color_l);
 
-                color_h += 8;
-                if (color_h > 511) {
+                if ((color_h += 8) == 512) {
                     color_h = 0;
                 }
 
@@ -1010,10 +996,10 @@ loop_break:
                     }
                 }
 
-                if (frame_pre == 27) {
+                if (frame_pre++ == 27) {
                     frame_idx = 0;
                 } else {
-                    frame_idx = frame_pre + 1;
+                    frame_idx = frame_pre;
                 }
 
                 vTaskDelayUntil(&xLastWakeTime, 40 / portTICK_RATE_MS);
@@ -1045,10 +1031,10 @@ loop_break:
                     }
                 }
 
-                if (frame_pre == 0) {
+                if (frame_pre-- == 0) {
                     frame_idx = 27;
                 } else {
-                    frame_idx = frame_pre - 1;
+                    frame_idx = frame_pre;
                 }
 
                 vTaskDelayUntil(&xLastWakeTime, 40 / portTICK_RATE_MS);
@@ -1145,7 +1131,7 @@ loop_break:
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1241,20 +1227,19 @@ loop_break:
                         }
                     }
 
-                    color_h += 8;
-                    if (color_h > 511) {
+                    if ((color_h += 8) == 512) {
                         color_h = 0;
                     }
                 }
 
-                if (++color_cnt % (128 / VFX_PERIOD) == 0) {
-                    color_tmp += 8;
-                    if (color_tmp > 511) {
+                if (color_cnt++ == 7) {
+                    color_cnt = 0;
+                    if ((color_tmp += 8) == 512) {
                         color_tmp = 0;
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1371,13 +1356,14 @@ loop_break:
                     }
                 }
 
-                if (++color_cnt % (32 / VFX_PERIOD) == 0) {
+                if (color_cnt++ == 1) {
+                    color_cnt = 0;
                     color_flg = 1;
                 } else {
                     color_flg = 0;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1476,7 +1462,7 @@ loop_break:
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1572,20 +1558,19 @@ loop_break:
                         }
                     }
 
-                    color_h += 8;
-                    if (color_h > 511) {
+                    if ((color_h += 8) == 512) {
                         color_h = 0;
                     }
                 }
 
-                if (++color_cnt % (128 / VFX_PERIOD) == 0) {
-                    color_tmp += 8;
-                    if (color_tmp > 511) {
+                if (color_cnt++ == 7) {
+                    color_cnt = 0;
+                    if ((color_tmp += 8) == 512) {
                         color_tmp = 0;
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1702,13 +1687,14 @@ loop_break:
                     }
                 }
 
-                if (++color_cnt % (32 / VFX_PERIOD) == 0) {
+                if (color_cnt++ == 1) {
+                    color_cnt = 0;
                     color_flg = 1;
                 } else {
                     color_flg = 0;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, VFX_PERIOD / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
