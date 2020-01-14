@@ -53,6 +53,14 @@ void sleep_key_handle(void)
     }
 #endif
 
-    os_power_sleep_wait(BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT | AUDIO_PLAYER_IDLE_BIT);
+    os_power_sleep_wait(
+        BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+        | BLE_GATTS_IDLE_BIT
+#endif
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+        | AUDIO_PLAYER_IDLE_BIT
+#endif
+    );
 }
 #endif // CONFIG_ENABLE_SLEEP_KEY
