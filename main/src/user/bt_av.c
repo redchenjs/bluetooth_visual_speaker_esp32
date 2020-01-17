@@ -195,11 +195,12 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
             memset(&a2d_remote_bda, 0x00, sizeof(esp_bd_addr_t));
 
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+            audio_player_play_file(1);
+#endif
+
             if (!(uxBits & OS_PWR_SLEEP_BIT)) {
                 if (!(uxBits & BT_A2DP_IDLE_BIT)) {
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
-                    audio_player_play_file(1);
-#endif
 #ifdef CONFIG_ENABLE_VFX
                     if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
                         memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
