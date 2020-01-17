@@ -65,7 +65,6 @@ static esp_attr_value_t gatts_char1_val = {
     .attr_value   = ble_char_value_str,
 };
 
-static uint8_t gatts_conn_mask = 0;
 static const char *s_gatts_conn_state_str[] = {"disconnected", "connected"};
 
 static void gatts_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param)
@@ -292,10 +291,7 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_STOP_EVT:
         break;
     case ESP_GATTS_CONNECT_EVT: {
-        if (gatts_conn_mask == 0) {
-            xEventGroupClearBits(user_event_group, BLE_GATTS_IDLE_BIT);
-        }
-        gatts_conn_mask |= BIT0;
+        xEventGroupClearBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
         uint8_t *bda = param->connect.remote_bda;
         ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
@@ -310,10 +306,12 @@ static void profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[0], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
 
-        if (gatts_conn_mask == BIT0) {
-            xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+        if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESTART_BIT)) {
+            esp_ble_gap_start_advertising(&adv_params);
         }
-        gatts_conn_mask &= ~BIT0;
+
+        xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
         break;
     }
@@ -404,11 +402,6 @@ static void profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
     case ESP_GATTS_STOP_EVT:
         break;
     case ESP_GATTS_CONNECT_EVT: {
-        if (gatts_conn_mask == 0) {
-            xEventGroupClearBits(user_event_group, BLE_GATTS_IDLE_BIT);
-        }
-        gatts_conn_mask |= BIT1;
-
         uint8_t *bda = param->connect.remote_bda;
         ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[1], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
@@ -421,12 +414,6 @@ static void profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t ga
         uint8_t *bda = param->connect.remote_bda;
         ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[0], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
-
-        if (gatts_conn_mask == BIT1) {
-            xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
-        }
-        gatts_conn_mask &= ~BIT1;
-
         break;
     }
     case ESP_GATTS_CONF_EVT:

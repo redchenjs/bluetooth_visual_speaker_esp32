@@ -51,7 +51,6 @@ void sleep_key_handle(void)
     }
 #endif
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-    esp_ble_gap_stop_advertising();
     if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
         esp_ble_gatts_close(gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
                             gl_profile_tab[PROFILE_A_APP_ID].conn_id);

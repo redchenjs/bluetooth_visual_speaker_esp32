@@ -155,7 +155,6 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                     esp_a2d_sink_disconnect(a2d_remote_bda);
                 }
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-                esp_ble_gap_stop_advertising();
                 if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
                     esp_ble_gatts_close(gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
                                         gl_profile_tab[PROFILE_A_APP_ID].conn_id);
