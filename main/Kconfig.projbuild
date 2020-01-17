@@ -28,11 +28,31 @@ config ENABLE_BLE_CONTROL_IF
 endmenu
 
 menu "Audio Configuration"
-config ENABLE_AUDIO_PROMPT
+menuconfig ENABLE_AUDIO_PROMPT
     bool "Enable Audio Prompt"
     default y
     help
         Select this to enable Audio Prompt.
+
+config AUDIO_PROMPT_CONNECTED
+    bool "Connected"
+    default y
+    depends on ENABLE_AUDIO_PROMPT
+
+config AUDIO_PROMPT_DISCONNECTED
+    bool "Disconnected"
+    default y
+    depends on ENABLE_AUDIO_PROMPT
+
+config AUDIO_PROMPT_RESUME
+    bool "Resume"
+    default n
+    depends on ENABLE_AUDIO_PROMPT
+
+config AUDIO_PROMPT_SLEEP
+    bool "Sleep"
+    default n
+    depends on ENABLE_AUDIO_PROMPT
 
 choice AUDIO_OUTPUT
     prompt "Audio Output"

@@ -22,10 +22,26 @@
 #define TAG "audio_player"
 
 static const char *mp3_file_ptr[][2] = {
+#ifdef CONFIG_AUDIO_PROMPT_CONNECTED
     {snd0_mp3_ptr, snd0_mp3_end}, // "Connected"
+#else
+    {NULL, NULL},
+#endif
+#ifdef CONFIG_AUDIO_PROMPT_DISCONNECTED
     {snd1_mp3_ptr, snd1_mp3_end}, // "Disconnected"
+#else
+    {NULL, NULL},
+#endif
+#ifdef CONFIG_AUDIO_PROMPT_RESUME
     {snd2_mp3_ptr, snd2_mp3_end}, // "Resume"
+#else
+    {NULL, NULL},
+#endif
+#ifdef CONFIG_AUDIO_PROMPT_SLEEP
     {snd3_mp3_ptr, snd3_mp3_end}, // "Sleep"
+#else
+    {NULL, NULL},
+#endif
 };
 
 static uint8_t mp3_file_index   = 0;
@@ -58,8 +74,9 @@ static void audio_player_task(void *pvParameters)
         mad_frame_init(frame);
         mad_synth_init(synth);
 
-        mad_stream_buffer(stream, (const unsigned char *)mp3_file_ptr[mp3_file_index][0],
-                          mp3_file_ptr[mp3_file_index][1] - mp3_file_ptr[mp3_file_index][0]
+        mad_stream_buffer(
+            stream, (const unsigned char *)mp3_file_ptr[mp3_file_index][0],
+            mp3_file_ptr[mp3_file_index][1] - mp3_file_ptr[mp3_file_index][0]
         );
 
         while (1) {
@@ -99,6 +116,9 @@ void audio_player_play_file(uint8_t idx)
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
     if (idx >= (sizeof(mp3_file_ptr) / 2)) {
         ESP_LOGE(TAG, "invalid file index");
+        return;
+    }
+    if (mp3_file_ptr[idx][0] == NULL || mp3_file_ptr[idx][1] == NULL) {
         return;
     }
     mp3_file_index = idx;
