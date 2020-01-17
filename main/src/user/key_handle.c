@@ -7,6 +7,8 @@
 
 #include "esp_log.h"
 #include "esp_sleep.h"
+#include "esp_gap_bt_api.h"
+#include "esp_gap_ble_api.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -37,6 +39,8 @@ void sleep_key_handle(void)
     audio_player_play_file(3);
 #endif
 
+    esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
     if (!(uxBits & BT_A2DP_IDLE_BIT)) {
         esp_a2d_sink_disconnect(a2d_remote_bda);
@@ -47,9 +51,12 @@ void sleep_key_handle(void)
     }
 #endif
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+    esp_ble_gap_stop_advertising();
     if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
         esp_ble_gatts_close(gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
                             gl_profile_tab[PROFILE_A_APP_ID].conn_id);
+        esp_ble_gatts_close(gl_profile_tab[PROFILE_B_APP_ID].gatts_if,
+                            gl_profile_tab[PROFILE_B_APP_ID].conn_id);
     }
 #endif
 

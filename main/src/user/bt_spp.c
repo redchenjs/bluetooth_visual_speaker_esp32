@@ -13,6 +13,7 @@
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
 #include "esp_gap_bt_api.h"
+#include "esp_gap_ble_api.h"
 #include "esp_a2dp_api.h"
 #include "esp_spp_api.h"
 
@@ -147,11 +148,14 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                 audio_input_set_mode(0);
 #endif
 
+                esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
                 if (!(uxBits & BT_A2DP_IDLE_BIT)) {
                     esp_a2d_sink_disconnect(a2d_remote_bda);
                 }
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+                esp_ble_gap_stop_advertising();
                 if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
                     esp_ble_gatts_close(gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
                                         gl_profile_tab[PROFILE_A_APP_ID].conn_id);
