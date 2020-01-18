@@ -57,6 +57,10 @@ idf.py menuconfig
 idf.py flash monitor
 ```
 
+## VFX on ST7789 135x240 LCD Panel (VU Meter)
+
+<img src="docs/st7789vu.png">
+
 ## VFX on ST7789 135x240 LCD Panel (GIF)
 
 <img src="docs/st7789gif.png">
