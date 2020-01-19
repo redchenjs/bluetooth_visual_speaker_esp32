@@ -112,8 +112,8 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
@@ -212,8 +212,8 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
@@ -306,8 +306,8 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
             const uint8_t vu_idx_min = 0;
             const uint8_t vu_idx_max = 19;
@@ -373,7 +373,7 @@ static void vfx_task(void *pvParameter)
                 }
 
                 for (uint8_t i=vu_idx_min; i<=vu_idx_max; i++) {
-                    int8_t vu_val_out = fft_out[i];
+                    int16_t vu_val_out = fft_out[i];
 
                     if (vu_val_out > vu_val_max) {
                         vu_val_out = vu_val_max;
@@ -425,8 +425,8 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
@@ -529,8 +529,8 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
@@ -627,8 +627,8 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
             const uint8_t vu_idx_min = 0;
             const uint8_t vu_idx_max = 19;
@@ -694,7 +694,7 @@ static void vfx_task(void *pvParameter)
                 }
 
                 for (uint8_t i=vu_idx_min; i<=vu_idx_max; i++) {
-                    int8_t vu_val_out = fft_out[i];
+                    int16_t vu_val_out = fft_out[i];
 
                     if (vu_val_out > vu_val_max) {
                         vu_val_out = vu_val_max;
@@ -1283,8 +1283,8 @@ loop_break:
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
@@ -1384,8 +1384,8 @@ loop_break:
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
@@ -1492,8 +1492,8 @@ loop_break:
             uint16_t color_h[64] = {0};
             uint16_t color_l[64] = {vfx.lightness};
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
             const uint8_t led_idx_table[][64] = {
                 {
                     3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
@@ -1614,8 +1614,8 @@ loop_break:
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
@@ -1715,8 +1715,8 @@ loop_break:
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
 
@@ -1823,8 +1823,8 @@ loop_break:
             uint16_t color_h[64] = {0};
             uint16_t color_l[64] = {vfx.lightness};
             fft_config_t *fft = NULL;
-            float  fft_amp[64] = {0};
-            int8_t fft_out[64] = {0};
+            float   fft_amp[64] = {0};
+            int16_t fft_out[64] = {0};
             const uint8_t led_idx_table[][64] = {
                 {
                     3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
