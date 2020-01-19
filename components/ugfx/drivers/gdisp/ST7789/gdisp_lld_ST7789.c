@@ -70,8 +70,8 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     write_cmd(g, ST7789_SLPOUT);    //  2: Out of sleep mode, no args, w/delay
     gfxSleepMilliseconds(120);
     write_cmd(g, ST7789_PORCTRL);   //  3: Porch setting, 5 args, no delay:
-        write_data(g, 0x0C);
-        write_data(g, 0x0C);
+        write_data(g, 0x15);
+        write_data(g, 0x15);
         write_data(g, 0x00);
         write_data(g, 0x33);
         write_data(g, 0x33);
@@ -88,7 +88,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     write_cmd(g, ST7789_VDVSET);    //  9: VDV setting, 1 arg, no delay:
         write_data(g, 0x20);
     write_cmd(g, ST7789_FRCTRL2);   // 10: Frame rate control - normal mode, 1 arg:
-        write_data(g, 0x01);
+        write_data(g, 0x0C);
     write_cmd(g, ST7789_PWCTRL1);   // 11: Power control 1, 2 args, no delay:
         write_data(g, 0xA4);
         write_data(g, 0xA1);
