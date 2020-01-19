@@ -70,7 +70,7 @@
 #define GFX_USE_GDISP                                TRUE
 
 // #define GDISP_NEED_AUTOFLUSH                         TRUE
-#if defined(CONFIG_VFX_OUTPUT_CUBE0414) || defined(CONFIG_VFX_OUTPUT_ST7735)
+#ifdef CONFIG_VFX_OUTPUT_CUBE0414
    #define GDISP_NEED_TIMERFLUSH                        8
 #else
    #define GDISP_NEED_TIMERFLUSH                        16
