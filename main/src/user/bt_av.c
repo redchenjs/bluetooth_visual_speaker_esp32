@@ -198,22 +198,15 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
             audio_player_play_file(1);
 #endif
-
-            if (!(uxBits & OS_PWR_SLEEP_BIT)) {
-                if (!(uxBits & BT_A2DP_IDLE_BIT)) {
 #ifdef CONFIG_ENABLE_VFX
-                    if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
-                        memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-                        xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-                    }
-#endif
-                }
-                if (!(uxBits & OS_PWR_RESTART_BIT)) {
-#ifdef CONFIG_ENABLE_LED
-                    led_set_mode(3);
-#endif
-                }
+            if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
+                memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+                xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
             }
+#endif
+#ifdef CONFIG_ENABLE_LED
+            led_set_mode(3);
+#endif
 
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
@@ -238,13 +231,23 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
     }
     case ESP_A2D_AUDIO_STATE_EVT: {
         ESP_LOGI(BT_A2D_TAG, "A2DP audio state: %s", s_a2d_audio_state_str[a2d->audio_stat.state]);
-#ifdef CONFIG_ENABLE_LED
+
         if (a2d->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
+#ifdef CONFIG_ENABLE_LED
             led_set_mode(1);
-        } else {
-            led_set_mode(2);
-        }
 #endif
+        } else {
+#ifdef CONFIG_ENABLE_VFX
+            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+            if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
+                memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+                xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+            }
+#endif
+#ifdef CONFIG_ENABLE_LED
+            led_set_mode(2);
+#endif
+        }
         break;
     }
     case ESP_A2D_AUDIO_CFG_EVT: {
