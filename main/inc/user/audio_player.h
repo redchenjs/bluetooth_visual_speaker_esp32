@@ -24,6 +24,7 @@ extern const char snd3_mp3_ptr[] asm("_binary_snd3_mp3_start");
 extern const char snd3_mp3_end[] asm("_binary_snd3_mp3_end");
 
 extern void audio_player_play_file(uint8_t idx);
+extern void audio_player_set_mode(uint8_t idx);
 
 extern void audio_player_init(void);
 

@@ -30,6 +30,7 @@
 #include "user/ble_app.h"
 #include "user/ble_gatts.h"
 #include "user/audio_input.h"
+#include "user/audio_player.h"
 
 #define BT_SPP_TAG "bt_spp"
 #define BT_OTA_TAG "bt_ota"
@@ -104,6 +105,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             image_length = 0;
 
             i2s_output_init();
+            audio_player_set_mode(1);
 #ifndef CONFIG_AUDIO_INPUT_NONE
             audio_input_set_mode(ain_prev_mode);
 #endif
@@ -208,6 +210,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
                     audio_input_set_mode(0);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
+                    audio_player_set_mode(0);
                     xEventGroupWaitBits(
                         user_event_group,
                         AUDIO_PLAYER_IDLE_BIT,
@@ -282,6 +285,7 @@ err0:
                 esp_spp_write(param->write.handle, strlen(rsp_str[2]), (uint8_t *)rsp_str[2]);
 
                 i2s_output_init();
+                audio_player_set_mode(1);
 #ifndef CONFIG_AUDIO_INPUT_NONE
                 audio_input_set_mode(ain_prev_mode);
 #endif

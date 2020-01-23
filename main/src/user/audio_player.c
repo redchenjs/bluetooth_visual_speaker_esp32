@@ -44,7 +44,8 @@ static const char *mp3_file_ptr[][2] = {
 #endif
 };
 
-static uint8_t mp3_file_index   = 0;
+static uint8_t aplay_mode = 1;
+static uint8_t mp3_file_index = 0;
 static uint8_t playback_pending = 0;
 
 static void audio_player_task(void *pvParameters)
@@ -63,11 +64,25 @@ static void audio_player_task(void *pvParameters)
     while (1) {
         xEventGroupWaitBits(
             user_event_group,
-            AUDIO_PLAYER_RUN_BIT,
+            AUDIO_PLAYER_RUN_BIT | AUDIO_PLAYER_EXIT_BIT,
             pdFALSE,
             pdFALSE,
             portMAX_DELAY
         );
+
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+        if (uxBits & AUDIO_PLAYER_EXIT_BIT) {
+            xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
+            xEventGroupClearBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
+
+            free(synth);
+            free(frame);
+            free(stream);
+
+            ESP_LOGI(TAG, "exited.");
+
+            vTaskDelete(NULL);
+        }
 
         // Initialize mp3 parts
         mad_stream_init(stream);
@@ -108,7 +123,8 @@ err:
     free(stream);
 
     ESP_LOGE(TAG, "unrecoverable error");
-    esp_restart();
+
+    vTaskDelete(NULL);
 }
 
 void audio_player_play_file(uint8_t idx)
@@ -123,12 +139,30 @@ void audio_player_play_file(uint8_t idx)
     }
     mp3_file_index = idx;
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+    if (uxBits & AUDIO_PLAYER_EXIT_BIT) {
+        return;
+    }
     if (uxBits & AUDIO_PLAYER_RUN_BIT) {
         // Previous playback is still not complete
         playback_pending = 1;
     } else {
         xEventGroupClearBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
         xEventGroupSetBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
+    }
+#endif
+}
+
+void audio_player_set_mode(uint8_t idx)
+{
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+    aplay_mode = idx;
+    ESP_LOGI(TAG, "mode: %u", aplay_mode);
+
+    if (aplay_mode) {
+        xEventGroupClearBits(user_event_group, AUDIO_PLAYER_EXIT_BIT);
+        audio_player_init();
+    } else {
+        xEventGroupSetBits(user_event_group, AUDIO_PLAYER_EXIT_BIT);
     }
 #endif
 }
