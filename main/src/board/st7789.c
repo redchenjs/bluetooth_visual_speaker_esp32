@@ -33,7 +33,7 @@ void st7789_init_board(void)
 
     ledc_timer_config_t ledc_timer = {
         .duty_resolution = LEDC_TIMER_8_BIT,
-        .freq_hz         = 50000,
+        .freq_hz         = 20000,
         .speed_mode      = LEDC_HIGH_SPEED_MODE,
         .timer_num       = LEDC_TIMER_0,
         .clk_cfg         = LEDC_AUTO_CLK,
