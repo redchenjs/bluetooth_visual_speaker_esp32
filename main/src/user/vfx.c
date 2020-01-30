@@ -302,7 +302,7 @@ static void vfx_task(void *pvParameter)
 
             break;
         }
-        case 0x0F: {   // 音樂頻譜-电平-線性
+        case 0x0F: {   // 音樂頻譜-格柵-線性
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
@@ -391,7 +391,9 @@ static void vfx_task(void *pvParameter)
                     if (vu_val_peak[i] != vu_val_out) {
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_val_peak[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
                     }
-                    gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_val_peak[i])*vu_height+1, vu_width-2, vu_height-2, 0xFF00FF);
+
+                    uint32_t peak_color = vfx_read_color_from_table(80, color_l);
+                    gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_val_peak[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
 
                     color_h = 511;
                     for (int8_t j=vu_val_max; j>=vu_val_min; j--) {
@@ -623,7 +625,7 @@ static void vfx_task(void *pvParameter)
 
             break;
         }
-        case 0x12: {   // 音樂頻譜-电平-對數
+        case 0x12: {   // 音樂頻譜-格柵-對數
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
@@ -712,7 +714,9 @@ static void vfx_task(void *pvParameter)
                     if (vu_val_peak[i] != vu_val_out) {
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_val_peak[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
                     }
-                    gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_val_peak[i])*vu_height+1, vu_width-2, vu_height-2, 0xFF00FF);
+
+                    uint32_t peak_color = vfx_read_color_from_table(80, color_l);
+                    gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_val_peak[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
 
                     color_h = 511;
                     for (int8_t j=vu_val_max; j>=vu_val_min; j--) {
