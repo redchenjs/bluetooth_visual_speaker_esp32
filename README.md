@@ -15,7 +15,7 @@ Visual Effects Controller based on ESP32 chip.
 
 ## Preparing
 
-### Obtain the Source
+### Obtain the source
 
 ```
 git clone --recursive https://github.com/redchenjs/visual_effects_controller_esp32.git
@@ -28,7 +28,7 @@ git pull
 git submodule update --init --recursive
 ```
 
-### Setup the Tools
+### Setup the tools
 
 ```
 ./esp-idf/install.sh
