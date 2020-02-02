@@ -191,7 +191,6 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                  a2d->conn_stat.remote_bda[2], a2d->conn_stat.remote_bda[3],
                  a2d->conn_stat.remote_bda[4], a2d->conn_stat.remote_bda[5]);
 
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
             memset(&a2d_remote_bda, 0x00, sizeof(esp_bd_addr_t));
 
@@ -199,6 +198,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             audio_player_play_file(1);
 #endif
 #ifdef CONFIG_ENABLE_VFX
+            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
             if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
                 memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
                 xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
