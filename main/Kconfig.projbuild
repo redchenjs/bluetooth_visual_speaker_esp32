@@ -1,9 +1,9 @@
-menu "Visual Effects Controller"
+menu "Bluetooth Visual Speaker"
 
 menu "Bluetooth Configuration"
 config BT_NAME
     string "Bluetooth Name"
-    default "Visual Effects Controller"
+    default "Bluetooth Visual Speaker"
     help
         Bluetooth name exposed by the device.
 

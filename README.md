@@ -1,11 +1,11 @@
-Visual Effects Controller
-=========================
+Bluetooth Visual Speaker
+========================
 
-Visual Effects Controller based on ESP32 chip.
+Bluetooth Visual Speaker based on ESP32 chip.
 
 ## Main Features
 
-* Bluetooth A2DP Audio Streaming
+* A2DP Audio Streaming
 * I2S & PDM Input / I2S Output
 * VFX Output (GIF / Audio FFT / Rainbow / Star Sky / ...)
 * BLE Control Interface (for VFX Output)
@@ -18,7 +18,7 @@ Visual Effects Controller based on ESP32 chip.
 ### Obtain the source
 
 ```
-git clone --recursive https://github.com/redchenjs/visual_effects_controller_esp32.git
+git clone --recursive https://github.com/redchenjs/bluetooth_visual_speaker_esp32.git
 ```
 
 ### Update an existing repository
@@ -49,7 +49,7 @@ source ./esp-idf/export.sh
 idf.py menuconfig
 ```
 
-* All project configurations are under the `Visual Effects Controller` menu.
+* All project configurations are under the `Bluetooth Visual Speaker` menu.
 
 ### Flash & Monitor
 
