@@ -339,22 +339,22 @@ void ota_exec(esp_spp_cb_param_t *param)
             case CMD_IDX_RAM: {
                 ESP_LOGI(OTA_TAG, "GET command: "CMD_FMT_RAM);
 
-                char str_buf[40] = {0};
+                char rsp_str[40] = {0};
                 ESP_LOGI(OTA_TAG, "free memory: %u bytes", heap_caps_get_free_size(MALLOC_CAP_DEFAULT));
-                snprintf(str_buf, sizeof(str_buf), "%u\r\n", heap_caps_get_free_size(MALLOC_CAP_DEFAULT));
+                snprintf(rsp_str, sizeof(rsp_str), "%u\r\n", heap_caps_get_free_size(MALLOC_CAP_DEFAULT));
 
-                ota_send_data(str_buf, strlen(str_buf));
+                ota_send_data(rsp_str, strlen(rsp_str));
 
                 break;
             }
             case CMD_IDX_VER: {
                 ESP_LOGI(OTA_TAG, "GET command: "CMD_FMT_VER);
 
-                char str_buf[40] = {0};
+                char rsp_str[40] = {0};
                 ESP_LOGI(OTA_TAG, "app version: %s", app_get_version());
-                snprintf(str_buf, sizeof(str_buf), "%s\r\n", app_get_version());
+                snprintf(rsp_str, sizeof(rsp_str), "%s\r\n", app_get_version());
 
-                ota_send_data(str_buf, strlen(str_buf));
+                ota_send_data(rsp_str, strlen(rsp_str));
 
                 break;
             }
