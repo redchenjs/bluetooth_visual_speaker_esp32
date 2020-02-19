@@ -19,7 +19,6 @@
 #include "core/app.h"
 #include "chip/i2s.h"
 #include "user/vfx.h"
-#include "user/ota.h"
 #include "user/bt_av.h"
 #include "user/bt_app.h"
 #include "user/bt_spp.h"
@@ -112,7 +111,7 @@ static void ota_write_task(void *pvParameter)
     ESP_LOGI(OTA_TAG, "write started.");
 
     while (data_length > 0) {
-        if (!data_recv || !update_handle) {
+        if (!data_recv) {
             ESP_LOGE(OTA_TAG, "write aborted.");
 
             goto write_fail;
@@ -173,10 +172,33 @@ static void ota_write_task(void *pvParameter)
     ota_send_response(RSP_IDX_DONE);
 
 write_fail:
-    ota_end();
-
     vRingbufferDelete(buff_handle);
     buff_handle = NULL;
+
+    data_recv = false;
+
+    if (update_handle) {
+        esp_ota_end(update_handle);
+        update_handle = 0;
+
+        data_length = 0;
+
+        i2s_output_init();
+        audio_player_set_mode(1);
+#ifndef CONFIG_AUDIO_INPUT_NONE
+        audio_input_set_mode(ain_prev_mode);
+#endif
+#ifdef CONFIG_ENABLE_VFX
+        vfx->mode = vfx_prev_mode;
+        vfx_set_conf(vfx);
+#endif
+
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+        esp_ble_gap_start_advertising(&adv_params);
+#endif
+
+        xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
+    }
 
     vTaskDelete(NULL);
 }
