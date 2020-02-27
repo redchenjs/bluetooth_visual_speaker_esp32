@@ -118,8 +118,8 @@ void bt_app_init(void)
 
     ESP_LOGI(BT_APP_TAG, "started.");
 
-    if (strlen((const char *)last_remote_bda) != 0) {
-        // Reconnecting Delay
+    if (memcmp(last_remote_bda, "\x00\x00\x00\x00\x00\x00", 6) != 0) {
+        // Reconnection delay
         vTaskDelay(1000 / portTICK_RATE_MS);
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
         xEventGroupWaitBits(
