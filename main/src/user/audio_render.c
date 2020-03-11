@@ -69,11 +69,21 @@ static void audio_render_task(void *pvParameter)
         uint8_t *data = NULL;
         uint32_t size = 0;
 
-        data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 1 / portTICK_RATE_MS, 512);
+        data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 10 / portTICK_RATE_MS, 512);
 
         if (data == NULL || size == 0) {
             continue;
         }
+
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+        xEventGroupWaitBits(
+            user_event_group,
+            AUDIO_PLAYER_IDLE_BIT,
+            pdFALSE,
+            pdFALSE,
+            portMAX_DELAY
+        );
+#endif
 
         set_dac_sample_rate(a2d_sample_rate);
 
