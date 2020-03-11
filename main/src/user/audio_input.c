@@ -24,7 +24,6 @@ static uint8_t ain_mode = DEFAULT_AIN_MODE;
 
 static void audio_input_task(void *pvParameters)
 {
-    size_t bytes_read = 0;
     char data[FFT_N * 4] = {0};
 
     ESP_LOGI(TAG, "started.");
@@ -38,6 +37,7 @@ static void audio_input_task(void *pvParameters)
             portMAX_DELAY
         );
 
+        size_t bytes_read = 0;
         i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, data, FFT_N * 4, &bytes_read, portMAX_DELAY);
 
 #ifdef CONFIG_ENABLE_VFX
