@@ -392,6 +392,7 @@ static void vfx_task(void *pvParameter)
                     if (vu_val_peak[i] <= vu_val_out) {
                         vu_val_peak[i] = vu_val_out;
                         vu_peak_delay[i] = 8;
+                        vu_drop_delay[i] = 2;
                     }
                     if (vu_val_peak[i] != vu_val_out) {
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_val_peak[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
@@ -720,6 +721,7 @@ static void vfx_task(void *pvParameter)
                     if (vu_val_peak[i] <= vu_val_out) {
                         vu_val_peak[i] = vu_val_out;
                         vu_peak_delay[i] = 8;
+                        vu_drop_delay[i] = 2;
                     }
                     if (vu_val_peak[i] != vu_val_out) {
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_val_peak[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
