@@ -144,6 +144,6 @@ void audio_render_init(void)
     if (!audio_buff) {
         ESP_LOGE(TAG, "failed to start audio render task");
     } else {
-        xTaskCreatePinnedToCore(audio_render_task, "audioRenderT", 4096, NULL, configMAX_PRIORITIES - 3, NULL, 0);
+        xTaskCreatePinnedToCore(audio_render_task, "audioRenderT", 4096, NULL, configMAX_PRIORITIES - 2, NULL, 0);
     }
 }
