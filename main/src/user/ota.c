@@ -85,9 +85,10 @@ static bool data_err = false;
 static bool data_recv = false;
 static uint32_t data_length = 0;
 
-static uint8_t data_buff[990] = {0};
-static RingbufHandle_t buff_handle = NULL;
+static uint8_t buff_data[990] = {0};
 static StaticRingbuffer_t buff_struct = {0};
+
+static RingbufHandle_t ota_buff = NULL;
 
 static const esp_partition_t *update_partition = NULL;
 static esp_ota_handle_t update_handle = 0;
@@ -118,9 +119,9 @@ static void ota_write_task(void *pvParameter)
         }
 
         if (data_length >= 990) {
-            data = (uint8_t *)xRingbufferReceiveUpTo(buff_handle, &size, 10 / portTICK_RATE_MS, 990);
+            data = (uint8_t *)xRingbufferReceiveUpTo(ota_buff, &size, 10 / portTICK_RATE_MS, 990);
         } else {
-            data = (uint8_t *)xRingbufferReceiveUpTo(buff_handle, &size, 10 / portTICK_RATE_MS, data_length);
+            data = (uint8_t *)xRingbufferReceiveUpTo(ota_buff, &size, 10 / portTICK_RATE_MS, data_length);
         }
 
         if (data == NULL || size == 0) {
@@ -164,7 +165,7 @@ static void ota_write_task(void *pvParameter)
             }
         }
 
-        vRingbufferReturnItem(buff_handle, (void *)data);
+        vRingbufferReturnItem(ota_buff, (void *)data);
     }
 
     ESP_LOGI(OTA_TAG, "write done.");
@@ -172,8 +173,8 @@ static void ota_write_task(void *pvParameter)
     ota_send_response(RSP_IDX_DONE);
 
 write_fail:
-    vRingbufferDelete(buff_handle);
-    buff_handle = NULL;
+    vRingbufferDelete(ota_buff);
+    ota_buff = NULL;
 
     data_recv = false;
 
@@ -278,8 +279,8 @@ void ota_exec(esp_spp_cb_param_t *param)
 
                     memset(&buff_struct, 0x00, sizeof(StaticRingbuffer_t));
 
-                    buff_handle = xRingbufferCreateStatic(sizeof(data_buff), RINGBUF_TYPE_BYTEBUF, data_buff, &buff_struct);
-                    if (!buff_handle) {
+                    ota_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
+                    if (!ota_buff) {
                         ota_send_response(RSP_IDX_ERROR);
                     } else {
                         data_recv = true;
@@ -366,8 +367,8 @@ void ota_exec(esp_spp_cb_param_t *param)
                 break;
         }
     } else {
-        if (buff_handle) {
-            xRingbufferSend(buff_handle, (void *)param->data_ind.data, param->data_ind.len, portMAX_DELAY);
+        if (ota_buff) {
+            xRingbufferSend(ota_buff, (void *)param->data_ind.data, param->data_ind.len, portMAX_DELAY);
         }
     }
 }
