@@ -174,5 +174,5 @@ void audio_player_init(void)
         xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
     }
 
-    xTaskCreatePinnedToCore(audio_player_task, "audioPlayerT", 8448, NULL, configMAX_PRIORITIES - 4, NULL, 0);
+    xTaskCreatePinnedToCore(audio_player_task, "audioPlayerT", 8448, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }

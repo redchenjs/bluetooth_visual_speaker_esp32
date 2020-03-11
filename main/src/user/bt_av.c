@@ -71,6 +71,15 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
     if (audio_buff) {
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+        xEventGroupWaitBits(
+            user_event_group,
+            AUDIO_PLAYER_IDLE_BIT,
+            pdFALSE,
+            pdFALSE,
+            portMAX_DELAY
+        );
+#endif
         xRingbufferSend(audio_buff, (void *)data, len, portMAX_DELAY);
     }
 }

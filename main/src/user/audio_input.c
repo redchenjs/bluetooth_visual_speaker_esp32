@@ -109,5 +109,5 @@ void audio_input_init(void)
 
     audio_input_set_mode(ain_mode);
 
-    xTaskCreatePinnedToCore(audio_input_task, "audioInputT", 2048, NULL, configMAX_PRIORITIES - 4, NULL, 0);
+    xTaskCreatePinnedToCore(audio_input_task, "audioInputT", 2048, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }

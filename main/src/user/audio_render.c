@@ -75,20 +75,14 @@ static void audio_render_task(void *pvParameter)
             continue;
         }
 
-#if !defined(CONFIG_AUDIO_INPUT_NONE) || defined(CONFIG_ENABLE_AUDIO_PROMPT) || defined(CONFIG_ENABLE_VFX)
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-#endif
-
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
-        if (uxBits & AUDIO_PLAYER_RUN_BIT) {
-            goto return_item;
-        }
-#endif
-
         set_dac_sample_rate(a2d_sample_rate);
 
         size_t bytes_written = 0;
         i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, data, size, &bytes_written, portMAX_DELAY);
+
+#if !defined(CONFIG_AUDIO_INPUT_NONE) || defined(CONFIG_ENABLE_VFX)
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+#endif
 
 #ifndef CONFIG_AUDIO_INPUT_NONE
         if (uxBits & AUDIO_INPUT_RUN_BIT) {
