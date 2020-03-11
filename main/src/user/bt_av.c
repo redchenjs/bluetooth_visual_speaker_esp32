@@ -17,21 +17,14 @@
 #include "esp_a2dp_api.h"
 #include "esp_avrc_api.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "driver/i2s.h"
-
 #include "core/os.h"
 #include "core/app.h"
-#include "chip/i2s.h"
 #include "user/led.h"
 #include "user/vfx.h"
-#include "user/bt_av.h"
 #include "user/bt_app.h"
-#include "user/ble_app.h"
 #include "user/bt_app_core.h"
-#include "user/audio_input.h"
 #include "user/audio_player.h"
+#include "user/audio_render.h"
 
 #define BT_A2D_TAG   "bt_a2d"
 #define BT_RC_CT_TAG "bt_rc_ct"
@@ -57,8 +50,7 @@ static const char *s_a2d_audio_state_str[] = {"suspended", "stopped", "started"}
 
 static esp_avrc_rn_evt_cap_mask_t s_avrc_peer_rn_cap;
 
-static int sample_rate = 16000;
-
+int a2d_sample_rate = 16000;
 esp_bd_addr_t a2d_remote_bda = {0};
 
 /* callback for A2DP sink */
@@ -78,61 +70,9 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
-#if !defined(CONFIG_AUDIO_INPUT_NONE) || defined(CONFIG_ENABLE_AUDIO_PROMPT) || defined(CONFIG_ENABLE_VFX)
-    EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-#endif
-
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    if (uxBits & AUDIO_PLAYER_RUN_BIT) {
-        return;
+    if (audio_buff) {
+        xRingbufferSend(audio_buff, (void *)data, len, portMAX_DELAY);
     }
-#endif
-
-    i2s_output_set_sample_rate(sample_rate);
-
-    size_t bytes_written = 0;
-    i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, data, len, &bytes_written, portMAX_DELAY);
-
-#ifndef CONFIG_AUDIO_INPUT_NONE
-    if (uxBits & AUDIO_INPUT_RUN_BIT) {
-        return;
-    }
-#endif
-
-#ifdef CONFIG_ENABLE_VFX
-    if (!(uxBits & VFX_FFT_NULL_BIT)) {
-        return;
-    }
-
-    // Copy data to FFT input buffer
-    uint32_t idx = 0;
-
-#ifdef CONFIG_BT_AUDIO_FFT_ONLY_LEFT
-    int16_t data_l = 0;
-    for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-        data_l = data[idx+1] << 8 | data[idx];
-
-        vfx_fft_input[k] = (float)data_l;
-    }
-#elif defined(CONFIG_BT_AUDIO_FFT_ONLY_RIGHT)
-    int16_t data_r = 0;
-    for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-        data_r = data[idx+3] << 8 | data[idx+2];
-
-        vfx_fft_input[k] = (float)data_r;
-    }
-#else
-    int16_t data_l = 0, data_r = 0;
-    for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-        data_l = data[idx+1] << 8 | data[idx];
-        data_r = data[idx+3] << 8 | data[idx+2];
-
-        vfx_fft_input[k] = (float)((data_l + data_r) / 2);
-    }
-#endif
-
-    xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-#endif
 }
 
 static void bt_app_alloc_meta_buffer(esp_avrc_ct_cb_param_t *param)
@@ -254,16 +194,16 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         ESP_LOGI(BT_A2D_TAG, "A2DP audio stream configuration, codec type %d", a2d->audio_cfg.mcc.type);
         // for now only SBC stream is supported
         if (a2d->audio_cfg.mcc.type == ESP_A2D_MCT_SBC) {
-            sample_rate = 16000;
+            a2d_sample_rate = 16000;
 
             char oct0 = a2d->audio_cfg.mcc.cie.sbc[0];
 
             if (oct0 & (0x01 << 6)) {
-                sample_rate = 32000;
+                a2d_sample_rate = 32000;
             } else if (oct0 & (0x01 << 5)) {
-                sample_rate = 44100;
+                a2d_sample_rate = 44100;
             } else if (oct0 & (0x01 << 4)) {
-                sample_rate = 48000;
+                a2d_sample_rate = 48000;
             }
 
             ESP_LOGI(BT_A2D_TAG, "configure audio player %x-%x-%x-%x",
@@ -271,7 +211,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                      a2d->audio_cfg.mcc.cie.sbc[1],
                      a2d->audio_cfg.mcc.cie.sbc[2],
                      a2d->audio_cfg.mcc.cie.sbc[3]);
-            ESP_LOGI(BT_A2D_TAG, "audio player configured, sample rate=%d", sample_rate);
+            ESP_LOGI(BT_A2D_TAG, "audio player configured, sample rate=%d", a2d_sample_rate);
         }
 
         break;

@@ -20,6 +20,7 @@
 #include "user/ble_app.h"
 #include "user/audio_input.h"
 #include "user/audio_player.h"
+#include "user/audio_render.h"
 
 static void core_init(void)
 {
@@ -72,6 +73,8 @@ static void user_init(void)
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
     ble_app_init();
 #endif
+
+    audio_render_init();
 
     bt_app_init();
 }

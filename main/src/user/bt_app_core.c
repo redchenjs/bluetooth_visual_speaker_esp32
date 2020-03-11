@@ -76,7 +76,7 @@ static void bt_app_task(void *pvParameter)
     bt_app_msg_t msg;
 
     while (1) {
-        if (pdTRUE == xQueueReceive(s_bt_app_task_queue, &msg, (portTickType)portMAX_DELAY)) {
+        if (pdTRUE == xQueueReceive(s_bt_app_task_queue, &msg, portMAX_DELAY)) {
             ESP_LOGD(BT_APP_CORE_TAG, "%s, sig 0x%x, 0x%x", __func__, msg.sig, msg.event);
             switch (msg.sig) {
             case BT_APP_SIG_WORK_DISPATCH:
