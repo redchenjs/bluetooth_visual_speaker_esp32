@@ -22,7 +22,7 @@
 
 #define TAG "audio_render"
 
-static uint8_t buff_data[8*1024] = {0};
+static uint8_t buff_data[4*1024] = {0};
 static StaticRingbuffer_t buff_struct = {0};
 
 RingbufHandle_t audio_buff = NULL;
