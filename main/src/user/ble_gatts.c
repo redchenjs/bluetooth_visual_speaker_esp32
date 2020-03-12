@@ -23,6 +23,9 @@
 
 #define BLE_GATTS_TAG "ble_gatts"
 
+#define GATTS_VFX_TAG "gatts_vfx"
+#define GATTS_VER_TAG "gatts_ver"
+
 #define GATTS_SRV_UUID_VFX      0x00AA
 #define GATTS_CHAR_UUID_VFX     0xAA01
 #define GATTS_DESC_UUID_VFX     0xDEAD
@@ -214,12 +217,12 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
     #endif
 #endif
                     } else {
-                        ESP_LOGE(BLE_GATTS_TAG, "command 0x%02X error", param->write.value[0]);
+                        ESP_LOGE(GATTS_VFX_TAG, "command 0x%02X error", param->write.value[0]);
                     }
                     break;
                 }
                 default:
-                    ESP_LOGW(BLE_GATTS_TAG, "unknown command: 0x%02X", param->write.value[0]);
+                    ESP_LOGW(GATTS_VFX_TAG, "unknown command: 0x%02X", param->write.value[0]);
                     break;
             }
         }
@@ -249,7 +252,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
                                                         NULL,
                                                         NULL);
         if (add_char_ret) {
-            ESP_LOGE(BLE_GATTS_TAG, "add char failed, error code =%x", add_char_ret);
+            ESP_LOGE(GATTS_VFX_TAG, "add char failed, error code =%x", add_char_ret);
         }
         break;
     case ESP_GATTS_ADD_INCL_SRVC_EVT:
@@ -265,7 +268,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
                                                                NULL,
                                                                NULL);
         if (add_descr_ret) {
-            ESP_LOGE(BLE_GATTS_TAG, "add char descr failed, error code =%x", add_descr_ret);
+            ESP_LOGE(GATTS_VFX_TAG, "add char descr failed, error code =%x", add_descr_ret);
         }
         break;
     case ESP_GATTS_ADD_CHAR_DESCR_EVT:
@@ -281,7 +284,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         xEventGroupClearBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
         uint8_t *bda = param->connect.remote_bda;
-        ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+        ESP_LOGI(GATTS_VFX_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[1], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
 
         gatts_profile_tbl[PROFILE_IDX_VFX].conn_id = param->connect.conn_id;
@@ -290,7 +293,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
     }
     case ESP_GATTS_DISCONNECT_EVT: {
         uint8_t *bda = param->connect.remote_bda;
-        ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+        ESP_LOGI(GATTS_VFX_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[0], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
@@ -360,7 +363,7 @@ static void profile_ver_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
                                                         NULL,
                                                         NULL);
         if (add_char_ret) {
-            ESP_LOGE(BLE_GATTS_TAG, "add char failed, error code =%x", add_char_ret);
+            ESP_LOGE(GATTS_VER_TAG, "add char failed, error code =%x", add_char_ret);
         }
         break;
     case ESP_GATTS_ADD_INCL_SRVC_EVT:
@@ -376,7 +379,7 @@ static void profile_ver_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
                                                                NULL,
                                                                NULL);
         if (add_descr_ret) {
-            ESP_LOGE(BLE_GATTS_TAG, "add char descr failed, error code =%x", add_descr_ret);
+            ESP_LOGE(GATTS_VER_TAG, "add char descr failed, error code =%x", add_descr_ret);
         }
         break;
     case ESP_GATTS_ADD_CHAR_DESCR_EVT:
@@ -390,7 +393,7 @@ static void profile_ver_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         break;
     case ESP_GATTS_CONNECT_EVT: {
         uint8_t *bda = param->connect.remote_bda;
-        ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+        ESP_LOGI(GATTS_VER_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[1], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
 
         gatts_profile_tbl[PROFILE_IDX_VER].conn_id = param->connect.conn_id;
@@ -399,7 +402,7 @@ static void profile_ver_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
     }
     case ESP_GATTS_DISCONNECT_EVT: {
         uint8_t *bda = param->connect.remote_bda;
-        ESP_LOGI(BLE_GATTS_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+        ESP_LOGI(GATTS_VER_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[0], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
         break;
     }
@@ -421,7 +424,7 @@ void ble_gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if,
         if (param->reg.status == ESP_GATT_OK) {
             gatts_profile_tbl[param->reg.app_id].gatts_if = gatts_if;
         } else {
-            ESP_LOGI(BLE_GATTS_TAG, "reg app failed, app_id %04x, status %d",
+            ESP_LOGE(BLE_GATTS_TAG, "reg app failed, app_id %04x, status %d",
                      param->reg.app_id,
                      param->reg.status);
             return;
