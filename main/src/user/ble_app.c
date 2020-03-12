@@ -102,8 +102,8 @@ void ble_app_init(void)
     ESP_ERROR_CHECK(esp_ble_gatts_register_callback(ble_gatts_event_handler));
     ESP_ERROR_CHECK(esp_ble_gap_register_callback(ble_gap_event_handler));
 
-    ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_A_APP_ID));
-    ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_B_APP_ID));
+    ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_IDX_VFX));
+    ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_IDX_VER));
 
     ESP_ERROR_CHECK(esp_ble_gatt_set_local_mtu(500));
 

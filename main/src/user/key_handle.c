@@ -52,10 +52,7 @@ void sleep_key_handle(void)
 #endif
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
     if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
-        esp_ble_gatts_close(gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
-                            gl_profile_tab[PROFILE_A_APP_ID].conn_id);
-        esp_ble_gatts_close(gl_profile_tab[PROFILE_B_APP_ID].gatts_if,
-                            gl_profile_tab[PROFILE_B_APP_ID].conn_id);
+        esp_ble_gatts_close(gatts_profile_tbl[0].gatts_if, gatts_profile_tbl[0].conn_id);
     }
 #endif
 

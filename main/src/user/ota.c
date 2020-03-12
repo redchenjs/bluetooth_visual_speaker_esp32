@@ -323,10 +323,7 @@ void ota_exec(esp_spp_cb_param_t *param)
                 }
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
                 if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
-                    esp_ble_gatts_close(gl_profile_tab[PROFILE_A_APP_ID].gatts_if,
-                                        gl_profile_tab[PROFILE_A_APP_ID].conn_id);
-                    esp_ble_gatts_close(gl_profile_tab[PROFILE_B_APP_ID].gatts_if,
-                                        gl_profile_tab[PROFILE_B_APP_ID].conn_id);
+                    esp_ble_gatts_close(gatts_profile_tbl[0].gatts_if, gatts_profile_tbl[0].conn_id);
                 }
                 os_power_restart_wait(BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT);
 #else
