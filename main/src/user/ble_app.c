@@ -105,7 +105,5 @@ void ble_app_init(void)
     ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_IDX_VFX));
     ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_IDX_VER));
 
-    ESP_ERROR_CHECK(esp_ble_gatt_set_local_mtu(500));
-
     ESP_LOGI(BLE_APP_TAG, "started.");
 }

@@ -187,43 +187,43 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 #endif
         if (!param->write.is_prep) {
             switch (param->write.value[0]) {
-                case 0xEF: {
-                    if (param->write.len == 1) {    // Restore Default Configuration
+            case 0xEF: {
+                if (param->write.len == 1) {    // Restore Default Configuration
 #ifdef CONFIG_ENABLE_VFX
-                        vfx->mode = DEFAULT_VFX_MODE;
-                        vfx->scale_factor = DEFAULT_VFX_SCALE_FACTOR;
-                        vfx->lightness = DEFAULT_VFX_LIGHTNESS;
-                        vfx->backlight = DEFAULT_VFX_BACKLIGHT;
-                        vfx_set_conf(vfx);
-                        app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
+                    vfx->mode = DEFAULT_VFX_MODE;
+                    vfx->scale_factor = DEFAULT_VFX_SCALE_FACTOR;
+                    vfx->lightness = DEFAULT_VFX_LIGHTNESS;
+                    vfx->backlight = DEFAULT_VFX_BACKLIGHT;
+                    vfx_set_conf(vfx);
+                    app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
     #ifndef CONFIG_AUDIO_INPUT_NONE
-                        ain_mode = DEFAULT_AIN_MODE;
-                        audio_input_set_mode(ain_mode);
-                        app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
+                    ain_mode = DEFAULT_AIN_MODE;
+                    audio_input_set_mode(ain_mode);
+                    app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
     #endif
 #endif
-                    } else if (param->write.len == 8) { // Update with New Configuration
+                } else if (param->write.len == 8) { // Update with New Configuration
 #ifdef CONFIG_ENABLE_VFX
-                        vfx->mode = param->write.value[1];
-                        vfx->scale_factor = param->write.value[2] << 8 | param->write.value[3];
-                        vfx->lightness = (param->write.value[4] << 8 | param->write.value[5]) % 0x0200;
-                        vfx->backlight = param->write.value[6];
-                        vfx_set_conf(vfx);
-                        app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
+                    vfx->mode = param->write.value[1];
+                    vfx->scale_factor = param->write.value[2] << 8 | param->write.value[3];
+                    vfx->lightness = (param->write.value[4] << 8 | param->write.value[5]) % 0x0200;
+                    vfx->backlight = param->write.value[6];
+                    vfx_set_conf(vfx);
+                    app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
     #ifndef CONFIG_AUDIO_INPUT_NONE
-                        ain_mode = param->write.value[7];
-                        audio_input_set_mode(ain_mode);
-                        app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
+                    ain_mode = param->write.value[7];
+                    audio_input_set_mode(ain_mode);
+                    app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
     #endif
 #endif
-                    } else {
-                        ESP_LOGE(GATTS_VFX_TAG, "command 0x%02X error", param->write.value[0]);
-                    }
-                    break;
+                } else {
+                    ESP_LOGE(GATTS_VFX_TAG, "command 0x%02X error", param->write.value[0]);
                 }
-                default:
-                    ESP_LOGW(GATTS_VFX_TAG, "unknown command: 0x%02X", param->write.value[0]);
-                    break;
+                break;
+            }
+            default:
+                ESP_LOGW(GATTS_VFX_TAG, "unknown command: 0x%02X", param->write.value[0]);
+                break;
             }
         }
 
@@ -433,7 +433,7 @@ void ble_gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if,
 
     /* If the gatts_if equal to profile A, call profile A cb handler,
      * so here call each profile's callback */
-    for (int idx = 0; idx < PROFILE_IDX_MAX; idx++) {
+    for (int idx=0; idx<PROFILE_IDX_MAX; idx++) {
         if (gatts_if == ESP_GATT_IF_NONE || /* ESP_GATT_IF_NONE, not specify a certain gatt_if, need to call every profile cb function */
             gatts_if == gatts_profile_tbl[idx].gatts_if) {
             if (gatts_profile_tbl[idx].gatts_cb) {
