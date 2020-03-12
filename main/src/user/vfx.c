@@ -337,8 +337,8 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            memset(vu_peak_delay, vu_peak_delay_init, sizeof(vu_peak_delay));
-            memset(vu_drop_delay, vu_drop_delay_init, sizeof(vu_drop_delay));
+            memset(vu_peak_delay, vu_peak_delay_init - 1, sizeof(vu_peak_delay));
+            memset(vu_drop_delay, vu_drop_delay_init - 1, sizeof(vu_drop_delay));
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -396,12 +396,7 @@ static void vfx_task(void *pvParameter)
                     }
                     if (vu_peak_value[i] <= vu_val_out) {
                         vu_peak_value[i] = vu_val_out;
-
-                        if (vu_peak_delay[i] % vu_drop_delay_init == 0) {
-                            vu_peak_delay[i] = vu_peak_delay_init - 1;
-                        } else {
-                            vu_peak_delay[i] = vu_peak_delay_init - 1 + vu_peak_delay[i] % vu_drop_delay_init;
-                        }
+                        vu_peak_delay[i] = vu_peak_delay_init - 1 + vu_peak_delay[i] % vu_drop_delay_init;
                     }
                     if (vu_peak_value[i] != vu_val_out) {
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
@@ -675,8 +670,8 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            memset(vu_peak_delay, vu_peak_delay_init, sizeof(vu_peak_delay));
-            memset(vu_drop_delay, vu_drop_delay_init, sizeof(vu_drop_delay));
+            memset(vu_peak_delay, vu_peak_delay_init - 1, sizeof(vu_peak_delay));
+            memset(vu_drop_delay, vu_drop_delay_init - 1, sizeof(vu_drop_delay));
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -734,12 +729,7 @@ static void vfx_task(void *pvParameter)
                     }
                     if (vu_peak_value[i] <= vu_val_out) {
                         vu_peak_value[i] = vu_val_out;
-
-                        if (vu_peak_delay[i] % vu_drop_delay_init == 0) {
-                            vu_peak_delay[i] = vu_peak_delay_init - 1;
-                        } else {
-                            vu_peak_delay[i] = vu_peak_delay_init - 1 + vu_peak_delay[i] % vu_drop_delay_init;
-                        }
+                        vu_peak_delay[i] = vu_peak_delay_init - 1 + vu_peak_delay[i] % vu_drop_delay_init;
                     }
                     if (vu_peak_value[i] != vu_val_out) {
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
