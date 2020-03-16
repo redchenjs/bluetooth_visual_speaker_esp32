@@ -178,29 +178,6 @@ write_fail:
 
     data_recv = false;
 
-    if (update_handle) {
-        esp_ota_end(update_handle);
-        update_handle = 0;
-
-        data_length = 0;
-
-        i2s_output_init();
-        audio_player_set_mode(1);
-#ifndef CONFIG_AUDIO_INPUT_NONE
-        audio_input_set_mode(ain_prev_mode);
-#endif
-#ifdef CONFIG_ENABLE_VFX
-        vfx->mode = vfx_prev_mode;
-        vfx_set_conf(vfx);
-#endif
-
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-        esp_ble_gap_start_advertising(&adv_params);
-#endif
-
-        xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
-    }
-
     vTaskDelete(NULL);
 }
 
