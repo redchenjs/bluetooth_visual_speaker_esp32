@@ -328,7 +328,7 @@ static void vfx_task(void *pvParameter)
             static int8_t vu_peak_value[24] = {0};
             static int8_t vu_peak_delay[24] = {0};
             static int8_t vu_drop_delay[24] = {0};
-            const int8_t vu_peak_delay_init = 12;
+            const int8_t vu_peak_delay_init = 9;
             const int8_t vu_drop_delay_init = 3;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
@@ -661,7 +661,7 @@ static void vfx_task(void *pvParameter)
             static int8_t vu_peak_value[24] = {0};
             static int8_t vu_peak_delay[24] = {0};
             static int8_t vu_drop_delay[24] = {0};
-            const int8_t vu_peak_delay_init = 12;
+            const int8_t vu_peak_delay_init = 9;
             const int8_t vu_drop_delay_init = 3;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
