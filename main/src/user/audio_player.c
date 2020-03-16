@@ -154,10 +154,10 @@ void audio_player_play_file(uint8_t idx)
 
 void audio_player_set_mode(uint8_t idx)
 {
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
     aplay_mode = idx;
     ESP_LOGI(TAG, "mode: %u", aplay_mode);
 
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
     if (aplay_mode) {
         xEventGroupClearBits(user_event_group, AUDIO_PLAYER_EXIT_BIT);
         audio_player_init();

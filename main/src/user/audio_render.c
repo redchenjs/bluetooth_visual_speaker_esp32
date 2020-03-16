@@ -133,7 +133,9 @@ static void audio_render_task(void *pvParameter)
         xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 #endif
 
+#if defined(CONFIG_ENABLE_AUDIO_PROMPT) || !defined(CONFIG_AUDIO_INPUT_NONE) || defined(CONFIG_ENABLE_VFX)
 return_item:
+#endif
         vRingbufferReturnItem(audio_buff, (void *)data);
     }
 }
