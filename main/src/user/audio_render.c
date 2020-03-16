@@ -81,7 +81,8 @@ static void audio_render_task(void *pvParameter)
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
         if (!(uxBits & AUDIO_PLAYER_IDLE_BIT)) {
-            goto return_item;
+            vRingbufferReturnItem(audio_buff, (void *)data);
+            continue;
         }
 #endif
 
@@ -93,14 +94,16 @@ static void audio_render_task(void *pvParameter)
 #ifndef CONFIG_AUDIO_INPUT_NONE
         uxBits = xEventGroupGetBits(user_event_group);
         if (uxBits & AUDIO_INPUT_RUN_BIT) {
-            goto return_item;
+            vRingbufferReturnItem(audio_buff, (void *)data);
+            continue;
         }
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
         uxBits = xEventGroupGetBits(user_event_group);
         if (!(uxBits & VFX_FFT_NULL_BIT)) {
-            goto return_item;
+            vRingbufferReturnItem(audio_buff, (void *)data);
+            continue;
         }
 
         // Copy data to FFT input buffer
@@ -133,9 +136,6 @@ static void audio_render_task(void *pvParameter)
         xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 #endif
 
-#if defined(CONFIG_ENABLE_AUDIO_PROMPT) || !defined(CONFIG_AUDIO_INPUT_NONE) || defined(CONFIG_ENABLE_VFX)
-return_item:
-#endif
         vRingbufferReturnItem(audio_buff, (void *)data);
     }
 }
