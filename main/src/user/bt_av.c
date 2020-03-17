@@ -27,7 +27,6 @@
 
 #define BT_A2D_TAG   "bt_a2d"
 #define BT_RC_CT_TAG "bt_rc_ct"
-#define BT_RC_TG_TAG "bt_rc_tg"
 #define BT_RC_RN_TAG "bt_rc_rn"
 
 // AVRCP used transaction label
@@ -41,8 +40,6 @@
 static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param);
 /* avrc CT event handler */
 static void bt_av_hdl_avrc_ct_evt(uint16_t event, void *p_param);
-/* avrc TG event handler */
-static void bt_av_hdl_avrc_tg_evt(uint16_t event, void *p_param);
 
 static const char *s_a2d_conn_state_str[] = {"disconnected", "connecting", "connected", "disconnecting"};
 static const char *s_a2d_audio_state_str[] = {"suspended", "stopped", "started"};
@@ -116,21 +113,6 @@ void bt_app_avrc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t *par
         bt_app_work_dispatch(bt_av_hdl_avrc_ct_evt, event, param, sizeof(esp_avrc_ct_cb_param_t), NULL);
         break;
     }
-    default:
-        break;
-    }
-}
-
-void bt_app_avrc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t *param)
-{
-    switch (event) {
-    case ESP_AVRC_TG_CONNECTION_STATE_EVT:
-    case ESP_AVRC_TG_REMOTE_FEATURES_EVT:
-    case ESP_AVRC_TG_PASSTHROUGH_CMD_EVT:
-    case ESP_AVRC_TG_SET_ABSOLUTE_VOLUME_CMD_EVT:
-    case ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT:
-        bt_app_work_dispatch(bt_av_hdl_avrc_tg_evt, event, param, sizeof(esp_avrc_tg_cb_param_t), NULL);
-        break;
     default:
         break;
     }
@@ -319,40 +301,6 @@ static void bt_av_hdl_avrc_ct_evt(uint16_t event, void *p_param)
     }
     default:
         ESP_LOGE(BT_RC_CT_TAG, "%s unhandled evt %d", __func__, event);
-        break;
-    }
-}
-
-static void bt_av_hdl_avrc_tg_evt(uint16_t event, void *p_param)
-{
-    esp_avrc_tg_cb_param_t *rc = (esp_avrc_tg_cb_param_t *)(p_param);
-    switch (event) {
-    case ESP_AVRC_TG_CONNECTION_STATE_EVT: {
-        ESP_LOGI(BT_RC_TG_TAG, "AVRC conn_state evt: state %d, [%02x:%02x:%02x:%02x:%02x:%02x]",
-                 rc->conn_stat.connected,
-                 rc->conn_stat.remote_bda[0], rc->conn_stat.remote_bda[1],
-                 rc->conn_stat.remote_bda[2], rc->conn_stat.remote_bda[3],
-                 rc->conn_stat.remote_bda[4], rc->conn_stat.remote_bda[5]);
-        break;
-    }
-    case ESP_AVRC_TG_PASSTHROUGH_CMD_EVT: {
-        ESP_LOGI(BT_RC_TG_TAG, "AVRC passthrough cmd: key_code 0x%x, key_state %d", rc->psth_cmd.key_code, rc->psth_cmd.key_state);
-        break;
-    }
-    case ESP_AVRC_TG_SET_ABSOLUTE_VOLUME_CMD_EVT: {
-        ESP_LOGI(BT_RC_TG_TAG, "AVRC set absolute volume: %d%%", (int)rc->set_abs_vol.volume * 100 / 0x7f);
-        break;
-    }
-    case ESP_AVRC_TG_REGISTER_NOTIFICATION_EVT: {
-        ESP_LOGI(BT_RC_TG_TAG, "AVRC register event notification: %d, param: 0x%x", rc->reg_ntf.event_id, rc->reg_ntf.event_parameter);
-        break;
-    }
-    case ESP_AVRC_TG_REMOTE_FEATURES_EVT: {
-        ESP_LOGI(BT_RC_TG_TAG, "AVRC remote features %x, CT features %x", rc->rmt_feats.feat_mask, rc->rmt_feats.ct_feat_flag);
-        break;
-    }
-    default:
-        ESP_LOGE(BT_RC_TG_TAG, "%s unhandled evt %d", __func__, event);
         break;
     }
 }

@@ -66,13 +66,6 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
         /* initialize AVRCP controller */
         esp_avrc_ct_init();
         esp_avrc_ct_register_callback(bt_app_avrc_ct_cb);
-        /* initialize AVRCP target */
-        esp_avrc_tg_init();
-        esp_avrc_tg_register_callback(bt_app_avrc_tg_cb);
-
-        esp_avrc_rn_evt_cap_mask_t evt_set = {0};
-        esp_avrc_rn_evt_bit_mask_operation(ESP_AVRC_BIT_MASK_OP_SET, &evt_set, ESP_AVRC_RN_VOLUME_CHANGE);
-        esp_avrc_tg_set_rn_evt_cap(&evt_set);
 
         /* initialize A2DP sink */
         esp_a2d_register_callback(&bt_app_a2d_cb);
