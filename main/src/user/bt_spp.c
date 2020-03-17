@@ -54,11 +54,14 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 
         ota_end();
 
-#ifdef CONFIG_ENABLE_LED
-        led_set_mode(3);
-#endif
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+        if (!(uxBits & OS_PWR_RESTART_BIT)) {
+            esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 
-        esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+#ifdef CONFIG_ENABLE_LED
+            led_set_mode(3);
+#endif
+        }
 
         xEventGroupSetBits(user_event_group, BT_SPP_IDLE_BIT);
         break;
