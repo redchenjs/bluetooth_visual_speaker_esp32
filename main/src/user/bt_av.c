@@ -71,8 +71,15 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
     if (audio_buff) {
-        for (uint32_t i=0; i<len; i+=512) {
-            xRingbufferSend(audio_buff, (void *)(data + i), 512, portMAX_DELAY);
+        uint32_t pkt = 0, remain = 0;
+
+        for (pkt=0; pkt<len/512; pkt++) {
+            xRingbufferSend(audio_buff, (void *)(data + pkt * 512), 512, portMAX_DELAY);
+        }
+
+        remain = len - pkt * 512;
+        if (remain != 0) {
+            xRingbufferSend(audio_buff, (void *)(data + pkt * 512), remain, portMAX_DELAY);
         }
     }
 }
