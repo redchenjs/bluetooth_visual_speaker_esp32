@@ -206,32 +206,34 @@ void ota_exec(esp_spp_cb_param_t *param)
                     && (uxBits & BLE_GATTS_IDLE_BIT)
 #endif
                 ) {
-                    xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
+                    if (!update_handle) {
+                        xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
 
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-                    esp_ble_gap_stop_advertising();
+                        esp_ble_gap_stop_advertising();
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-                    vfx_prev_mode = vfx->mode;
-                    vfx->mode = VFX_MODE_IDX_OFF;
-                    vfx_set_conf(vfx);
+                        vfx_prev_mode = vfx->mode;
+                        vfx->mode = VFX_MODE_IDX_OFF;
+                        vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-                    ain_prev_mode = audio_input_get_mode();
-                    audio_input_set_mode(0);
+                        ain_prev_mode = audio_input_get_mode();
+                        audio_input_set_mode(0);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-                    audio_player_set_mode(0);
-                    xEventGroupWaitBits(
-                        user_event_group,
-                        AUDIO_PLAYER_IDLE_BIT,
-                        pdFALSE,
-                        pdFALSE,
-                        portMAX_DELAY
-                    );
+                        audio_player_set_mode(0);
+                        xEventGroupWaitBits(
+                            user_event_group,
+                            AUDIO_PLAYER_IDLE_BIT,
+                            pdFALSE,
+                            pdFALSE,
+                            portMAX_DELAY
+                        );
 #endif
-                    i2s_output_deinit();
+                        i2s_output_deinit();
+                    }
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
                     if (update_partition != NULL) {
@@ -286,13 +288,15 @@ void ota_exec(esp_spp_cb_param_t *param)
                 memset(&last_remote_bda, 0x00, sizeof(esp_bd_addr_t));
                 app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
 
+                if (!update_handle) {
 #ifdef CONFIG_ENABLE_VFX
-                vfx->mode = VFX_MODE_IDX_OFF;
-                vfx_set_conf(vfx);
+                    vfx->mode = VFX_MODE_IDX_OFF;
+                    vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-                audio_input_set_mode(0);
+                    audio_input_set_mode(0);
 #endif
+                }
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
                 if (!(uxBits & BT_A2DP_IDLE_BIT)) {
@@ -306,6 +310,8 @@ void ota_exec(esp_spp_cb_param_t *param)
 #else
                 os_power_restart_wait(BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT);
 #endif
+
+                update_handle = 0;
 
                 esp_spp_disconnect(param->write.handle);
 
