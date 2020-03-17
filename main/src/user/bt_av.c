@@ -20,7 +20,6 @@
 #include "core/os.h"
 #include "core/app.h"
 #include "user/led.h"
-#include "user/vfx.h"
 #include "user/bt_app.h"
 #include "user/bt_app_core.h"
 #include "user/audio_player.h"
@@ -70,6 +69,14 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+    EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+
+    if (!(uxBits & AUDIO_PLAYER_IDLE_BIT)) {
+        return;
+    }
+#endif
+
     if (audio_buff) {
         uint32_t pkt = 0, remain = 0;
 
@@ -146,13 +153,6 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
             audio_player_play_file(1);
 #endif
-#ifdef CONFIG_ENABLE_VFX
-            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-            if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
-                memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-                xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-            }
-#endif
 #ifdef CONFIG_ENABLE_LED
             led_set_mode(3);
 #endif
@@ -186,13 +186,6 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             led_set_mode(1);
 #endif
         } else {
-#ifdef CONFIG_ENABLE_VFX
-            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-            if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
-                memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-                xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-            }
-#endif
 #ifdef CONFIG_ENABLE_LED
             led_set_mode(2);
 #endif
