@@ -84,6 +84,7 @@ static void audio_render_task(void *pvParameter)
                 data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, 512);
             } else if (remain > 0) {
                 if ((remain % 4) != 0) {
+                    taskYIELD();
                     continue;
                 }
 
@@ -97,11 +98,15 @@ static void audio_render_task(void *pvParameter)
                 }
 #endif
                 start = false;
+
+                taskYIELD();
                 continue;
             }
 
             if (data == NULL) {
                 ESP_LOGE(TAG, "receive timeout.");
+
+                taskYIELD();
                 continue;
             }
         } else {

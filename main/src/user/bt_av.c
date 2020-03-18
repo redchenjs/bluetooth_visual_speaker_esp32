@@ -79,11 +79,13 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 
         for (pkt=0; pkt<len/512; pkt++) {
             xRingbufferSend(audio_buff, (void *)(data + pkt * 512), 512, portMAX_DELAY);
+            taskYIELD();
         }
 
         remain = len - pkt * 512;
         if (remain != 0) {
             xRingbufferSend(audio_buff, (void *)(data + pkt * 512), remain, portMAX_DELAY);
+            taskYIELD();
         }
     }
 }
