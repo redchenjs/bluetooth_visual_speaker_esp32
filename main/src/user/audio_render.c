@@ -22,7 +22,7 @@
 
 #define TAG "audio_render"
 
-static uint8_t buff_data[10*1024] = {0};
+static uint8_t buff_data[8*1024] = {0};
 static StaticRingbuffer_t buff_struct = {0};
 
 RingbufHandle_t audio_buff = NULL;
@@ -31,8 +31,8 @@ RingbufHandle_t audio_buff = NULL;
 void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels)
 {
     // pointer to left / right sample position
-    char *ptr_l = (char*)sample_buff_ch0;
-    char *ptr_r = (char*)sample_buff_ch1;
+    char *ptr_l = (char *)sample_buff_ch0;
+    char *ptr_r = (char *)sample_buff_ch1;
     uint8_t stride = sizeof(short);
 
     if (num_channels == 1) {
@@ -42,20 +42,16 @@ void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num
     size_t bytes_written = 0;
     for (int i = 0; i < num_samples; i++) {
         /* low - high / low - high */
-        const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]}; // ESP32 CPU is Little Endian
+        const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]}; // ESP32 CPU is little-endian
+
         i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, (const char *)&samp32, sizeof(samp32), &bytes_written, portMAX_DELAY);
 
-        // DMA buffer full - retry
-        if (bytes_written == 0) {
-            i--;
-        } else {
-            ptr_l += stride;
-            ptr_r += stride;
-        }
+        ptr_l += stride;
+        ptr_r += stride;
     }
 }
 
-/* Called by the NXP modifications of libmad. Sets the needed output sample rate. */
+/* frame callback for the libmad synth, set the needed output sample rate */
 void set_dac_sample_rate(int rate)
 {
     i2s_output_set_sample_rate(rate);
@@ -82,22 +78,31 @@ static void audio_render_task(void *pvParameter)
         );
 
         if (start) {
-            data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 10 / portTICK_RATE_MS, 512);
-            if (data == NULL) {
-                remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
-                if (remain > 0) {
-                    data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, portMAX_DELAY, remain);
-                } else {
-#ifdef CONFIG_ENABLE_VFX
-                    uxBits = xEventGroupGetBits(user_event_group);
-                    if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
-                        memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-                        xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-                    }
-#endif
-                    start = false;
+            remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
+
+            if (remain >= 512) {
+                data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, 512);
+            } else if (remain > 0) {
+                if ((remain % 4) != 0) {
                     continue;
                 }
+
+                data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, remain);
+            } else {
+#ifdef CONFIG_ENABLE_VFX
+                uxBits = xEventGroupGetBits(user_event_group);
+                if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
+                    memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+                    xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+                }
+#endif
+                start = false;
+                continue;
+            }
+
+            if (data == NULL) {
+                ESP_LOGE(TAG, "receive timeout.");
+                continue;
             }
         } else {
             if (xRingbufferGetCurFreeSize(audio_buff) == 0) {
@@ -177,6 +182,6 @@ void audio_render_init(void)
     if (!audio_buff) {
         ESP_LOGE(TAG, "failed to start audio render task");
     } else {
-        xTaskCreatePinnedToCore(audio_render_task, "audioRenderT", 2048, NULL, configMAX_PRIORITIES - 3, NULL, 1);
+        xTaskCreatePinnedToCore(audio_render_task, "audioRenderT", 2048, NULL, configMAX_PRIORITIES - 3, NULL, 0);
     }
 }
