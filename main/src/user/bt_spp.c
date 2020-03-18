@@ -55,7 +55,7 @@ void bt_app_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         ota_end();
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (!(uxBits & OS_PWR_RESTART_BIT)) {
+        if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESTART_BIT)) {
             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
 
 #ifdef CONFIG_ENABLE_LED

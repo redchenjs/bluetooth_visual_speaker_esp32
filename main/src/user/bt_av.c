@@ -163,15 +163,13 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
     case ESP_A2D_AUDIO_STATE_EVT: {
         ESP_LOGI(BT_A2D_TAG, "A2DP audio state: %s", s_a2d_audio_state_str[a2d->audio_stat.state]);
 
+#ifdef CONFIG_ENABLE_LED
         if (a2d->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
-#ifdef CONFIG_ENABLE_LED
             led_set_mode(1);
-#endif
         } else {
-#ifdef CONFIG_ENABLE_LED
             led_set_mode(2);
-#endif
         }
+#endif
         break;
     }
     case ESP_A2D_AUDIO_CFG_EVT: {
