@@ -90,31 +90,34 @@ static void audio_render_task(void *pvParameter)
 
                 data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, remain);
             } else {
-#ifdef CONFIG_ENABLE_VFX
-                uxBits = xEventGroupGetBits(user_event_group);
-                if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
-                    memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-                    xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-                }
-#endif
-                start = false;
+                vTaskDelay(1 / portTICK_RATE_MS);
 
-                taskYIELD();
+                remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
+                if (remain == 0) {
+#ifdef CONFIG_ENABLE_VFX
+                    uxBits = xEventGroupGetBits(user_event_group);
+                    if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
+                        memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+                        xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+                    }
+#endif
+                    start = false;
+                }
+
                 continue;
             }
 
             if (data == NULL) {
-                ESP_LOGE(TAG, "receive timeout.");
-
                 taskYIELD();
                 continue;
             }
         } else {
+            vTaskDelay(1 / portTICK_RATE_MS);
+
             if (xRingbufferGetCurFreeSize(audio_buff) == 0) {
                 start = true;
-            } else {
-                vTaskDelay(1 / portTICK_RATE_MS);
             }
+
             continue;
         }
 
