@@ -107,14 +107,13 @@ static void audio_render_task(void *pvParameter)
             }
 
             if (data == NULL) {
-                taskYIELD();
                 continue;
             }
         } else {
-            vTaskDelay(1 / portTICK_RATE_MS);
-
             if (xRingbufferGetCurFreeSize(audio_buff) == 0) {
                 start = true;
+            } else {
+                vTaskDelay(1 / portTICK_RATE_MS);
             }
 
             continue;
