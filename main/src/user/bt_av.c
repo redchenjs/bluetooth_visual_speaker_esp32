@@ -66,9 +66,13 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
 
+    if ((uxBits & BT_A2DP_IDLE_BIT) || (uxBits & OS_PWR_SLEEP_BIT) || (uxBits & OS_PWR_RESTART_BIT)) {
+        return;
+    }
+
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
     if (!(uxBits & AUDIO_PLAYER_IDLE_BIT)) {
         return;
     }

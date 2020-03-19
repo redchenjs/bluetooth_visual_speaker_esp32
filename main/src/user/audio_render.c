@@ -60,7 +60,6 @@ void set_dac_sample_rate(int rate)
 static void audio_render_task(void *pvParameter)
 {
     bool start = false;
-    EventBits_t uxBits = 0;
 
     ESP_LOGI(TAG, "started.");
 
@@ -121,10 +120,19 @@ static void audio_render_task(void *pvParameter)
             continue;
         }
 
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+
         if ((uxBits & BT_A2DP_IDLE_BIT) || (uxBits & OS_PWR_SLEEP_BIT) || (uxBits & OS_PWR_RESTART_BIT)) {
             vRingbufferReturnItem(audio_buff, (void *)data);
             continue;
         }
+
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+        if (!(uxBits & AUDIO_PLAYER_IDLE_BIT)) {
+            vRingbufferReturnItem(audio_buff, (void *)data);
+            continue;
+        }
+#endif
 
         set_dac_sample_rate(a2d_sample_rate);
 
