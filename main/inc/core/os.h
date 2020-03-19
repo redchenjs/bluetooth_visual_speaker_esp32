@@ -15,24 +15,27 @@ typedef enum user_event_group_bits {
     OS_PWR_SLEEP_BIT      = BIT0,
     OS_PWR_RESTART_BIT    = BIT1,
 
-    BT_SPP_IDLE_BIT       = BIT2,
-    BT_A2DP_IDLE_BIT      = BIT3,
-    BT_OTA_LOCKED_BIT     = BIT4,
-    BLE_GATTS_IDLE_BIT    = BIT5,
+    BT_A2DP_IDLE_BIT      = BIT2,
+    BT_A2DP_DATA_BIT      = BIT3,
 
-    VFX_RELOAD_BIT        = BIT6,
-    VFX_FFT_NULL_BIT      = BIT7,
+    BT_SPP_IDLE_BIT       = BIT4,
+    BT_OTA_LOCKED_BIT     = BIT5,
 
-    KEY_SCAN_RUN_BIT      = BIT8,
+    BLE_GATTS_IDLE_BIT    = BIT6,
 
-    AUDIO_INPUT_RUN_BIT   = BIT9,
-    AUDIO_INPUT_FFT_BIT   = BIT10,
+    VFX_RELOAD_BIT        = BIT7,
+    VFX_FFT_NULL_BIT      = BIT8,
 
-    AUDIO_RENDER_RUN_BIT  = BIT11,
+    KEY_SCAN_RUN_BIT      = BIT9,
 
-    AUDIO_PLAYER_RUN_BIT  = BIT12,
-    AUDIO_PLAYER_IDLE_BIT = BIT13,
-    AUDIO_PLAYER_EXIT_BIT = BIT14,
+    AUDIO_INPUT_RUN_BIT   = BIT10,
+    AUDIO_INPUT_FFT_BIT   = BIT11,
+
+    AUDIO_RENDER_RUN_BIT  = BIT12,
+
+    AUDIO_PLAYER_RUN_BIT  = BIT13,
+    AUDIO_PLAYER_IDLE_BIT = BIT14,
+    AUDIO_PLAYER_EXIT_BIT = BIT15,
 } user_event_group_bits_t;
 
 extern EventGroupHandle_t user_event_group;

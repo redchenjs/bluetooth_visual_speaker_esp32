@@ -22,7 +22,7 @@
 
 #define TAG "audio_render"
 
-static uint8_t buff_data[8*1024] = {0};
+static uint8_t buff_data[4*1024] = {0};
 static StaticRingbuffer_t buff_struct = {0};
 
 RingbufHandle_t audio_buff = NULL;
@@ -57,9 +57,35 @@ void set_dac_sample_rate(int rate)
     i2s_output_set_sample_rate(rate);
 }
 
+static void audio_buffer_reset(void)
+{
+    vTaskSuspendAll();
+
+    EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+    if (uxBits & BT_A2DP_DATA_BIT) {
+        goto reset_abort;
+    }
+
+#ifdef CONFIG_ENABLE_VFX
+    if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
+        memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+        xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+    }
+#endif
+
+    memset(&buff_struct, 0x00, sizeof(StaticRingbuffer_t));
+    audio_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
+
+reset_abort:
+    xTaskResumeAll();
+}
+
 static void audio_render_task(void *pvParameter)
 {
+    bool clear = true;
     bool start = false;
+    uint16_t count = 0;
+    EventBits_t uxBits = 0;
 
     ESP_LOGI(TAG, "started.");
 
@@ -76,6 +102,12 @@ static void audio_render_task(void *pvParameter)
             portMAX_DELAY
         );
 
+        if (!clear) {
+            audio_buffer_reset();
+
+            clear = true;
+        }
+
         if (start) {
             remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
 
@@ -89,19 +121,18 @@ static void audio_render_task(void *pvParameter)
 
                 data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, remain);
             } else {
-                taskYIELD();
+                do {
+                    vTaskDelay(1 / portTICK_RATE_MS);
 
-                remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
+                    remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
+                } while (remain == 0 && ++count < 16);
+
                 if (remain == 0) {
-#ifdef CONFIG_ENABLE_VFX
-                    uxBits = xEventGroupGetBits(user_event_group);
-                    if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
-                        memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-                        xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-                    }
-#endif
+                    clear = false;
                     start = false;
                 }
+
+                count = 0;
 
                 continue;
             }
@@ -110,7 +141,7 @@ static void audio_render_task(void *pvParameter)
                 continue;
             }
         } else {
-            if (xRingbufferGetCurFreeSize(audio_buff) == 0) {
+            if (xRingbufferGetCurFreeSize(audio_buff) < 512) {
                 start = true;
             } else {
                 vTaskDelay(1 / portTICK_RATE_MS);
@@ -119,19 +150,12 @@ static void audio_render_task(void *pvParameter)
             continue;
         }
 
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-
-        if ((uxBits & BT_A2DP_IDLE_BIT) || (uxBits & OS_PWR_SLEEP_BIT) || (uxBits & OS_PWR_RESTART_BIT)) {
+        uxBits = xEventGroupGetBits(user_event_group);
+        if ((uxBits & AUDIO_PLAYER_RUN_BIT) || (uxBits & BT_A2DP_IDLE_BIT)
+             || (uxBits & OS_PWR_SLEEP_BIT) || (uxBits & OS_PWR_RESTART_BIT)) {
             vRingbufferReturnItem(audio_buff, (void *)data);
             continue;
         }
-
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
-        if (!(uxBits & AUDIO_PLAYER_IDLE_BIT)) {
-            vRingbufferReturnItem(audio_buff, (void *)data);
-            continue;
-        }
-#endif
 
         set_dac_sample_rate(a2d_sample_rate);
 
@@ -192,11 +216,7 @@ void audio_render_init(void)
     xEventGroupSetBits(user_event_group, AUDIO_RENDER_RUN_BIT);
 
     memset(&buff_struct, 0x00, sizeof(StaticRingbuffer_t));
-
     audio_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
-    if (!audio_buff) {
-        ESP_LOGE(TAG, "failed to start audio render task");
-    } else {
-        xTaskCreatePinnedToCore(audio_render_task, "audioRenderT", 2048, NULL, configMAX_PRIORITIES - 3, NULL, 0);
-    }
+
+    xTaskCreatePinnedToCore(audio_render_task, "audioRenderT", 2048, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }
