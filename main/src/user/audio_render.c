@@ -89,7 +89,7 @@ static void audio_render_task(void *pvParameter)
 
                 data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, remain);
             } else {
-                vTaskDelay(1 / portTICK_RATE_MS);
+                taskYIELD();
 
                 remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
                 if (remain == 0) {
