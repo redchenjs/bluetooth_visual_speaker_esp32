@@ -85,9 +85,6 @@ static bool data_err = false;
 static bool data_recv = false;
 static uint32_t data_length = 0;
 
-static uint8_t buff_data[990] = {0};
-static StaticRingbuffer_t buff_struct = {0};
-
 static RingbufHandle_t ota_buff = NULL;
 
 static const esp_partition_t *update_partition = NULL;
@@ -256,9 +253,7 @@ void ota_exec(esp_spp_cb_param_t *param)
                         break;
                     }
 
-                    memset(&buff_struct, 0x00, sizeof(StaticRingbuffer_t));
-
-                    ota_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
+                    ota_buff = xRingbufferCreate(990, RINGBUF_TYPE_BYTEBUF);
                     if (!ota_buff) {
                         ota_send_response(RSP_IDX_ERROR);
                     } else {
