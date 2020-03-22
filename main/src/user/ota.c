@@ -196,7 +196,7 @@ void ota_exec(esp_spp_cb_param_t *param)
                 ESP_LOGI(OTA_TAG, "GET command: "CMD_FMT_UPD, data_length);
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-                if (data_length != 0 && !(uxBits & BT_OTA_LOCKED_BIT)
+                if (data_length != 0 && !(uxBits & BT_OTA_LOCK_BIT)
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
                     && (uxBits & BLE_GATTS_IDLE_BIT)
 #endif
@@ -259,7 +259,7 @@ void ota_exec(esp_spp_cb_param_t *param)
 
                         xTaskCreatePinnedToCore(ota_write_task, "otaWriteT", 1920, NULL, 9, NULL, 1);
                     }
-                } else if (uxBits & BT_OTA_LOCKED_BIT
+                } else if ((uxBits & BT_OTA_LOCK_BIT)
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
                         || !(uxBits & BLE_GATTS_IDLE_BIT)
 #endif
@@ -274,7 +274,7 @@ void ota_exec(esp_spp_cb_param_t *param)
             case CMD_IDX_RST: {
                 ESP_LOGI(OTA_TAG, "GET command: "CMD_FMT_RST);
 
-                xEventGroupSetBits(user_event_group, BT_OTA_LOCKED_BIT);
+                xEventGroupSetBits(user_event_group, BT_OTA_LOCK_BIT);
 
                 memset(&last_remote_bda, 0x00, sizeof(esp_bd_addr_t));
                 app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));

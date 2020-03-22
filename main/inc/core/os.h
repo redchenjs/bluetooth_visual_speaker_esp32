@@ -15,11 +15,11 @@ typedef enum user_event_group_bits {
     OS_PWR_SLEEP_BIT      = BIT0,
     OS_PWR_RESTART_BIT    = BIT1,
 
-    BT_A2DP_IDLE_BIT      = BIT2,
-    BT_A2DP_DATA_BIT      = BIT3,
+    BT_SPP_IDLE_BIT       = BIT2,
+    BT_OTA_LOCK_BIT       = BIT3,
 
-    BT_SPP_IDLE_BIT       = BIT4,
-    BT_OTA_LOCKED_BIT     = BIT5,
+    BT_A2DP_IDLE_BIT      = BIT4,
+    BT_A2DP_DATA_BIT      = BIT5,
 
     BLE_GATTS_IDLE_BIT    = BIT6,
 
