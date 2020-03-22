@@ -66,7 +66,6 @@ static void audio_player_task(void *pvParameters)
         struct mad_synth  *synth  = malloc(sizeof(struct mad_synth));
 
         if ((stream == NULL) || (frame == NULL) || (synth == NULL)) {
-            xEventGroupSetBits(user_event_group, AUDIO_RENDER_RUN_BIT);
             xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
             xEventGroupClearBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
 
@@ -113,7 +112,6 @@ static void audio_player_task(void *pvParameters)
         if (playback_pending) {
             playback_pending = 0;
         } else {
-            xEventGroupSetBits(user_event_group, AUDIO_RENDER_RUN_BIT);
             xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
             xEventGroupClearBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
         }
@@ -136,13 +134,19 @@ void audio_player_play_file(uint8_t idx)
         return;
     }
     if (uxBits & AUDIO_PLAYER_RUN_BIT) {
-        // Previous playback is still not complete
+        // previous playback is still not complete
         playback_pending = 1;
     } else {
-        xEventGroupClearBits(user_event_group, AUDIO_RENDER_RUN_BIT);
         xEventGroupClearBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
         xEventGroupSetBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
     }
+    xEventGroupWaitBits(
+        user_event_group,
+        AUDIO_RENDER_CLR_BIT,
+        pdFALSE,
+        pdFALSE,
+        portMAX_DELAY
+    );
 #endif
 }
 

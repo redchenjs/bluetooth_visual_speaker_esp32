@@ -40,7 +40,7 @@ void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num
     }
 
     size_t bytes_written = 0;
-    for (int i = 0; i < num_samples; i++) {
+    for (int i=0; i<num_samples; i++) {
         /* low - high / low - high */
         const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]}; // ESP32 CPU is little-endian
 
@@ -82,7 +82,7 @@ reset_abort:
 
 static void audio_render_task(void *pvParameter)
 {
-    bool clear = true;
+    bool clear = false;
     bool start = false;
     uint16_t count = 0;
     EventBits_t uxBits = 0;
@@ -94,18 +94,13 @@ static void audio_render_task(void *pvParameter)
         uint32_t size = 0;
         uint32_t remain = 0;
 
-        xEventGroupWaitBits(
-            user_event_group,
-            AUDIO_RENDER_RUN_BIT,
-            pdFALSE,
-            pdFALSE,
-            portMAX_DELAY
-        );
-
-        if (!clear) {
+        uxBits = xEventGroupGetBits(user_event_group);
+        if (!clear && !(uxBits & AUDIO_RENDER_CLR_BIT)) {
             audio_buffer_reset();
 
             clear = true;
+
+            xEventGroupSetBits(user_event_group, AUDIO_RENDER_CLR_BIT);
         }
 
         if (start) {
@@ -143,6 +138,8 @@ static void audio_render_task(void *pvParameter)
         } else {
             if (xRingbufferGetCurFreeSize(audio_buff) < 512) {
                 start = true;
+
+                xEventGroupClearBits(user_event_group, AUDIO_RENDER_CLR_BIT);
             } else {
                 vTaskDelay(1 / portTICK_RATE_MS);
             }
@@ -213,8 +210,6 @@ static void audio_render_task(void *pvParameter)
 
 void audio_render_init(void)
 {
-    xEventGroupSetBits(user_event_group, AUDIO_RENDER_RUN_BIT);
-
     memset(&buff_struct, 0x00, sizeof(StaticRingbuffer_t));
     audio_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
 
