@@ -44,21 +44,11 @@ static const char *mp3_file_ptr[][2] = {
 #endif
 };
 
-static uint8_t aplay_mode = 1;
 static uint8_t mp3_file_index = 0;
 static uint8_t playback_pending = 0;
 
 static void audio_player_task(void *pvParameters)
 {
-    // Allocate structs needed for mp3 decoding
-    struct mad_stream *stream = malloc(sizeof(struct mad_stream));
-    struct mad_frame  *frame  = malloc(sizeof(struct mad_frame));
-    struct mad_synth  *synth  = malloc(sizeof(struct mad_synth));
-
-    if (stream == NULL) { ESP_LOGE(TAG, "malloc(stream) failed"); goto err; }
-    if (frame  == NULL) { ESP_LOGE(TAG, "malloc(frame) failed");  goto err; }
-    if (synth  == NULL) { ESP_LOGE(TAG, "malloc(synth) failed");  goto err; }
-
     ESP_LOGI(TAG, "started.");
 
     while (1) {
@@ -70,21 +60,28 @@ static void audio_player_task(void *pvParameters)
             portMAX_DELAY
         );
 
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (uxBits & AUDIO_PLAYER_EXIT_BIT) {
+        // allocate structs needed for mp3 decoding
+        struct mad_stream *stream = malloc(sizeof(struct mad_stream));
+        struct mad_frame  *frame  = malloc(sizeof(struct mad_frame));
+        struct mad_synth  *synth  = malloc(sizeof(struct mad_synth));
+
+        if ((stream == NULL) || (frame == NULL) || (synth == NULL)) {
+            xEventGroupSetBits(user_event_group, AUDIO_RENDER_RUN_BIT);
             xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
             xEventGroupClearBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
+
+            ESP_LOGE(TAG, "allocate memory failed.");
+
+            playback_pending = 0;
 
             free(synth);
             free(frame);
             free(stream);
 
-            ESP_LOGI(TAG, "exited.");
-
-            vTaskDelete(NULL);
+            continue;
         }
 
-        // Initialize mp3 parts
+        // initialize mp3 parts
         mad_stream_init(stream);
         mad_frame_init(frame);
         mad_synth_init(synth);
@@ -109,6 +106,10 @@ static void audio_player_task(void *pvParameters)
         mad_frame_finish(frame);
         mad_stream_finish(stream);
 
+        free(synth);
+        free(frame);
+        free(stream);
+
         if (playback_pending) {
             playback_pending = 0;
         } else {
@@ -117,15 +118,6 @@ static void audio_player_task(void *pvParameters)
             xEventGroupClearBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
         }
     }
-
-err:
-    free(synth);
-    free(frame);
-    free(stream);
-
-    ESP_LOGE(TAG, "unrecoverable error");
-
-    vTaskDelete(NULL);
 }
 
 void audio_player_play_file(uint8_t idx)
@@ -150,21 +142,6 @@ void audio_player_play_file(uint8_t idx)
         xEventGroupClearBits(user_event_group, AUDIO_RENDER_RUN_BIT);
         xEventGroupClearBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
         xEventGroupSetBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
-    }
-#endif
-}
-
-void audio_player_set_mode(uint8_t idx)
-{
-    aplay_mode = idx;
-    ESP_LOGI(TAG, "mode: %u", aplay_mode);
-
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    if (aplay_mode) {
-        xEventGroupClearBits(user_event_group, AUDIO_PLAYER_EXIT_BIT);
-        audio_player_init();
-    } else {
-        xEventGroupSetBits(user_event_group, AUDIO_PLAYER_EXIT_BIT);
     }
 #endif
 }

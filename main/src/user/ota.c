@@ -25,7 +25,6 @@
 #include "user/ble_app.h"
 #include "user/ble_gatts.h"
 #include "user/audio_input.h"
-#include "user/audio_player.h"
 
 #define OTA_TAG "ota"
 
@@ -220,7 +219,6 @@ void ota_exec(esp_spp_cb_param_t *param)
                         audio_input_set_mode(0);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-                        audio_player_set_mode(0);
                         xEventGroupWaitBits(
                             user_event_group,
                             AUDIO_PLAYER_IDLE_BIT,
@@ -360,7 +358,6 @@ void ota_end(void)
         data_length = 0;
 
         i2s_output_init();
-        audio_player_set_mode(1);
 #ifndef CONFIG_AUDIO_INPUT_NONE
         audio_input_set_mode(ain_prev_mode);
 #endif
