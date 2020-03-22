@@ -17,9 +17,9 @@
 #include "core/os.h"
 #include "core/app.h"
 #include "user/vfx.h"
+#include "user/ain.h"
 #include "user/ble_app.h"
 #include "user/ble_gatts.h"
-#include "user/audio_input.h"
 
 #define BLE_GATTS_TAG "ble_gatts"
 
@@ -135,7 +135,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 #ifdef CONFIG_ENABLE_VFX
         vfx_config_t *vfx = vfx_get_conf();
     #ifndef CONFIG_AUDIO_INPUT_NONE
-        uint8_t ain_mode = audio_input_get_mode();
+        uint8_t ain_mode = ain_get_mode();
     #endif
 #endif
 
@@ -182,7 +182,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 #ifdef CONFIG_ENABLE_VFX
         vfx_config_t *vfx = vfx_get_conf();
     #ifndef CONFIG_AUDIO_INPUT_NONE
-        uint8_t ain_mode = audio_input_get_mode();
+        uint8_t ain_mode = ain_get_mode();
     #endif
 #endif
         if (!param->write.is_prep) {
@@ -198,7 +198,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
                     app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
     #ifndef CONFIG_AUDIO_INPUT_NONE
                     ain_mode = DEFAULT_AIN_MODE;
-                    audio_input_set_mode(ain_mode);
+                    ain_set_mode(ain_mode);
                     app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
     #endif
 #endif
@@ -212,7 +212,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
                     app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
     #ifndef CONFIG_AUDIO_INPUT_NONE
                     ain_mode = param->write.value[7];
-                    audio_input_set_mode(ain_mode);
+                    ain_set_mode(ain_mode);
                     app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
     #endif
 #endif

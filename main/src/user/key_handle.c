@@ -16,10 +16,10 @@
 
 #include "core/os.h"
 #include "user/vfx.h"
+#include "user/ain.h"
 #include "user/bt_av.h"
 #include "user/bt_spp.h"
 #include "user/ble_gatts.h"
-#include "user/audio_input.h"
 #include "user/audio_player.h"
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
@@ -33,7 +33,7 @@ void sleep_key_handle(void)
     vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-    audio_input_set_mode(0);
+    ain_set_mode(0);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
     audio_player_play_file(3);

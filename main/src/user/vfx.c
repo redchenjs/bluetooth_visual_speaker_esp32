@@ -18,7 +18,6 @@
 #include "user/vfx.h"
 #include "user/vfx_core.h"
 #include "user/vfx_bitmap.h"
-#include "user/audio_input.h"
 
 #define TAG "vfx"
 

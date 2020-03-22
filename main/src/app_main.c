@@ -16,9 +16,9 @@
 #include "user/led.h"
 #include "user/vfx.h"
 #include "user/key.h"
+#include "user/ain.h"
 #include "user/bt_app.h"
 #include "user/ble_app.h"
-#include "user/audio_input.h"
 #include "user/audio_player.h"
 #include "user/audio_render.h"
 
@@ -63,7 +63,7 @@ static void user_init(void)
 #endif
 
 #ifndef CONFIG_AUDIO_INPUT_NONE
-    audio_input_init();
+    ain_init();
 #endif
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT

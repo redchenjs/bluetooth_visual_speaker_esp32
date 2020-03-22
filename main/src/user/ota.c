@@ -18,12 +18,12 @@
 #include "core/os.h"
 #include "core/app.h"
 #include "user/vfx.h"
+#include "user/ain.h"
 #include "user/bt_av.h"
 #include "user/bt_app.h"
 #include "user/bt_spp.h"
 #include "user/ble_app.h"
 #include "user/ble_gatts.h"
-#include "user/audio_input.h"
 
 #define OTA_TAG "ota"
 
@@ -214,8 +214,8 @@ void ota_exec(esp_spp_cb_param_t *param)
                         vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-                        ain_prev_mode = audio_input_get_mode();
-                        audio_input_set_mode(0);
+                        ain_prev_mode = ain_get_mode();
+                        ain_set_mode(0);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
                         xEventGroupWaitBits(
@@ -285,7 +285,7 @@ void ota_exec(esp_spp_cb_param_t *param)
                     vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-                    audio_input_set_mode(0);
+                    ain_set_mode(0);
 #endif
                 }
 
@@ -356,7 +356,7 @@ void ota_end(void)
         data_length = 0;
 
 #ifndef CONFIG_AUDIO_INPUT_NONE
-        audio_input_set_mode(ain_prev_mode);
+        ain_set_mode(ain_prev_mode);
 #endif
 #ifdef CONFIG_ENABLE_VFX
         vfx->mode = vfx_prev_mode;

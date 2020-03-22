@@ -1,5 +1,5 @@
 /*
- * audio_input.c
+ * ain.c
  *
  *  Created on: 2019-07-05 21:22
  *      Author: Jack Chen <redchenjs@live.com>
@@ -16,13 +16,13 @@
 #include "core/app.h"
 #include "chip/i2s.h"
 #include "user/vfx.h"
-#include "user/audio_input.h"
+#include "user/ain.h"
 
 #define TAG "ain"
 
 static uint8_t ain_mode = DEFAULT_AIN_MODE;
 
-static void audio_input_task(void *pvParameters)
+static void ain_task(void *pvParameters)
 {
     char data[FFT_N * 4] = {0};
 
@@ -83,7 +83,7 @@ static void audio_input_task(void *pvParameters)
     }
 }
 
-void audio_input_set_mode(uint8_t idx)
+void ain_set_mode(uint8_t idx)
 {
 #ifndef CONFIG_AUDIO_INPUT_NONE
     ain_mode = idx;
@@ -97,17 +97,17 @@ void audio_input_set_mode(uint8_t idx)
 #endif
 }
 
-uint8_t audio_input_get_mode(void)
+uint8_t ain_get_mode(void)
 {
     return ain_mode;
 }
 
-void audio_input_init(void)
+void ain_init(void)
 {
     size_t length = sizeof(uint8_t);
     app_getenv("AIN_INIT_CFG", &ain_mode, &length);
 
-    audio_input_set_mode(ain_mode);
+    ain_set_mode(ain_mode);
 
-    xTaskCreatePinnedToCore(audio_input_task, "audioInputT", 1920, NULL, configMAX_PRIORITIES - 3, NULL, 0);
+    xTaskCreatePinnedToCore(ain_task, "ainT", 1920, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }
