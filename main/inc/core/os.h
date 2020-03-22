@@ -35,7 +35,6 @@ typedef enum user_event_group_bits {
 
     AUDIO_PLAYER_RUN_BIT  = BIT13,
     AUDIO_PLAYER_IDLE_BIT = BIT14,
-    AUDIO_PLAYER_EXIT_BIT = BIT15,
 } user_event_group_bits_t;
 
 extern EventGroupHandle_t user_event_group;

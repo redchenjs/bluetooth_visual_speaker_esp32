@@ -54,9 +54,9 @@ static void audio_player_task(void *pvParameters)
     while (1) {
         xEventGroupWaitBits(
             user_event_group,
-            AUDIO_PLAYER_RUN_BIT | AUDIO_PLAYER_EXIT_BIT,
+            AUDIO_PLAYER_RUN_BIT | AUDIO_RENDER_CLR_BIT,
             pdFALSE,
-            pdFALSE,
+            pdTRUE,
             portMAX_DELAY
         );
 
@@ -128,25 +128,16 @@ void audio_player_play_file(uint8_t idx)
     if (mp3_file_ptr[idx][0] == NULL || mp3_file_ptr[idx][1] == NULL) {
         return;
     }
+
     mp3_file_index = idx;
+
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-    if (uxBits & AUDIO_PLAYER_EXIT_BIT) {
-        return;
-    }
     if (uxBits & AUDIO_PLAYER_RUN_BIT) {
-        // previous playback is still not complete
         playback_pending = 1;
     } else {
         xEventGroupClearBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
         xEventGroupSetBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
     }
-    xEventGroupWaitBits(
-        user_event_group,
-        AUDIO_RENDER_CLR_BIT,
-        pdFALSE,
-        pdFALSE,
-        portMAX_DELAY
-    );
 #endif
 }
 
