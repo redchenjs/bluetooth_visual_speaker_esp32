@@ -17,7 +17,6 @@
 
 #include "core/os.h"
 #include "core/app.h"
-#include "chip/i2s.h"
 #include "user/vfx.h"
 #include "user/bt_av.h"
 #include "user/bt_app.h"
@@ -227,7 +226,6 @@ void ota_exec(esp_spp_cb_param_t *param)
                             portMAX_DELAY
                         );
 #endif
-                        i2s_output_deinit();
                     }
 
                     update_partition = esp_ota_get_next_update_partition(NULL);
@@ -357,7 +355,6 @@ void ota_end(void)
 
         data_length = 0;
 
-        i2s_output_init();
 #ifndef CONFIG_AUDIO_INPUT_NONE
         audio_input_set_mode(ain_prev_mode);
 #endif
