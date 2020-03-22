@@ -95,6 +95,6 @@ void key_init(void)
 {
     xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
 
-    xTaskCreatePinnedToCore(key_task, "keyT", 2048, NULL, 9, NULL, 1);
+    xTaskCreatePinnedToCore(key_task, "keyT", 1280, NULL, 9, NULL, 1);
 }
 #endif

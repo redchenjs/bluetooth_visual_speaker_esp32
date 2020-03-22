@@ -259,7 +259,7 @@ void ota_exec(esp_spp_cb_param_t *param)
 
                         ota_send_response(RSP_IDX_OK);
 
-                        xTaskCreatePinnedToCore(ota_write_task, "otaWriteT", 4096, NULL, 9, NULL, 1);
+                        xTaskCreatePinnedToCore(ota_write_task, "otaWriteT", 1920, NULL, 9, NULL, 1);
                     }
                 } else if (uxBits & BT_OTA_LOCKED_BIT
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
