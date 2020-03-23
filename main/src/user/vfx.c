@@ -324,11 +324,11 @@ static void vfx_task(void *pvParameter)
             const uint8_t vu_width = 10;
             const uint8_t vu_step = 6;
 #endif
-            static int8_t vu_peak_value[24] = {0};
-            static int8_t vu_peak_delay[24] = {0};
-            static int8_t vu_drop_delay[24] = {0};
-            const int8_t vu_peak_delay_init = 9;
-            const int8_t vu_drop_delay_init = 3;
+            static uint8_t vu_peak_value[24] = {0};
+            static uint8_t vu_peak_delay[24] = {0};
+            static uint8_t vu_drop_delay[24] = {0};
+            const uint8_t vu_peak_delay_init = 9;
+            const uint8_t vu_drop_delay_init = 3;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
@@ -657,11 +657,11 @@ static void vfx_task(void *pvParameter)
             const uint8_t vu_width = 10;
             const uint8_t vu_step = 6;
 #endif
-            static int8_t vu_peak_value[24] = {0};
-            static int8_t vu_peak_delay[24] = {0};
-            static int8_t vu_drop_delay[24] = {0};
-            const int8_t vu_peak_delay_init = 9;
-            const int8_t vu_drop_delay_init = 3;
+            static uint8_t vu_peak_value[24] = {0};
+            static uint8_t vu_peak_delay[24] = {0};
+            static uint8_t vu_drop_delay[24] = {0};
+            const uint8_t vu_peak_delay_init = 9;
+            const uint8_t vu_drop_delay_init = 3;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
