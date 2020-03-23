@@ -63,7 +63,8 @@ static void audio_buffer_reset(void)
 
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
     if (uxBits & BT_A2DP_DATA_BIT) {
-        goto reset_abort;
+        xTaskResumeAll();
+        return;
     }
 
 #ifdef CONFIG_ENABLE_VFX
@@ -76,7 +77,6 @@ static void audio_buffer_reset(void)
     memset(&buff_struct, 0x00, sizeof(StaticRingbuffer_t));
     audio_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
 
-reset_abort:
     xTaskResumeAll();
 }
 
@@ -103,29 +103,28 @@ static void audio_render_task(void *pvParameter)
             xEventGroupSetBits(user_event_group, AUDIO_RENDER_CLR_BIT);
         }
 
+        taskYIELD();
+
         if (start) {
             remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
 
             if (remain >= 512) {
+                count = 0;
+
                 data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, 512);
-            } else if (remain > 0) {
-                if ((remain % 4) != 0) {
-                    taskYIELD();
-                    continue;
-                }
+            } else if (remain > 0 && !(remain % 4)) {
+                count = 0;
 
                 data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, remain);
             } else {
-                do {
+                if (++count < 160) {
                     vTaskDelay(1 / portTICK_RATE_MS);
 
-                    remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
-                } while (remain == 0 && ++count < 16);
-
-                if (remain == 0) {
-                    clear = false;
-                    start = false;
+                    continue;
                 }
+
+                clear = false;
+                start = false;
 
                 count = 0;
 
