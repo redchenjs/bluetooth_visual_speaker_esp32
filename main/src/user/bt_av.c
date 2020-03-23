@@ -241,7 +241,7 @@ static void bt_av_notify_evt_handler(uint8_t event_id, esp_avrc_rn_param_t *even
 {
     switch (event_id) {
     case ESP_AVRC_RN_TRACK_CHANGE:
-        ESP_LOGI(BT_RC_RN_TAG, "Track changed");
+        ESP_LOGI(BT_RC_RN_TAG, "Track changed.");
         bt_av_new_track();
         break;
     case ESP_AVRC_RN_PLAY_STATUS_CHANGE:
