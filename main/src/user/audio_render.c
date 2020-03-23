@@ -22,7 +22,7 @@
 
 #define TAG "audio_render"
 
-static uint8_t buff_data[8*1024] = {0};
+static uint8_t buff_data[10*1024] = {0};
 static StaticRingbuffer_t buff_struct = {0};
 
 RingbufHandle_t audio_buff = NULL;
@@ -117,7 +117,7 @@ static void audio_render_task(void *pvParameter)
 
                 data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, remain);
             } else {
-                if (++count < 160) {
+                if (++count < 200) {
                     vTaskDelay(1 / portTICK_RATE_MS);
 
                     continue;
