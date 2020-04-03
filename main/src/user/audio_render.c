@@ -212,5 +212,5 @@ void audio_render_init(void)
     memset(&buff_struct, 0x00, sizeof(StaticRingbuffer_t));
     audio_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
 
-    xTaskCreatePinnedToCore(audio_render_task, "audioRenderT", 1536, NULL, configMAX_PRIORITIES - 3, NULL, 0);
+    xTaskCreatePinnedToCore(audio_render_task, "audioRenderT", 1920, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }
