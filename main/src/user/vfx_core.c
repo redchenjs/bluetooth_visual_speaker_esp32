@@ -15,23 +15,54 @@
 #include "user/vfx.h"
 #include "user/vfx_core.h"
 #include "user/vfx_bitmap.h"
-#include "user/vfx_color_table.h"
 
-inline uint32_t vfx_read_color_from_table(uint16_t color_h, uint16_t color_l)
+static float hue2rgb(float v1, float v2, float vH)
 {
-    uint16_t table_x = color_h;
-    uint16_t table_y = 511 - color_l;
+    if (vH < 0) vH += 1.0;
+    if (vH > 1) vH -= 1.0;
 
-    uint8_t *pixel_addr = (uint8_t *)vfx_color_table_512 + (table_x + table_y * 512) * 3;
-    uint32_t pixel_color = *(pixel_addr + 0) << 16 | *(pixel_addr + 1) << 8 | *(pixel_addr + 2);
+    if (6.0 * vH < 1) return v1 + (v2 - v1) * 6.0 * vH;
+    if (2.0 * vH < 1) return v2;
+    if (3.0 * vH < 2) return v1 + (v2 - v1) * ((2.0 / 3.0) - vH) * 6.0;
 
-    return pixel_color;
+    return v1;
+}
+
+static uint32_t hsl2rgb(float H, float S, float L)
+{
+    uint8_t R, G, B;
+    float var_1, var_2;
+
+    if (S == 0.0) {
+        R = L * 255.0;
+        G = L * 255.0;
+        B = L * 255.0;
+    } else {
+        if (L < 0.5) {
+            var_2 = L * (1 + S);
+        } else {
+            var_2 = (L + S) - (S * L);
+        }
+
+        var_1 = 2.0 * L - var_2;
+
+        R = 255.0 * hue2rgb(var_1, var_2, H + (1.0 / 3.0));
+        G = 255.0 * hue2rgb(var_1, var_2, H);
+        B = 255.0 * hue2rgb(var_1, var_2, H - (1.0 / 3.0));
+    }
+
+    return (uint32_t)(R << 16 | G << 8 | B);
+}
+
+uint32_t vfx_get_color(uint16_t color_h, uint16_t color_l)
+{
+    return hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 }
 
 #ifndef CONFIG_SCREEN_PANEL_OUTPUT_VFX
 void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, uint16_t color_h, uint16_t color_l)
 {
-    uint32_t pixel_color = vfx_read_color_from_table(color_h, color_l);
+    uint32_t pixel_color = vfx_get_color(color_h, color_l);
     uint8_t pixel_x = x + y * 8;
     uint8_t pixel_y = z;
 

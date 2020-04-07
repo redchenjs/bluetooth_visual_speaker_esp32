@@ -160,7 +160,7 @@ static void vfx_task(void *pvParameter)
 
                 color_tmp = color_h;
                 for (uint16_t i=0; i<vfx_disp_width; i++) {
-                    uint32_t pixel_color = vfx_read_color_from_table(color_h, color_l);
+                    uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
@@ -260,7 +260,7 @@ static void vfx_task(void *pvParameter)
 
                 color_h = 511;
                 for (uint16_t i=0; i<vfx_disp_width; i++) {
-                    uint32_t pixel_color = vfx_read_color_from_table(color_h, color_l);
+                    uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
@@ -401,12 +401,12 @@ static void vfx_task(void *pvParameter)
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
                     }
 
-                    uint32_t peak_color = vfx_read_color_from_table(80, color_l);
+                    uint32_t peak_color = vfx_get_color(80, color_l);
                     gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
 
                     color_h = 511;
                     for (int8_t j=vu_val_max; j>=vu_val_min; j--) {
-                        uint32_t pixel_color = vfx_read_color_from_table(color_h, color_l);
+                        uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
                         if (j == vu_peak_value[i]) {
                             continue;
@@ -486,7 +486,7 @@ static void vfx_task(void *pvParameter)
 
                 color_tmp = color_h;
                 for (uint16_t i=0; i<vfx_disp_width; i++) {
-                    uint32_t pixel_color = vfx_read_color_from_table(color_h, color_l);
+                    uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
@@ -590,7 +590,7 @@ static void vfx_task(void *pvParameter)
 
                 color_h = 511;
                 for (uint16_t i=0; i<vfx_disp_width; i++) {
-                    uint32_t pixel_color = vfx_read_color_from_table(color_h, color_l);
+                    uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
@@ -734,12 +734,12 @@ static void vfx_task(void *pvParameter)
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
                     }
 
-                    uint32_t peak_color = vfx_read_color_from_table(80, color_l);
+                    uint32_t peak_color = vfx_get_color(80, color_l);
                     gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
 
                     color_h = 511;
                     for (int8_t j=vu_val_max; j>=vu_val_min; j--) {
-                        uint32_t pixel_color = vfx_read_color_from_table(color_h, color_l);
+                        uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
                         if (j == vu_peak_value[i]) {
                             continue;
