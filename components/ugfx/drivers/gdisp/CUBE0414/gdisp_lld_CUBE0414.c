@@ -46,6 +46,28 @@
 
 #include "CUBE0414.h"
 
+static uint8_t init_ram_addr[64] = {
+#ifdef CONFIG_CUBE0414_LINE_S_CURVE
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x0f,
+    0x10, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
+    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x1f,
+    0x20, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e,
+    0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x2f,
+    0x30, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e,
+    0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x3f,
+    0x00, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e,
+#else
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
+    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+    0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20,
+    0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+    0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30,
+    0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
+    0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f, 0x00,
+#endif
+};
+
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     g->priv = gfxAlloc(GDISP_SCREEN_HEIGHT * GDISP_SCREEN_WIDTH * 3);
     if (g->priv == NULL) {
@@ -59,8 +81,12 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     // Initialise the board interface
     init_board(g);
 
+    // Write RAM Addr
+    write_cmd(g, CUBE0414_ADDR_WR);
+    write_buff(g, init_ram_addr, sizeof(init_ram_addr));
+
     // Refresh GRAM
-    write_cmd(g, CUBE0414_RAMWR);
+    write_cmd(g, CUBE0414_DATA_WR);
     write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_HEIGHT*GDISP_SCREEN_WIDTH*3);
 
     /* Initialise the GDISP structure */
@@ -96,8 +122,8 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     }
     LLDSPEC void gdisp_lld_write_color(GDisplay *g) {
         LLDCOLOR_TYPE c = gdispColor2Native(g->p.color);
-        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 0) = c >> 16;
-        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 1) = c >> 8;
+        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 0) = c >> 8;
+        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 1) = c >> 16;
         *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 2) = c;
         stream_write_x++;
         if (--stream_write_cx <= 0) {
@@ -131,8 +157,8 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         stream_read_cy = g->p.cy;
     }
     LLDSPEC color_t gdisp_lld_read_color(GDisplay *g) {
-        LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 0) << 16)
-                        | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 1) << 8)
+        LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 0) << 8)
+                        | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 1) << 16)
                         | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 2));
         stream_read_x++;
         if (--stream_read_cx <= 0) {

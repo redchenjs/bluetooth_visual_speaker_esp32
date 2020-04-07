@@ -210,23 +210,31 @@ choice AUDIO_INPUT_FFT_CHANNEL
         bool "Both Channel"
 endchoice
 
-config LIGHT_CUBE_DC_PIN
-    int "Light Cube DC Pin"
-    default 23
+choice CUBE0414_LINE_TYPE
+    prompt "CUBE0414 Line Type"
+    default CUBE0414_LINE_S_CURVE
     depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    help
+        Select CUBE0414 line type.
 
-config SCREEN_PANEL_RST_PIN
-    int "Screen Panel RST Pin"
+config CUBE0414_LINE_NORMAL
+    bool "Normal"
+config CUBE0414_LINE_S_CURVE
+    bool "S Curve"
+endchoice
+
+config DEVICE_RST_PIN
+    int "Device RST Pin"
     default 14
     depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
 
-config SCREEN_PANEL_DC_PIN
-    int "Screen Panel DC Pin"
+config DEVICE_DC_PIN
+    int "Device DC Pin"
     default 23
-    depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
+    depends on ENABLE_VFX
 
-config SCREEN_PANEL_BL_PIN
-    int "Screen Panel BL Pin"
+config DEVICE_BL_PIN
+    int "Device BL Pin"
     default 4
     depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
 

@@ -26,10 +26,10 @@ void st7735_init_board(void)
 {
     memset(hspi_trans, 0x00, sizeof(hspi_trans));
 
-    gpio_set_direction(CONFIG_SCREEN_PANEL_DC_PIN,  GPIO_MODE_OUTPUT);
-    gpio_set_direction(CONFIG_SCREEN_PANEL_RST_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_level(CONFIG_SCREEN_PANEL_DC_PIN,  0);
-    gpio_set_level(CONFIG_SCREEN_PANEL_RST_PIN, 0);
+    gpio_set_direction(CONFIG_DEVICE_DC_PIN,  GPIO_MODE_OUTPUT);
+    gpio_set_direction(CONFIG_DEVICE_RST_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_level(CONFIG_DEVICE_DC_PIN,  0);
+    gpio_set_level(CONFIG_DEVICE_RST_PIN, 0);
 
     ledc_timer_config_t ledc_timer = {
         .duty_resolution = LEDC_TIMER_8_BIT,
@@ -43,7 +43,7 @@ void st7735_init_board(void)
     ledc_channel_config_t ledc_channel = {
         .channel    = LEDC_CHANNEL_0,
         .duty       = 0,
-        .gpio_num   = CONFIG_SCREEN_PANEL_BL_PIN,
+        .gpio_num   = CONFIG_DEVICE_BL_PIN,
         .speed_mode = LEDC_HIGH_SPEED_MODE,
         .hpoint     = 0,
         .timer_sel  = LEDC_TIMER_0,
@@ -52,7 +52,7 @@ void st7735_init_board(void)
 
     ledc_fade_func_install(0);
 
-    ESP_LOGI(TAG, "initialized, bl: %d, dc: %d, rst: %d", CONFIG_SCREEN_PANEL_BL_PIN, CONFIG_SCREEN_PANEL_DC_PIN, CONFIG_SCREEN_PANEL_RST_PIN);
+    ESP_LOGI(TAG, "initialized, bl: %d, dc: %d, rst: %d", CONFIG_DEVICE_BL_PIN, CONFIG_DEVICE_DC_PIN, CONFIG_DEVICE_RST_PIN);
 }
 
 void st7735_set_backlight(uint8_t val)
@@ -64,12 +64,12 @@ void st7735_set_backlight(uint8_t val)
 void st7735_setpin_dc(spi_transaction_t *t)
 {
     int dc = (int)t->user;
-    gpio_set_level(CONFIG_SCREEN_PANEL_DC_PIN, dc);
+    gpio_set_level(CONFIG_DEVICE_DC_PIN, dc);
 }
 
 void st7735_setpin_reset(uint8_t val)
 {
-    gpio_set_level(CONFIG_SCREEN_PANEL_RST_PIN, val);
+    gpio_set_level(CONFIG_DEVICE_RST_PIN, val);
 }
 
 void st7735_write_cmd(uint8_t cmd)
