@@ -258,7 +258,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                color_h = 511;
+                color_h = 0;
                 for (uint16_t i=0; i<vfx_disp_width; i++) {
                     uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
@@ -287,8 +287,8 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if ((color_h -= 8) == 7) {
-                        color_h = 511;
+                    if ((color_h += 8) == 512) {
+                        color_h = 0;
                     }
                 }
 
@@ -401,10 +401,10 @@ static void vfx_task(void *pvParameter)
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
                     }
 
-                    uint32_t peak_color = vfx_get_color(80, color_l);
+                    uint32_t peak_color = vfx_get_color(432, color_l);
                     gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
 
-                    color_h = 511;
+                    color_h = 0;
                     for (int8_t j=vu_val_max; j>=vu_val_min; j--) {
                         uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
@@ -418,7 +418,7 @@ static void vfx_task(void *pvParameter)
                             gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, pixel_color);
                         }
 
-                        color_h -= vu_step;
+                        color_h += vu_step;
                     }
                 }
 
@@ -588,7 +588,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                color_h = 511;
+                color_h = 0;
                 for (uint16_t i=0; i<vfx_disp_width; i++) {
                     uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
@@ -620,7 +620,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, 0x000000);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if ((color_h -= 8) == 7) {
+                    if ((color_h += 8) == 512) {
                         color_h = 511;
                     }
                 }
@@ -734,10 +734,10 @@ static void vfx_task(void *pvParameter)
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
                     }
 
-                    uint32_t peak_color = vfx_get_color(80, color_l);
+                    uint32_t peak_color = vfx_get_color(432, color_l);
                     gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
 
-                    color_h = 511;
+                    color_h = 0;
                     for (int8_t j=vu_val_max; j>=vu_val_min; j--) {
                         uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
@@ -751,7 +751,7 @@ static void vfx_task(void *pvParameter)
                             gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, pixel_color);
                         }
 
-                        color_h -= vu_step;
+                        color_h += vu_step;
                     }
                 }
 
@@ -930,7 +930,7 @@ static void vfx_task(void *pvParameter)
 
             for (uint16_t i=0; i<=511; i++) {
                 led_idx[i] = i;
-                color_h[i] = i % 80;
+                color_h[i] = i % 80 + 432;
             }
 
             for (uint16_t i=0; i<=511; i++) {
@@ -995,7 +995,7 @@ static void vfx_task(void *pvParameter)
 
             for (uint16_t i=0; i<=511; i++) {
                 led_idx[i] = i;
-                color_h[i] = i % 85 + 345;
+                color_h[i] = i % 85 + 80;
             }
 
             for (uint16_t i=0; i<=511; i++) {
@@ -1060,7 +1060,7 @@ static void vfx_task(void *pvParameter)
 
             for (uint16_t i=0; i<=511; i++) {
                 led_idx[i] = i;
-                color_h[i] = i % 80 + 170;
+                color_h[i] = i % 80 + 260;
             }
 
             for (uint16_t i=0; i<=511; i++) {
@@ -1355,7 +1355,7 @@ loop_break:
                     }
                 }
 
-                color_h = 511;
+                color_h = 0;
                 for (uint16_t i=0; i<canvas_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
@@ -1385,8 +1385,8 @@ loop_break:
                         }
                     }
 
-                    if ((color_h -= 8) == 7) {
-                        color_h = 511;
+                    if ((color_h += 8) == 512) {
+                        color_h = 0;
                     }
                 }
 
@@ -1609,8 +1609,8 @@ loop_break:
                                   color_h[i], color_l[i]);
 
                     if (color_flg) {
-                        if (color_h[i]-- == 0) {
-                            color_h[i] = 511;
+                        if (color_h[i]++ == 511) {
+                            color_h[i] = 0;
                         }
                     }
                 }
@@ -1686,7 +1686,7 @@ loop_break:
                     }
                 }
 
-                color_h = 511;
+                color_h = 0;
                 for (uint16_t i=0; i<canvas_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
@@ -1716,8 +1716,8 @@ loop_break:
                         }
                     }
 
-                    if ((color_h -= 8) == 7) {
-                        color_h = 511;
+                    if ((color_h += 8) == 512) {
+                        color_h = 0;
                     }
                 }
 
@@ -1940,8 +1940,8 @@ loop_break:
                                   color_h[i], color_l[i]);
 
                     if (color_flg) {
-                        if (color_h[i]-- == 0) {
-                            color_h[i] = 511;
+                        if (color_h[i]++ == 511) {
+                            color_h[i] = 0;
                         }
                     }
                 }
