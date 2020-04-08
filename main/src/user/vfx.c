@@ -187,12 +187,12 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (color_h++ == 511) {
+                    if (++color_h == 512) {
                         color_h = 0;
                     }
                 }
 
-                if (color_tmp++ == 511) {
+                if (++color_tmp == 512) {
                     color_h = 0;
                 } else {
                     color_h = color_tmp;
@@ -516,12 +516,12 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, 0x000000);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (color_h++ == 511) {
+                    if (++color_h == 512) {
                         color_h = 0;
                     }
                 }
 
-                if (color_tmp++ == 511) {
+                if (++color_tmp == 512) {
                     color_h = 0;
                 } else {
                     color_h = color_tmp;
@@ -621,7 +621,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
                     if ((color_h += 8) == 512) {
-                        color_h = 511;
+                        color_h = 0;
                     }
                 }
 
@@ -791,18 +791,18 @@ static void vfx_task(void *pvParameter)
                 while (1) {
                     vfx_draw_pixel(x, y, z, color_h, color_l);
 
-                    if (x++ == 7) {
+                    if (++x == 8) {
                         x = 0;
-                        if (y++ == 7) {
+                        if (++y == 8) {
                             y = 0;
-                            if (z++ == 7) {
+                            if (++z == 8) {
                                 z = 0;
                                 break;
                             }
                         }
                     }
 
-                    if (color_h++ == 511) {
+                    if (++color_h == 512) {
                         color_h = 0;
                     }
                 }
@@ -834,20 +834,20 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, i, color_h, color_l);
                     }
 
-                    if (x++ == 7) {
+                    if (++x == 8) {
                         x = 0;
-                        if (y++ == 7) {
+                        if (++y == 8) {
                             y = 0;
                             break;
                         }
                     }
 
-                    if (color_h++ == 511) {
+                    if (++color_h == 512) {
                         color_h = 0;
                     }
                 }
 
-                if (color_tmp++ == 511) {
+                if (++color_tmp == 512) {
                     color_h = 0;
                 } else {
                     color_h = color_tmp;
@@ -873,7 +873,7 @@ static void vfx_task(void *pvParameter)
 
                 vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, color_l);
 
-                if (color_h++ == 511) {
+                if (++color_h == 512) {
                     color_h = 0;
                 }
 
@@ -928,19 +928,19 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 80 + 432;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
                 led_idx[rnd] = led_idx[i];
                 led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
                 color_h[rnd] = color_h[i];
@@ -964,7 +964,7 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
                     }
 
-                    if ((idx_base + led_num) <= 511) {
+                    if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
@@ -974,7 +974,7 @@ static void vfx_task(void *pvParameter)
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
 
-                if (idx_base++ == 511) {
+                if (++idx_base == 512) {
                     idx_base = -led_num;
                 }
             }
@@ -993,19 +993,19 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 85 + 80;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
                 led_idx[rnd] = led_idx[i];
                 led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
                 color_h[rnd] = color_h[i];
@@ -1029,7 +1029,7 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
                     }
 
-                    if ((idx_base + led_num) <= 511) {
+                    if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
@@ -1039,7 +1039,7 @@ static void vfx_task(void *pvParameter)
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
 
-                if (idx_base++ == 511) {
+                if (++idx_base == 512) {
                     idx_base = -led_num;
                 }
             }
@@ -1058,19 +1058,19 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 80 + 260;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
                 led_idx[rnd] = led_idx[i];
                 led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
                 color_h[rnd] = color_h[i];
@@ -1094,7 +1094,7 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
                     }
 
-                    if ((idx_base + led_num) <= 511) {
+                    if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
@@ -1104,7 +1104,7 @@ static void vfx_task(void *pvParameter)
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
 
-                if (idx_base++ == 511) {
+                if (++idx_base == 512) {
                     idx_base = -led_num;
                 }
             }
@@ -1137,7 +1137,7 @@ loop_break:
                     color_h = 0;
                 }
 
-                if (num++ == 9) {
+                if (++num == 10) {
                     num = 0;
                 }
 
@@ -1174,13 +1174,13 @@ loop_break:
                     layer1++;
                     layer0++;
                 } else if (layer1 == 7) {
-                    if (layer0++ == 7) {
+                    if (++layer0 == 8) {
                         vfx_draw_layer_number(num, 7, 0, 0);
 
                         layer0 = 0;
                         layer1 = 0;
 
-                        if (num++ == 9) {
+                        if (++num == 10) {
                             num = 0;
                         }
                     } else {
@@ -1197,7 +1197,7 @@ loop_break:
                     }
                 }
 
-                if (color_h++ == 511) {
+                if (++color_h == 512) {
                     color_h = 0;
                 }
 
@@ -1222,7 +1222,7 @@ loop_break:
 
                 vfx_draw_cube_bitmap(vfx_bitmap_wave[frame_idx], vfx.lightness);
 
-                if (frame_idx++ == 44) {
+                if (++frame_idx == 45) {
                     frame_idx = 8;
                 }
 
@@ -1250,12 +1250,12 @@ loop_break:
                 for (uint8_t i=0; i<8; i++) {
                     vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx], vfx.lightness);
 
-                    if (frame_idx++ == 27) {
+                    if (++frame_idx == 28) {
                         frame_idx = 0;
                     }
                 }
 
-                if (frame_pre++ == 27) {
+                if (++frame_pre == 28) {
                     frame_idx = 0;
                 } else {
                     frame_idx = frame_pre;
@@ -1337,7 +1337,7 @@ loop_break:
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor;
+                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor * 8;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1346,7 +1346,7 @@ loop_break:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor;
+                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1378,9 +1378,9 @@ loop_break:
                                   fill_cx, fill_cy, fill_cz,
                                   color_h, color_l);
 
-                    if (y++ == 7) {
+                    if (++y == 8) {
                         y = 0;
-                        if (x++ == 7) {
+                        if (++x == 8) {
                             x = 0;
                         }
                     }
@@ -1438,7 +1438,7 @@ loop_break:
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor;
+                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor * 8;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1447,7 +1447,7 @@ loop_break:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor;
+                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1479,9 +1479,9 @@ loop_break:
                                   fill_cx, fill_cy, fill_cz,
                                   color_h, color_l);
 
-                    if (y++ == 7) {
+                    if (++y == 8) {
                         y = 0;
-                        if (x++ == 7) {
+                        if (++x == 8) {
                             x = 0;
                         }
                     }
@@ -1491,7 +1491,7 @@ loop_break:
                     }
                 }
 
-                if (color_cnt++ == 7) {
+                if (++color_cnt == 8) {
                     color_cnt = 0;
                     if ((color_tmp += 8) == 512) {
                         color_tmp = 0;
@@ -1565,7 +1565,7 @@ loop_break:
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor;
+                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor * 8;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1574,7 +1574,7 @@ loop_break:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor;
+                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1609,13 +1609,13 @@ loop_break:
                                   color_h[i], color_l[i]);
 
                     if (color_flg) {
-                        if (color_h[i]++ == 511) {
+                        if (++color_h[i] == 512) {
                             color_h[i] = 0;
                         }
                     }
                 }
 
-                if (color_cnt++ == 1) {
+                if (++color_cnt == 2) {
                     color_cnt = 0;
                     color_flg = 1;
                 } else {
@@ -1668,7 +1668,7 @@ loop_break:
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor;
+                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 8;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1677,7 +1677,7 @@ loop_break:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor;
+                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1709,9 +1709,9 @@ loop_break:
                                   fill_cx, fill_cy, fill_cz,
                                   color_h, color_l);
 
-                    if (y++ == 7) {
+                    if (++y == 8) {
                         y = 0;
-                        if (x++ == 7) {
+                        if (++x == 8) {
                             x = 0;
                         }
                     }
@@ -1769,7 +1769,7 @@ loop_break:
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor;
+                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 8;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1778,7 +1778,7 @@ loop_break:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor;
+                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1810,9 +1810,9 @@ loop_break:
                                   fill_cx, fill_cy, fill_cz,
                                   color_h, color_l);
 
-                    if (y++ == 7) {
+                    if (++y == 8) {
                         y = 0;
-                        if (x++ == 7) {
+                        if (++x == 8) {
                             x = 0;
                         }
                     }
@@ -1822,7 +1822,7 @@ loop_break:
                     }
                 }
 
-                if (color_cnt++ == 7) {
+                if (++color_cnt == 8) {
                     color_cnt = 0;
                     if ((color_tmp += 8) == 512) {
                         color_tmp = 0;
@@ -1896,7 +1896,7 @@ loop_break:
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor;
+                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 8;
                     if (fft_out[0] > canvas_height) {
                         fft_out[0] = canvas_height;
                     } else if (fft_out[0] < 1) {
@@ -1905,7 +1905,7 @@ loop_break:
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor;
+                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
                         } else if (fft_out[k] < 1) {
@@ -1940,13 +1940,13 @@ loop_break:
                                   color_h[i], color_l[i]);
 
                     if (color_flg) {
-                        if (color_h[i]++ == 511) {
+                        if (++color_h[i] == 512) {
                             color_h[i] = 0;
                         }
                     }
                 }
 
-                if (color_cnt++ == 1) {
+                if (++color_cnt == 2) {
                     color_cnt = 0;
                     color_flg = 1;
                 } else {
