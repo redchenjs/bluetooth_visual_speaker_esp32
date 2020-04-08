@@ -140,7 +140,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor;
+                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                     if (fft_out[0] > vfx_disp_height) {
                         fft_out[0] = vfx_disp_height;
                     } else if (fft_out[0] < 1) {
@@ -149,7 +149,7 @@ static void vfx_task(void *pvParameter)
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor;
+                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                         if (fft_out[k] > vfx_disp_height) {
                             fft_out[k] = vfx_disp_height;
                         } else if (fft_out[k] < 1) {
@@ -240,7 +240,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor;
+                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                     if (fft_out[0] > vfx_disp_height) {
                         fft_out[0] = vfx_disp_height;
                     } else if (fft_out[0] < 1) {
@@ -249,7 +249,7 @@ static void vfx_task(void *pvParameter)
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor;
+                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                         if (fft_out[k] > vfx_disp_height) {
                             fft_out[k] = vfx_disp_height;
                         } else if (fft_out[k] < 1) {
@@ -466,7 +466,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor;
+                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                     if (fft_out[0] > center_y) {
                         fft_out[0] = center_y;
                     } else if (fft_out[0] < 0) {
@@ -475,7 +475,7 @@ static void vfx_task(void *pvParameter)
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor;
+                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
                         } else if (fft_out[k] < 0) {
@@ -570,7 +570,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
 
                     fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor;
+                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                     if (fft_out[0] > center_y) {
                         fft_out[0] = center_y;
                     } else if (fft_out[0] < 0) {
@@ -579,7 +579,7 @@ static void vfx_task(void *pvParameter)
 
                     for (uint16_t k=1; k<FFT_N/2; k++) {
                         fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor;
+                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
                         } else if (fft_out[k] < 0) {
