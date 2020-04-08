@@ -187,12 +187,12 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (color_h++ == 511) {
+                    if ((color_h++) == 512) {
                         color_h = 0;
                     }
                 }
 
-                if (color_tmp++ == 511) {
+                if ((color_tmp++) == 512) {
                     color_h = 0;
                 } else {
                     color_h = color_tmp;
@@ -516,12 +516,12 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, 0x000000);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (color_h++ == 511) {
+                    if ((color_h++) == 512) {
                         color_h = 0;
                     }
                 }
 
-                if (color_tmp++ == 511) {
+                if ((color_tmp++) == 512) {
                     color_h = 0;
                 } else {
                     color_h = color_tmp;
@@ -621,7 +621,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
                     if ((color_h += 8) == 512) {
-                        color_h = 511;
+                        color_h = 0;
                     }
                 }
 
@@ -802,7 +802,7 @@ static void vfx_task(void *pvParameter)
                         }
                     }
 
-                    if (color_h++ == 511) {
+                    if ((color_h++) == 512) {
                         color_h = 0;
                     }
                 }
@@ -842,12 +842,12 @@ static void vfx_task(void *pvParameter)
                         }
                     }
 
-                    if (color_h++ == 511) {
+                    if ((color_h++) == 512) {
                         color_h = 0;
                     }
                 }
 
-                if (color_tmp++ == 511) {
+                if ((color_tmp++) == 512) {
                     color_h = 0;
                 } else {
                     color_h = color_tmp;
@@ -873,7 +873,7 @@ static void vfx_task(void *pvParameter)
 
                 vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, color_l);
 
-                if (color_h++ == 511) {
+                if ((color_h++) == 512) {
                     color_h = 0;
                 }
 
@@ -928,19 +928,19 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 80 + 432;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
                 led_idx[rnd] = led_idx[i];
                 led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
                 color_h[rnd] = color_h[i];
@@ -964,7 +964,7 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
                     }
 
-                    if ((idx_base + led_num) <= 511) {
+                    if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
@@ -974,7 +974,7 @@ static void vfx_task(void *pvParameter)
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
 
-                if (idx_base++ == 511) {
+                if ((idx_base++) == 512) {
                     idx_base = -led_num;
                 }
             }
@@ -993,19 +993,19 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 85 + 80;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
                 led_idx[rnd] = led_idx[i];
                 led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
                 color_h[rnd] = color_h[i];
@@ -1029,7 +1029,7 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
                     }
 
-                    if ((idx_base + led_num) <= 511) {
+                    if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
@@ -1039,7 +1039,7 @@ static void vfx_task(void *pvParameter)
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
 
-                if (idx_base++ == 511) {
+                if ((idx_base++) == 512) {
                     idx_base = -led_num;
                 }
             }
@@ -1058,19 +1058,19 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 80 + 260;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
                 led_idx[rnd] = led_idx[i];
                 led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<=511; i++) {
+            for (uint16_t i=0; i<512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
                 color_h[rnd] = color_h[i];
@@ -1094,7 +1094,7 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
                     }
 
-                    if ((idx_base + led_num) <= 511) {
+                    if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
@@ -1104,7 +1104,7 @@ static void vfx_task(void *pvParameter)
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
                 }
 
-                if (idx_base++ == 511) {
+                if ((idx_base++) == 512) {
                     idx_base = -led_num;
                 }
             }
@@ -1197,7 +1197,7 @@ loop_break:
                     }
                 }
 
-                if (color_h++ == 511) {
+                if ((color_h++) == 512) {
                     color_h = 0;
                 }
 
@@ -1609,7 +1609,7 @@ loop_break:
                                   color_h[i], color_l[i]);
 
                     if (color_flg) {
-                        if (color_h[i]++ == 511) {
+                        if ((color_h[i]++) == 512) {
                             color_h[i] = 0;
                         }
                     }
@@ -1940,7 +1940,7 @@ loop_break:
                                   color_h[i], color_l[i]);
 
                     if (color_flg) {
-                        if (color_h[i]++ == 511) {
+                        if ((color_h[i]++) == 512) {
                             color_h[i] = 0;
                         }
                     }

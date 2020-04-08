@@ -125,17 +125,15 @@ void vfx_draw_cube_bitmap(const uint8_t *bitmap, uint16_t color_l)
                     }
                 }
 
-                if (color_h++ == 511) {
+                if ((color_h++) == 512) {
                     color_h = 0;
                 }
             }
         }
     }
 
-    if (color_pre == 510) {
+    if ((color_h = color_pre + 1) == 512) {
         color_h = 0;
-    } else {
-        color_h = color_pre + 2;
     }
 }
 
@@ -167,16 +165,14 @@ void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, uint16_t color_
                 }
             }
 
-            if (color_h++ == 511) {
+            if ((color_h++) == 512) {
                 color_h = 0;
             }
         }
     }
 
-    if (color_pre == 511) {
+    if ((color_h = color_pre + 1) == 512) {
         color_h = 0;
-    } else {
-        color_h = color_pre + 1;
     }
 }
 
