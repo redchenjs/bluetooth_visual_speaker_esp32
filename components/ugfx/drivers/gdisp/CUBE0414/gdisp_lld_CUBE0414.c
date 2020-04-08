@@ -46,7 +46,7 @@
 
 #include "CUBE0414.h"
 
-static uint8_t init_ram_addr[64] = {
+static const uint8_t ram_addr_table[64] = {
 #ifdef CONFIG_CUBE0414_LINE_S_CURVE
     0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x0f,
     0x10, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
@@ -81,9 +81,9 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     // Initialise the board interface
     init_board(g);
 
-    // Write RAM Addr
+    // Write RAM Addr Table
     write_cmd(g, CUBE0414_ADDR_WR);
-    write_buff(g, init_ram_addr, sizeof(init_ram_addr));
+    write_buff(g, (uint8_t *)ram_addr_table, sizeof(ram_addr_table));
 
     // Refresh GRAM
     write_cmd(g, CUBE0414_DATA_WR);
