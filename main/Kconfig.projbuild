@@ -223,6 +223,19 @@ config CUBE0414_LINE_S_CURVE
     bool "S Curve"
 endchoice
 
+choice CUBE0414_COLOR_ORDER
+    prompt "CUBE0414 Color Order"
+    default CUBE0414_COLOR_RGB
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    help
+        Select CUBE0414 color order.
+
+config CUBE0414_COLOR_RGB
+    bool "RGB"
+config CUBE0414_COLOR_GRB
+    bool "GRB"
+endchoice
+
 config DEVICE_RST_PIN
     int "Device RST Pin"
     default 14

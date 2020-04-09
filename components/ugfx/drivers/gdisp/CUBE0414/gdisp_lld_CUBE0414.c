@@ -122,9 +122,15 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     }
     LLDSPEC void gdisp_lld_write_color(GDisplay *g) {
         LLDCOLOR_TYPE c = gdispColor2Native(g->p.color);
+#ifdef CONFIG_CUBE0414_COLOR_GRB
         *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 0) = c >> 8;
         *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 1) = c >> 16;
         *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 2) = c;
+#else
+        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 0) = c >> 16;
+        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 1) = c >> 8;
+        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 2) = c;
+#endif
         stream_write_x++;
         if (--stream_write_cx <= 0) {
             stream_write_x  = g->p.x;
@@ -157,9 +163,15 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         stream_read_cy = g->p.cy;
     }
     LLDSPEC color_t gdisp_lld_read_color(GDisplay *g) {
+#ifdef CONFIG_CUBE0414_COLOR_GRB
         LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 0) << 8)
                         | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 1) << 16)
                         | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 2));
+#else
+        LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 0) << 16)
+                        | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 1) << 8)
+                        | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 2));
+#endif
         stream_read_x++;
         if (--stream_read_cx <= 0) {
             stream_read_x  = g->p.x;
