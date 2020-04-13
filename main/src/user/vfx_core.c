@@ -18,37 +18,44 @@
 
 static float hue2rgb(float v1, float v2, float vH)
 {
-    if (vH < 0) vH += 1.0;
-    if (vH > 1) vH -= 1.0;
+    if (vH < 0.0) {
+        vH += 1.0;
+    } else if (vH > 1.0) {
+        vH -= 1.0;
+    }
 
-    if (6.0 * vH < 1) return v1 + (v2 - v1) * 6.0 * vH;
-    if (2.0 * vH < 1) return v2;
-    if (3.0 * vH < 2) return v1 + (v2 - v1) * ((2.0 / 3.0) - vH) * 6.0;
-
-    return v1;
+    if (6.0 * vH < 1.0) {
+        return v1 + (v2 - v1) * 6.0 * vH;
+    } else if (2.0 * vH < 1.0) {
+        return v2;
+    } else if (3.0 * vH < 2.0) {
+        return v1 + (v2 - v1) * ((2.0 / 3.0) - vH) * 6.0;
+    } else {
+        return v1;
+    }
 }
 
 static uint32_t hsl2rgb(float H, float S, float L)
 {
+    float v1, v2;
     uint8_t R, G, B;
-    float var_1, var_2;
 
     if (S == 0.0) {
-        R = L * 255.0;
-        G = L * 255.0;
-        B = L * 255.0;
+        R = 255.0 * L;
+        G = 255.0 * L;
+        B = 255.0 * L;
     } else {
         if (L < 0.5) {
-            var_2 = L * (1 + S);
+            v2 = L * (1.0 + S);
         } else {
-            var_2 = (L + S) - (S * L);
+            v2 = (L + S) - (L * S);
         }
 
-        var_1 = 2.0 * L - var_2;
+        v1 = 2.0 * L - v2;
 
-        R = 255.0 * hue2rgb(var_1, var_2, H + (1.0 / 3.0));
-        G = 255.0 * hue2rgb(var_1, var_2, H);
-        B = 255.0 * hue2rgb(var_1, var_2, H - (1.0 / 3.0));
+        R = 255.0 * hue2rgb(v1, v2, H + (1.0 / 3.0));
+        G = 255.0 * hue2rgb(v1, v2, H);
+        B = 255.0 * hue2rgb(v1, v2, H - (1.0 / 3.0));
     }
 
     return (uint32_t)(R << 16 | G << 8 | B);
@@ -56,7 +63,7 @@ static uint32_t hsl2rgb(float H, float S, float L)
 
 uint32_t vfx_get_color(uint16_t color_h, uint16_t color_l)
 {
-    return hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
+    return hsl2rgb(color_h / 511.0, 1.0, color_l / 2047.0);
 }
 
 #ifndef CONFIG_SCREEN_PANEL_OUTPUT_VFX
