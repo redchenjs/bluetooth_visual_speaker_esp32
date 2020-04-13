@@ -63,7 +63,7 @@ static uint32_t hsl2rgb(float H, float S, float L)
 
 uint32_t vfx_get_color(float color_h, float color_l)
 {
-    return hsl2rgb(color_h / 511.0, 1.0, color_l / 2047.0);
+    return hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 }
 
 #ifndef CONFIG_SCREEN_PANEL_OUTPUT_VFX
