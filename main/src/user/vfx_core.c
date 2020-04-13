@@ -61,13 +61,13 @@ static uint32_t hsl2rgb(float H, float S, float L)
     return (uint32_t)(R << 16 | G << 8 | B);
 }
 
-uint32_t vfx_get_color(uint16_t color_h, uint16_t color_l)
+uint32_t vfx_get_color(float color_h, float color_l)
 {
     return hsl2rgb(color_h / 511.0, 1.0, color_l / 2047.0);
 }
 
 #ifndef CONFIG_SCREEN_PANEL_OUTPUT_VFX
-void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, uint16_t color_h, uint16_t color_l)
+void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
 {
     uint32_t pixel_color = vfx_get_color(color_h, color_l);
     uint8_t pixel_x = x + y * 8;
@@ -90,7 +90,7 @@ void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, uint16_t color_h, uint16_t 
 #endif
 }
 
-void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint8_t cz, uint16_t color_h, uint16_t color_l)
+void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint8_t cz, float color_h, float color_l)
 {
     for (uint8_t i=0; i<cx; i++) {
         for (uint8_t j=0; j<cy; j++) {
@@ -101,7 +101,7 @@ void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint
     }
 }
 
-void vfx_draw_cube_bitmap(const uint8_t *bitmap, uint16_t color_l)
+void vfx_draw_cube_bitmap(const uint8_t *bitmap, float color_l)
 {
     uint8_t x = 0;
     uint8_t y = 0;
@@ -144,7 +144,7 @@ void vfx_draw_cube_bitmap(const uint8_t *bitmap, uint16_t color_l)
     }
 }
 
-void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, uint16_t color_l)
+void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, float color_l)
 {
     uint8_t x = 0;
     uint8_t y = 0;
@@ -183,7 +183,7 @@ void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, uint16_t color_
     }
 }
 
-void vfx_draw_layer_number(uint8_t num, uint8_t layer, uint16_t color_h, uint16_t color_l)
+void vfx_draw_layer_number(uint8_t num, uint8_t layer, float color_h, float color_l)
 {
     uint8_t x = 0;
     uint8_t y = layer;

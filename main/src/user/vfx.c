@@ -883,8 +883,9 @@ static void vfx_task(void *pvParameter)
         }
         case VFX_MODE_IDX_BREATHING: {   // 呼吸
             uint8_t scale_dir = 0;
+            uint16_t fade_cnt = 0;
             uint16_t color_h = esp_random() % 512;
-            uint16_t color_l = 0;
+            float color_l = vfx.lightness / 256.0;
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -896,22 +897,20 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, color_l);
+                vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, fade_cnt * color_l);
 
                 if (scale_dir == 0) {   // 暗->明
-                    if (color_l++ == vfx.lightness) {
-                        color_l = vfx.lightness;
+                    if (++fade_cnt == 256) {
                         scale_dir = 1;
                     }
                 } else {                // 明->暗
-                    if (color_l-- == 0) {
-                        color_l = 0;
+                    if (--fade_cnt == 0) {
                         scale_dir = 0;
                         color_h = esp_random() % 512;
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
             }
             break;
         }
