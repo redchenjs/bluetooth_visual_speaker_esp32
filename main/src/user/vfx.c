@@ -58,7 +58,7 @@ static void vfx_task(void *pvParameter)
     vfx_disp_width = gdispGGetWidth(vfx_gdisp);
     vfx_disp_height = gdispGGetHeight(vfx_gdisp);
 
-    ESP_LOGI(TAG, "started.");
+    ESP_LOGI(TAG, "started, fps: %.1f", 1000.0 / GDISP_NEED_TIMERFLUSH);
 
     while (1) {
         switch (vfx.mode) {
