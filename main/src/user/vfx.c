@@ -921,7 +921,7 @@ static void vfx_task(void *pvParameter)
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
-            uint16_t color_l = vfx.lightness;
+            float color_l = vfx.lightness / 256.0;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
@@ -948,26 +948,26 @@ static void vfx_task(void *pvParameter)
 
             int16_t idx_base = -led_num;
             while (1) {
-                for (uint16_t i=0; i<=color_l; i++) {
+                for (uint16_t i=0; i<=256; i++) {
                     xLastWakeTime = xTaskGetTickCount();
 
                     if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                         xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                        goto loop_break;
+                        goto star_sky_exit;
                     }
 
                     if (idx_base >= 0) {
                         x = (led_idx[idx_base] % 64) % 8;
                         y = (led_idx[idx_base] % 64) / 8;
                         z = led_idx[idx_base] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l);
                     }
 
                     if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
                     }
 
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
@@ -986,7 +986,7 @@ static void vfx_task(void *pvParameter)
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
-            uint16_t color_l = vfx.lightness;
+            float color_l = vfx.lightness / 256.0;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
@@ -1013,26 +1013,26 @@ static void vfx_task(void *pvParameter)
 
             int16_t idx_base = -led_num;
             while (1) {
-                for (uint16_t i=0; i<=color_l; i++) {
+                for (uint16_t i=0; i<=256; i++) {
                     xLastWakeTime = xTaskGetTickCount();
 
                     if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                         xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                        goto loop_break;
+                        goto star_sky_exit;
                     }
 
                     if (idx_base >= 0) {
                         x = (led_idx[idx_base] % 64) % 8;
                         y = (led_idx[idx_base] % 64) / 8;
                         z = led_idx[idx_base] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l);
                     }
 
                     if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
                     }
 
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
@@ -1051,7 +1051,7 @@ static void vfx_task(void *pvParameter)
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
-            uint16_t color_l = vfx.lightness;
+            float color_l = vfx.lightness / 256.0;
 
             gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
 
@@ -1078,26 +1078,26 @@ static void vfx_task(void *pvParameter)
 
             int16_t idx_base = -led_num;
             while (1) {
-                for (uint16_t i=0; i<=color_l; i++) {
+                for (uint16_t i=0; i<=256; i++) {
                     xLastWakeTime = xTaskGetTickCount();
 
                     if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
                         xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
-                        goto loop_break;
+                        goto star_sky_exit;
                     }
 
                     if (idx_base >= 0) {
                         x = (led_idx[idx_base] % 64) % 8;
                         y = (led_idx[idx_base] % 64) / 8;
                         z = led_idx[idx_base] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base], color_l - i);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l);
                     }
 
                     if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
                     }
 
                     vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
@@ -1107,7 +1107,7 @@ static void vfx_task(void *pvParameter)
                     idx_base = -led_num;
                 }
             }
-loop_break:
+star_sky_exit:
             break;
         }
         case VFX_MODE_IDX_NUMBERS_S: {   // 數字-固定
