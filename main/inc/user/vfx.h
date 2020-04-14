@@ -10,8 +10,8 @@
 
 #include <stdint.h>
 
-#include "gfx.h"
 #include "fft.h"
+#include "gfx.h"
 
 typedef enum {
     VFX_MODE_IDX_RANDOM = 0x00,
