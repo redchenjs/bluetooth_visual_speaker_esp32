@@ -42,8 +42,6 @@
     #define GDISP_INITIAL_BACKLIGHT 255
 #endif
 
-#define GDISP_FLG_NEEDFLUSH         (GDISP_FLG_DRIVER<<0)
-
 #include "ST7789.h"
 
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
@@ -154,11 +152,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 
 #if GDISP_HARDWARE_FLUSH
     LLDSPEC void gdisp_lld_flush(GDisplay *g) {
-        if (!(g->flags & GDISP_FLG_NEEDFLUSH)) {
-            return;
-        }
         refresh_gram(g, (uint8_t *)g->priv);
-        g->flags &= ~GDISP_FLG_NEEDFLUSH;
     }
 #endif
 
@@ -193,7 +187,6 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         stream_write_cx = 0;
         stream_write_y  = 0;
         stream_write_cy = 0;
-        g->flags |= GDISP_FLG_NEEDFLUSH;
     }
 #endif
 
