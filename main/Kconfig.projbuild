@@ -215,6 +215,23 @@ choice AUDIO_INPUT_FFT_CHANNEL
         bool "Both Channel"
 endchoice
 
+choice CUBE0414_LAYER_DIR
+    prompt "CUBE0414 Layer Direction"
+    default CUBE0414_LAYER_H
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    help
+        Select CUBE0414 layer direction.
+
+config CUBE0414_LAYER_H
+    bool "Horizontal"
+config CUBE0414_LAYER_H_XYI
+    bool "Horizontal XY-Inverted"
+config CUBE0414_LAYER_V
+    bool "Vertical"
+config CUBE0414_LAYER_V_XYI
+    bool "Vertical XY-Inverted"
+endchoice
+
 choice CUBE0414_LINE_TYPE
     prompt "CUBE0414 Line Type"
     default CUBE0414_LINE_S_CURVE

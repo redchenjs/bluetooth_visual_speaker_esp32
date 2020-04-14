@@ -70,8 +70,28 @@ uint32_t vfx_get_color(float color_h, float color_l)
 void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
 {
     uint32_t pixel_color = vfx_get_color(color_h, color_l);
+
+#ifdef CONFIG_VFX_OUTPUT_CUBE0414
+    #ifdef CONFIG_CUBE0414_LAYER_H
+        uint8_t pixel_x = x + y * 8;
+        uint8_t pixel_y = z;
+    #endif
+    #ifdef CONFIG_CUBE0414_LAYER_H_XYI
+        uint8_t pixel_x = (7 - x) + (7 - y) * 8;
+        uint8_t pixel_y = z;
+    #endif
+    #ifdef CONFIG_CUBE0414_LAYER_V
+        uint8_t pixel_x = x + z * 8;
+        uint8_t pixel_y = y;
+    #endif
+    #ifdef CONFIG_CUBE0414_LAYER_V_XYI
+        uint8_t pixel_x = (7 - x) + (7 - z) * 8;
+        uint8_t pixel_y = y;
+    #endif
+#else
     uint8_t pixel_x = x + y * 8;
     uint8_t pixel_y = z;
+#endif
 
 #ifdef CONFIG_VFX_OUTPUT_CUBE0414
     gdispGDrawPixel(vfx_gdisp, pixel_x, pixel_y, pixel_color);
