@@ -158,7 +158,7 @@ gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_
 		stacksz = configMINIMAL_STACK_SIZE;
 
 	task = 0;
-	if (xTaskCreate(fn, "uGFX_TASK", stacksz, param, prio, &task) != pdPASS)
+	if (xTaskCreatePinnedToCore(fn, "uGFX_TASK", stacksz, param, prio, &task, 1) != pdPASS)
 		return 0;
 
 	return task;
