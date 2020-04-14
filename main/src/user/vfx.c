@@ -910,7 +910,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, 12 / portTICK_RATE_MS);
             }
             break;
         }
