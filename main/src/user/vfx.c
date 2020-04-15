@@ -1249,13 +1249,13 @@ star_sky_exit:
                 for (uint8_t i=0; i<8; i++) {
                     vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx], vfx.lightness);
 
-                    if (++frame_idx == 28) {
-                        frame_idx = 0;
+                    if (frame_idx-- == 0) {
+                        frame_idx = 27;
                     }
                 }
 
-                if (++frame_pre == 28) {
-                    frame_idx = 0;
+                if (frame_pre-- == 0) {
+                    frame_idx = 27;
                 } else {
                     frame_idx = frame_pre;
                 }
@@ -1284,13 +1284,13 @@ star_sky_exit:
                 for (uint8_t i=0; i<8; i++) {
                     vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx], vfx.lightness);
 
-                    if (frame_idx-- == 0) {
-                        frame_idx = 27;
+                    if (++frame_idx == 28) {
+                        frame_idx = 0;
                     }
                 }
 
-                if (frame_pre-- == 0) {
-                    frame_idx = 27;
+                if (++frame_pre == 28) {
+                    frame_idx = 0;
                 } else {
                     frame_idx = frame_pre;
                 }
