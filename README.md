@@ -77,6 +77,10 @@ idf.py flash monitor
 
 <img src="docs/st7789log.png">
 
+## VFX on CUBE0414 8x8x8 Music Light Cube (Single Layer)
+
+<img src="docs/cube0414s.png">
+
 ## VFX on CUBE0414 8x8x8 Music Light Cube
 
 <img src="docs/cube0414.png">
