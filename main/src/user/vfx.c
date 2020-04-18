@@ -58,7 +58,7 @@ static void vfx_task(void *pvParameter)
     vfx_disp_width = gdispGGetWidth(vfx_gdisp);
     vfx_disp_height = gdispGGetHeight(vfx_gdisp);
 
-    ESP_LOGI(TAG, "started, fps: %.1f", 1000.0 / GDISP_NEED_TIMERFLUSH);
+    ESP_LOGI(TAG, "started, max fps: %.1f", 1000.0 / GDISP_NEED_TIMERFLUSH);
 
     while (1) {
         switch (vfx.mode) {
@@ -67,10 +67,12 @@ static void vfx_task(void *pvParameter)
         case 0x00:
         case 0x01: {   // 動態貼圖
             gdispImage gfx_image;
+            const uint16_t flush_period = GDISP_NEED_TIMERFLUSH;
 
             if (!(gdispImageOpenMemory(&gfx_image, img_file_ptr[vfx.mode][0]) & GDISP_IMAGE_ERR_UNRECOVERABLE)) {
                 gdispImageSetBgColor(&gfx_image, Black);
 
+                gdispGSetFlushPeriod(vfx_gdisp, flush_period);
                 gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
                 while (1) {
@@ -113,11 +115,14 @@ static void vfx_task(void *pvParameter)
             fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             int16_t fft_out[64] = {0};
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -198,7 +203,7 @@ static void vfx_task(void *pvParameter)
                     color_h = color_tmp;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -213,11 +218,14 @@ static void vfx_task(void *pvParameter)
             fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             int16_t fft_out[64] = {0};
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -292,7 +300,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -329,11 +337,14 @@ static void vfx_task(void *pvParameter)
             static uint8_t vu_drop_delay[24] = {0};
             const uint8_t vu_peak_delay_init = 9;
             const uint8_t vu_drop_delay_init = 3;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vu_peak_delay, vu_peak_delay_init - 1, sizeof(vu_peak_delay));
@@ -422,7 +433,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -439,11 +450,14 @@ static void vfx_task(void *pvParameter)
             float   fft_amp[64] = {0};
             int16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -527,7 +541,7 @@ static void vfx_task(void *pvParameter)
                     color_h = color_tmp;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -543,11 +557,14 @@ static void vfx_task(void *pvParameter)
             float   fft_amp[64] = {0};
             int16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -625,7 +642,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -662,11 +679,14 @@ static void vfx_task(void *pvParameter)
             static uint8_t vu_drop_delay[24] = {0};
             const uint8_t vu_peak_delay_init = 9;
             const uint8_t vu_drop_delay_init = 3;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vu_peak_delay, vu_peak_delay_init - 1, sizeof(vu_peak_delay));
@@ -755,7 +775,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -777,7 +797,9 @@ static void vfx_task(void *pvParameter)
             uint8_t z = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            const uint16_t flush_period = 16;
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -807,7 +829,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
         }
@@ -817,7 +839,9 @@ static void vfx_task(void *pvParameter)
             uint16_t color_tmp = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            const uint16_t flush_period = 16;
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -853,14 +877,16 @@ static void vfx_task(void *pvParameter)
                     color_h = color_tmp;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
         }
         case VFX_MODE_IDX_GRADUAL: {   // 漸變
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            const uint16_t flush_period = 16;
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -877,7 +903,7 @@ static void vfx_task(void *pvParameter)
                     color_h = 0;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
         }
@@ -886,7 +912,9 @@ static void vfx_task(void *pvParameter)
             uint16_t fade_cnt = 0;
             uint16_t color_h = esp_random() % 512;
             float color_l = vfx.lightness / 256.0;
+            const uint16_t flush_period = 8;
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -910,7 +938,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
         }
@@ -922,9 +950,12 @@ static void vfx_task(void *pvParameter)
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
             float color_l = vfx.lightness / 256.0;
+            const uint16_t flush_period = 8;
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<512; i++) {
@@ -970,7 +1001,7 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
                     }
 
-                    vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                    vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
                 }
 
                 if (++idx_base == 512) {
@@ -987,9 +1018,12 @@ static void vfx_task(void *pvParameter)
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
             float color_l = vfx.lightness / 256.0;
+            const uint16_t flush_period = 8;
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<512; i++) {
@@ -1035,7 +1069,7 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
                     }
 
-                    vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                    vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
                 }
 
                 if (++idx_base == 512) {
@@ -1052,9 +1086,12 @@ static void vfx_task(void *pvParameter)
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
             float color_l = vfx.lightness / 256.0;
+            const uint16_t flush_period = 8;
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<512; i++) {
@@ -1100,7 +1137,7 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
                     }
 
-                    vTaskDelayUntil(&xLastWakeTime, 8 / portTICK_RATE_MS);
+                    vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
                 }
 
                 if (++idx_base == 512) {
@@ -1114,9 +1151,12 @@ star_sky_exit:
             uint16_t num = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            const uint16_t flush_period = 1000;
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -1140,7 +1180,7 @@ star_sky_exit:
                     num = 0;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 1000 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
         }
@@ -1150,9 +1190,12 @@ star_sky_exit:
             uint16_t layer1 = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            const uint16_t flush_period = 80;
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -1200,15 +1243,18 @@ star_sky_exit:
                     color_h = 0;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 80 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
         }
         case VFX_MODE_IDX_MAGIC_CARPET: {   // 魔毯
             uint16_t frame_idx = 0;
+            const uint16_t flush_period = 16;
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -1225,16 +1271,19 @@ star_sky_exit:
                     frame_idx = 8;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
         }
         case VFX_MODE_IDX_ROTATING_F: {   // 旋轉曲面-正
             uint16_t frame_pre = 0;
             uint16_t frame_idx = 0;
+            const uint16_t flush_period = 40;
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -1260,16 +1309,19 @@ star_sky_exit:
                     frame_idx = frame_pre;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 40 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
         }
         case VFX_MODE_IDX_ROTATING_B: {   // 旋轉曲面-反
             uint16_t frame_pre = 0;
             uint16_t frame_idx = 0;
+            const uint16_t flush_period = 40;
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -1295,7 +1347,7 @@ star_sky_exit:
                     frame_idx = frame_pre;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 40 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
         }
@@ -1309,11 +1361,14 @@ star_sky_exit:
             int16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1389,7 +1444,7 @@ star_sky_exit:
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1410,11 +1465,14 @@ star_sky_exit:
             int16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1497,7 +1555,7 @@ star_sky_exit:
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1532,11 +1590,14 @@ star_sky_exit:
             };
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<64; i++) {
@@ -1621,7 +1682,7 @@ star_sky_exit:
                     color_flg = 0;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1640,11 +1701,14 @@ star_sky_exit:
             int16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1720,7 +1784,7 @@ star_sky_exit:
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1741,11 +1805,14 @@ star_sky_exit:
             int16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1828,7 +1895,7 @@ star_sky_exit:
                     }
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1863,11 +1930,14 @@ star_sky_exit:
             };
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, canvas_width, canvas_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
+            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<64; i++) {
@@ -1952,7 +2022,7 @@ star_sky_exit:
                     color_flg = 0;
                 }
 
-                vTaskDelayUntil(&xLastWakeTime, 16 / portTICK_RATE_MS);
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
@@ -1981,6 +2051,7 @@ star_sky_exit:
             vTaskDelay(500 / portTICK_RATE_MS);
 
             gdispGClear(vfx_gdisp, 0x000000);
+            gdispGFlush(vfx_gdisp);
 
             xEventGroupWaitBits(
                 user_event_group,
