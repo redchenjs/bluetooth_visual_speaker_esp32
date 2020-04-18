@@ -116,7 +116,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -216,7 +216,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -332,7 +332,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -442,7 +442,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -546,7 +546,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -665,7 +665,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -923,7 +923,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h[512] = {0};
             float color_l = vfx.lightness / 256.0;
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -988,7 +988,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h[512] = {0};
             float color_l = vfx.lightness / 256.0;
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -1053,7 +1053,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h[512] = {0};
             float color_l = vfx.lightness / 256.0;
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -1115,7 +1115,7 @@ star_sky_exit:
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -1151,7 +1151,7 @@ star_sky_exit:
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -1207,7 +1207,7 @@ star_sky_exit:
         case VFX_MODE_IDX_MAGIC_CARPET: {   // 魔毯
             uint16_t frame_idx = 0;
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -1233,7 +1233,7 @@ star_sky_exit:
             uint16_t frame_pre = 0;
             uint16_t frame_idx = 0;
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -1268,7 +1268,7 @@ star_sky_exit:
             uint16_t frame_pre = 0;
             uint16_t frame_idx = 0;
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
@@ -1980,7 +1980,7 @@ star_sky_exit:
 
             vTaskDelay(500 / portTICK_RATE_MS);
 
-            gdispGFillArea(vfx_gdisp, 0, 0, vfx_disp_width, vfx_disp_height, 0x000000);
+            gdispGClear(vfx_gdisp, 0x000000);
 
             xEventGroupWaitBits(
                 user_event_group,
