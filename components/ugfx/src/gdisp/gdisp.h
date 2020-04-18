@@ -1153,6 +1153,10 @@ void gdispGDrawBox(GDisplay *g, coord_t x, coord_t y, coord_t cx, coord_t cy, co
 	#define gdispFillRoundedBox(x,y,cx,cy,r,c)		gdispGFillRoundedBox(GDISP,x,y,cx,cy,r,c)
 #endif
 
+#if GDISP_NEED_TIMERFLUSH
+	void gdispGSetFlushPeriod(GDisplay *g, uint16_t period);
+#endif
+
 /*
  * Macro definitions
  */
