@@ -80,7 +80,6 @@ static void vfx_task(void *pvParameter)
         case 0x00:
         case 0x01: {   // 動態貼圖
             gdispImage gfx_image;
-            const uint16_t flush_period = GDISP_NEED_TIMERFLUSH;
 
             if (!(gdispImageOpenMemory(&gfx_image, img_file_ptr[vfx.mode][0]) & GDISP_IMAGE_ERR_UNRECOVERABLE)) {
                 gdispImageSetBgColor(&gfx_image, Black);
