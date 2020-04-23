@@ -155,7 +155,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
     #ifndef CONFIG_VFX_OUTPUT_CUBE0414
             | BIT1
     #endif
-    #ifndef CONFIG_SCREEN_PANEL_OUTPUT_VFX
+    #ifdef CONFIG_VFX_OUTPUT_CUBE0414
             | BIT2
     #endif
     #ifndef CONFIG_AUDIO_INPUT_NONE

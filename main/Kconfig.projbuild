@@ -167,19 +167,6 @@ config VFX_OUTPUT_ST7789
     bool "ST7789 135x240 LCD Panel"
 endchoice
 
-choice SCREEN_PANEL_OUTPUT
-    prompt "Screen Panel Output Mode"
-    default SCREEN_PANEL_OUTPUT_VFX
-    depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
-    help
-        Select Screen Panel Output Mode.
-
-config SCREEN_PANEL_OUTPUT_VFX
-    bool "Display Visual Effects"
-config SCREEN_PANEL_OUTPUT_MMAP
-    bool "Display CUBE0414's Memory Mapping"
-endchoice
-
 choice BT_AUDIO_FFT_CHANNEL
     prompt "Bluetooth Audio FFT Channel"
     default BT_AUDIO_FFT_BOTH

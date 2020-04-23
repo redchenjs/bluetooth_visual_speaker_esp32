@@ -69,10 +69,6 @@ idf.py flash monitor
 
 <img src="docs/st7735lin.png">
 
-## VFX on ST7735 80x160 LCD Panel (CUBE0414 Simulation)
-
-<img src="docs/st7735sim.png">
-
 ## VFX on ST7789 135x240 LCD Panel (Logarithmic Spectrum)
 
 <img src="docs/st7789log.png">

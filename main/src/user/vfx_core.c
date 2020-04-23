@@ -66,48 +66,29 @@ uint32_t vfx_get_color(float color_h, float color_l)
     return hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 }
 
-#ifndef CONFIG_SCREEN_PANEL_OUTPUT_VFX
+#ifdef CONFIG_VFX_OUTPUT_CUBE0414
 void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
 {
     uint32_t pixel_color = vfx_get_color(color_h, color_l);
 
-#ifdef CONFIG_VFX_OUTPUT_CUBE0414
-    #ifdef CONFIG_CUBE0414_LAYER_H
-        uint8_t pixel_x = x + y * 8;
-        uint8_t pixel_y = z;
-    #endif
-    #ifdef CONFIG_CUBE0414_LAYER_H_XYI
-        uint8_t pixel_x = (7 - x) + (7 - y) * 8;
-        uint8_t pixel_y = z;
-    #endif
-    #ifdef CONFIG_CUBE0414_LAYER_V
-        uint8_t pixel_x = x + z * 8;
-        uint8_t pixel_y = y;
-    #endif
-    #ifdef CONFIG_CUBE0414_LAYER_V_XYI
-        uint8_t pixel_x = (7 - x) + (7 - z) * 8;
-        uint8_t pixel_y = y;
-    #endif
-#else
+#ifdef CONFIG_CUBE0414_LAYER_H
     uint8_t pixel_x = x + y * 8;
     uint8_t pixel_y = z;
 #endif
-
-#ifdef CONFIG_VFX_OUTPUT_CUBE0414
-    gdispGDrawPixel(vfx_gdisp, pixel_x, pixel_y, pixel_color);
-#elif defined(CONFIG_VFX_OUTPUT_ST7735)
-    if (pixel_x <= 31) {
-        gdispGFillArea(vfx_gdisp, pixel_x * 5, pixel_y * 5, 5, 5, pixel_color);
-    } else {
-        gdispGFillArea(vfx_gdisp, (pixel_x - 32) * 5, (pixel_y + 8) * 5, 5, 5, pixel_color);
-    }
-#else
-    if (pixel_x <= 31) {
-        gdispGFillArea(vfx_gdisp, pixel_x * 7 + 8, pixel_y * 7 + 12, 7, 7, pixel_color);
-    } else {
-        gdispGFillArea(vfx_gdisp, (pixel_x - 32) * 7 + 8, (pixel_y + 8) * 7 + 12, 7, 7, pixel_color);
-    }
+#ifdef CONFIG_CUBE0414_LAYER_H_XYI
+    uint8_t pixel_x = (7 - x) + (7 - y) * 8;
+    uint8_t pixel_y = z;
 #endif
+#ifdef CONFIG_CUBE0414_LAYER_V
+    uint8_t pixel_x = x + z * 8;
+    uint8_t pixel_y = y;
+#endif
+#ifdef CONFIG_CUBE0414_LAYER_V_XYI
+    uint8_t pixel_x = (7 - x) + (7 - z) * 8;
+    uint8_t pixel_y = y;
+#endif
+
+    gdispGDrawPixel(vfx_gdisp, pixel_x, pixel_y, pixel_color);
 }
 
 void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint8_t cz, float color_h, float color_l)
@@ -230,4 +211,4 @@ void vfx_draw_layer_number(uint8_t num, uint8_t layer, float color_h, float colo
         }
     }
 }
-#endif // CONFIG_SCREEN_PANEL_OUTPUT_VFX
+#endif // CONFIG_VFX_OUTPUT_CUBE0414

@@ -50,23 +50,24 @@ typedef struct {
 
 #define FFT_N 128
 
-#define DEFAULT_VFX_MODE VFX_MODE_IDX_FOUNTAIN_H_N
-#define DEFAULT_VFX_SCALE_FACTOR 0xFF
-
-#ifndef CONFIG_VFX_OUTPUT_CUBE0414
-    #define DEFAULT_VFX_LIGHTNESS 0x00FF
+#ifdef CONFIG_VFX_OUTPUT_CUBE0414
+    #define DEFAULT_VFX_MODE            VFX_MODE_IDX_FOUNTAIN_H_N
+    #define DEFAULT_VFX_SCALE_FACTOR    0xFF
+    #define DEFAULT_VFX_LIGHTNESS       0x006F
+    #define DEFAULT_VFX_BACKLIGHT       0x00
 #else
-    #define DEFAULT_VFX_LIGHTNESS 0x006F
+    #define DEFAULT_VFX_MODE            15
+    #define DEFAULT_VFX_SCALE_FACTOR    0xFF
+    #define DEFAULT_VFX_LIGHTNESS       0x00FF
+    #define DEFAULT_VFX_BACKLIGHT       0xFF
 #endif
-
-#define DEFAULT_VFX_BACKLIGHT 0xFF
 
 extern GDisplay *vfx_gdisp;
 
 extern float vfx_fft_input[FFT_N];
 extern float vfx_fft_output[FFT_N];
 
-#ifdef CONFIG_SCREEN_PANEL_OUTPUT_VFX
+#ifndef CONFIG_VFX_OUTPUT_CUBE0414
     #ifdef CONFIG_VFX_OUTPUT_ST7735
         // ani0.gif
         extern const char ani0_160x80_gif_ptr[] asm("_binary_ani0_160x80_gif_start");

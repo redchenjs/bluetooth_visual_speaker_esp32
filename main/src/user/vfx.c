@@ -38,7 +38,7 @@ static coord_t vfx_disp_height = 0;
 
 static GTimer vfx_flush_timer;
 
-#ifdef CONFIG_SCREEN_PANEL_OUTPUT_VFX
+#ifndef CONFIG_VFX_OUTPUT_CUBE0414
 static const char *img_file_ptr[][2] = {
     #ifdef CONFIG_VFX_OUTPUT_ST7735
         {ani0_160x80_gif_ptr, ani0_160x80_gif_end},     // "Nyan Cat"
@@ -75,7 +75,7 @@ static void vfx_task(void *pvParameter)
 
     while (1) {
         switch (vfx.mode) {
-#ifdef CONFIG_SCREEN_PANEL_OUTPUT_VFX
+#ifndef CONFIG_VFX_OUTPUT_CUBE0414
         // LCD Output
         case 0x00:
         case 0x01: {   // 動態貼圖
@@ -818,8 +818,6 @@ static void vfx_task(void *pvParameter)
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 16;
 
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -860,8 +858,6 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 16;
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -907,8 +903,6 @@ static void vfx_task(void *pvParameter)
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 16;
 
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -935,8 +929,6 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = esp_random() % 512;
             float color_l = vfx.lightness / 256.0;
             const uint16_t flush_period = 10;
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -977,8 +969,6 @@ static void vfx_task(void *pvParameter)
 
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
@@ -1047,8 +1037,6 @@ static void vfx_task(void *pvParameter)
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
 
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 85 + 80;
@@ -1116,8 +1104,6 @@ static void vfx_task(void *pvParameter)
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
 
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             for (uint16_t i=0; i<512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 80 + 260;
@@ -1182,8 +1168,6 @@ star_sky_exit:
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
 
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -1221,8 +1205,6 @@ star_sky_exit:
 
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1282,8 +1264,6 @@ star_sky_exit:
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
 
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -1311,8 +1291,6 @@ star_sky_exit:
 
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1350,8 +1328,6 @@ star_sky_exit:
 
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1398,8 +1374,6 @@ star_sky_exit:
 
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -1503,8 +1477,6 @@ star_sky_exit:
 
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -1630,8 +1602,6 @@ star_sky_exit:
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
 
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             for (uint16_t i=0; i<64; i++) {
                 color_h[i] = i * 8;
                 color_l[i] = vfx.lightness;
@@ -1742,8 +1712,6 @@ star_sky_exit:
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
 
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
 
@@ -1846,8 +1814,6 @@ star_sky_exit:
 
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -1973,8 +1939,6 @@ star_sky_exit:
             gdispGClear(vfx_gdisp, 0x000000);
             gtimerJab(&vfx_flush_timer);
 
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             for (uint16_t i=0; i<64; i++) {
                 color_h[i] = i * 8;
                 color_l[i] = vfx.lightness;
@@ -2068,10 +2032,8 @@ star_sky_exit:
 
             break;
         }
-#endif // CONFIG_SCREEN_PANEL_OUTPUT_VFX
+#endif // CONFIG_VFX_OUTPUT_CUBE0414
         case VFX_MODE_IDX_PAUSE:
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             xEventGroupWaitBits(
                 user_event_group,
                 VFX_RELOAD_BIT,
