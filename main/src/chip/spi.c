@@ -20,7 +20,7 @@ spi_device_handle_t hspi;
 
 void hspi_init(void)
 {
-    spi_bus_config_t buscfg={
+    spi_bus_config_t buscfg = {
         .miso_io_num = -1,
         .mosi_io_num = CONFIG_SPI_MOSI_PIN,
         .sclk_io_num = CONFIG_SPI_SCLK_PIN,
@@ -36,22 +36,20 @@ void hspi_init(void)
     };
     ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &buscfg, 1));
 
-    spi_device_interface_config_t devcfg={
+    spi_device_interface_config_t devcfg = {
         .mode = 0,                                // SPI mode 0
         .spics_io_num = CONFIG_SPI_CS_PIN,        // CS pin
 #ifdef CONFIG_VFX_OUTPUT_CUBE0414
         .clock_speed_hz = 40000000,               // Clock out at 40 MHz
-        .queue_size = 2,                          // We want to be able to queue 2 transactions at a time
         .pre_cb = cube0414_setpin_dc,             // Specify pre-transfer callback to handle D/C line
 #elif defined(CONFIG_VFX_OUTPUT_ST7735)
         .clock_speed_hz = 26000000,               // Clock out at 26 MHz
-        .queue_size = 6,                          // We want to be able to queue 6 transactions at a time
         .pre_cb = st7735_setpin_dc,               // Specify pre-transfer callback to handle D/C line
 #elif defined(CONFIG_VFX_OUTPUT_ST7789)
         .clock_speed_hz = 40000000,               // Clock out at 40 MHz
-        .queue_size = 6,                          // We want to be able to queue 6 transactions at a time
         .pre_cb = st7789_setpin_dc,               // Specify pre-transfer callback to handle D/C line
 #endif
+        .queue_size = 2,                          // We want to be able to queue 2 transactions at a time
         .flags = SPI_DEVICE_3WIRE | SPI_DEVICE_HALFDUPLEX
     };
     ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &devcfg, &hspi));
