@@ -935,7 +935,7 @@ static void vfx_task(void *pvParameter)
             uint16_t fade_cnt = 0;
             uint16_t color_h = esp_random() % 512;
             float color_l = vfx.lightness / 256.0;
-            const uint16_t flush_period = 8;
+            const uint16_t flush_period = 10;
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
