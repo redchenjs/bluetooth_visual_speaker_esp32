@@ -60,6 +60,10 @@ static void vfx_task(void *pvParameter)
 
     ESP_LOGI(TAG, "started, max fps: %.1f", 1000.0 / GDISP_NEED_TIMERFLUSH);
 
+#ifdef CONFIG_VFX_OUTPUT_ST7789
+    gdispGSetOrientation(vfx_gdisp, GDISP_ROTATE_270);
+#endif
+
     while (1) {
         switch (vfx.mode) {
 #ifdef CONFIG_SCREEN_PANEL_OUTPUT_VFX
