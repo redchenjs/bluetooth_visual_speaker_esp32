@@ -167,11 +167,6 @@ config VFX_OUTPUT_ST7789
     bool "ST7789 135x240 LCD Panel"
 endchoice
 
-config VFX_OUTPUT_FLUSH_PERIOD
-    int
-    default  4 if  VFX_OUTPUT_CUBE0414
-    default 16 if !VFX_OUTPUT_CUBE0414
-
 choice SCREEN_PANEL_OUTPUT
     prompt "Screen Panel Output Mode"
     default SCREEN_PANEL_OUTPUT_VFX

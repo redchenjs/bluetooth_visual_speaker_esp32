@@ -36,6 +36,8 @@ float vfx_fft_output[FFT_N] = {0.0};
 static coord_t vfx_disp_width = 0;
 static coord_t vfx_disp_height = 0;
 
+static GTimer vfx_flush_timer;
+
 #ifdef CONFIG_SCREEN_PANEL_OUTPUT_VFX
 static const char *img_file_ptr[][2] = {
     #ifdef CONFIG_VFX_OUTPUT_ST7735
@@ -48,6 +50,11 @@ static const char *img_file_ptr[][2] = {
 };
 #endif
 
+static void vfx_flush_task(void *pvParameter)
+{
+    gdispGFlush(vfx_gdisp);
+}
+
 static void vfx_task(void *pvParameter)
 {
     portTickType xLastWakeTime;
@@ -58,7 +65,9 @@ static void vfx_task(void *pvParameter)
     vfx_disp_width = gdispGGetWidth(vfx_gdisp);
     vfx_disp_height = gdispGGetHeight(vfx_gdisp);
 
-    ESP_LOGI(TAG, "started, max fps: %.1f", 1000.0 / GDISP_NEED_TIMERFLUSH);
+    gtimerStart(&vfx_flush_timer, vfx_flush_task, NULL, TRUE, TIME_INFINITE);
+
+    ESP_LOGI(TAG, "started.");
 
 #ifdef CONFIG_VFX_OUTPUT_ST7789
     gdispGSetOrientation(vfx_gdisp, GDISP_ROTATE_270);
@@ -76,7 +85,6 @@ static void vfx_task(void *pvParameter)
             if (!(gdispImageOpenMemory(&gfx_image, img_file_ptr[vfx.mode][0]) & GDISP_IMAGE_ERR_UNRECOVERABLE)) {
                 gdispImageSetBgColor(&gfx_image, Black);
 
-                gdispGSetFlushPeriod(vfx_gdisp, flush_period);
                 gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
                 while (1) {
@@ -92,6 +100,8 @@ static void vfx_task(void *pvParameter)
                         vfx.mode = VFX_MODE_IDX_OFF;
                         break;
                     }
+
+                    gtimerJab(&vfx_flush_timer);
 
                     delaytime_t delay = gdispImageNext(&gfx_image);
                     if (delay == TIME_INFINITE) {
@@ -124,9 +134,8 @@ static void vfx_task(void *pvParameter)
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -207,6 +216,8 @@ static void vfx_task(void *pvParameter)
                     color_h = color_tmp;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -227,9 +238,8 @@ static void vfx_task(void *pvParameter)
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -304,6 +314,8 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -346,9 +358,8 @@ static void vfx_task(void *pvParameter)
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vu_peak_delay, vu_peak_delay_init - 1, sizeof(vu_peak_delay));
@@ -437,6 +448,8 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -459,9 +472,8 @@ static void vfx_task(void *pvParameter)
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -545,6 +557,8 @@ static void vfx_task(void *pvParameter)
                     color_h = color_tmp;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -566,9 +580,8 @@ static void vfx_task(void *pvParameter)
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -646,6 +659,8 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -688,9 +703,8 @@ static void vfx_task(void *pvParameter)
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vu_peak_delay, vu_peak_delay_init - 1, sizeof(vu_peak_delay));
@@ -779,6 +793,8 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -803,7 +819,6 @@ static void vfx_task(void *pvParameter)
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 16;
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -833,6 +848,8 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
@@ -845,7 +862,6 @@ static void vfx_task(void *pvParameter)
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 16;
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -881,6 +897,8 @@ static void vfx_task(void *pvParameter)
                     color_h = color_tmp;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
@@ -890,7 +908,6 @@ static void vfx_task(void *pvParameter)
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 16;
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -907,6 +924,8 @@ static void vfx_task(void *pvParameter)
                     color_h = 0;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
@@ -918,7 +937,6 @@ static void vfx_task(void *pvParameter)
             float color_l = vfx.lightness / 256.0;
             const uint16_t flush_period = 8;
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -942,6 +960,8 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
@@ -957,9 +977,8 @@ static void vfx_task(void *pvParameter)
             const uint16_t flush_period = 8;
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<512; i++) {
@@ -1005,6 +1024,8 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
                     }
 
+                    gtimerJab(&vfx_flush_timer);
+
                     vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
                 }
 
@@ -1025,9 +1046,8 @@ static void vfx_task(void *pvParameter)
             const uint16_t flush_period = 8;
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<512; i++) {
@@ -1073,6 +1093,8 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
                     }
 
+                    gtimerJab(&vfx_flush_timer);
+
                     vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
                 }
 
@@ -1093,9 +1115,8 @@ static void vfx_task(void *pvParameter)
             const uint16_t flush_period = 8;
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<512; i++) {
@@ -1141,6 +1162,8 @@ static void vfx_task(void *pvParameter)
                         vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
                     }
 
+                    gtimerJab(&vfx_flush_timer);
+
                     vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
                 }
 
@@ -1158,9 +1181,8 @@ star_sky_exit:
             const uint16_t flush_period = 1000;
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -1184,6 +1206,8 @@ star_sky_exit:
                     num = 0;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
@@ -1197,9 +1221,8 @@ star_sky_exit:
             const uint16_t flush_period = 80;
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -1247,6 +1270,8 @@ star_sky_exit:
                     color_h = 0;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
@@ -1256,9 +1281,8 @@ star_sky_exit:
             const uint16_t flush_period = 16;
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -1275,6 +1299,8 @@ star_sky_exit:
                     frame_idx = 8;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
@@ -1285,9 +1311,8 @@ star_sky_exit:
             const uint16_t flush_period = 40;
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -1313,6 +1338,8 @@ star_sky_exit:
                     frame_idx = frame_pre;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
@@ -1323,9 +1350,8 @@ star_sky_exit:
             const uint16_t flush_period = 40;
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             while (1) {
@@ -1351,6 +1377,8 @@ star_sky_exit:
                     frame_idx = frame_pre;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
             break;
@@ -1370,9 +1398,8 @@ star_sky_exit:
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1448,6 +1475,8 @@ star_sky_exit:
                     }
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -1474,9 +1503,8 @@ star_sky_exit:
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1558,6 +1586,8 @@ star_sky_exit:
                         color_tmp = 0;
                     }
                 }
+
+                gtimerJab(&vfx_flush_timer);
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
@@ -1599,9 +1629,8 @@ star_sky_exit:
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<64; i++) {
@@ -1686,6 +1715,8 @@ star_sky_exit:
                     color_flg = 0;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -1710,9 +1741,8 @@ star_sky_exit:
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1788,6 +1818,8 @@ star_sky_exit:
                     }
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -1814,9 +1846,8 @@ star_sky_exit:
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1899,6 +1930,8 @@ star_sky_exit:
                     }
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -1939,9 +1972,8 @@ star_sky_exit:
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
-            gdispGSetFlushPeriod(vfx_gdisp, flush_period);
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
             for (uint16_t i=0; i<64; i++) {
@@ -2026,6 +2058,8 @@ star_sky_exit:
                     color_flg = 0;
                 }
 
+                gtimerJab(&vfx_flush_timer);
+
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
@@ -2055,7 +2089,7 @@ star_sky_exit:
             vTaskDelay(500 / portTICK_RATE_MS);
 
             gdispGClear(vfx_gdisp, 0x000000);
-            gdispGFlush(vfx_gdisp);
+            gtimerJab(&vfx_flush_timer);
 
             xEventGroupWaitBits(
                 user_event_group,

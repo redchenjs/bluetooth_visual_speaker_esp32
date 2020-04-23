@@ -70,7 +70,7 @@
 #define GFX_USE_GDISP                                TRUE
 
 // #define GDISP_NEED_AUTOFLUSH                         TRUE
-#define GDISP_NEED_TIMERFLUSH                        CONFIG_VFX_OUTPUT_FLUSH_PERIOD
+// #define GDISP_NEED_TIMERFLUSH                       FALSE
 // #define GDISP_NEED_VALIDATION                        TRUE
 // #define GDISP_NEED_CLIP                              TRUE
 // #define GDISP_NEED_CIRCLE                            TRUE
