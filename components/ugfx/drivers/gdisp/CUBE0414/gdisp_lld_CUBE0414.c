@@ -9,7 +9,7 @@
 
 #if GFX_USE_GDISP
 
-#if defined(GDISP_SCREEN_HEIGHT) || defined(GDISP_SCREEN_HEIGHT)
+#if defined(GDISP_SCREEN_WIDTH) || defined(GDISP_SCREEN_HEIGHT)
     #if GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_DIRECT
         #warning "GDISP: This low level driver does not support setting a screen size. It is being ignored."
     #elif GFX_COMPILER_WARNING_TYPE == GFX_COMPILER_WARNING_MACRO
@@ -29,11 +29,11 @@
 /* Driver local definitions.                                                 */
 /*===========================================================================*/
 
-#ifndef GDISP_SCREEN_HEIGHT
-    #define GDISP_SCREEN_HEIGHT     CUBE0414_Z
-#endif
 #ifndef GDISP_SCREEN_WIDTH
     #define GDISP_SCREEN_WIDTH      CUBE0414_X*CUBE0414_Y
+#endif
+#ifndef GDISP_SCREEN_HEIGHT
+    #define GDISP_SCREEN_HEIGHT     CUBE0414_Z
 #endif
 #ifndef GDISP_INITIAL_CONTRAST
     #define GDISP_INITIAL_CONTRAST  100
@@ -42,7 +42,7 @@
     #define GDISP_INITIAL_BACKLIGHT 100
 #endif
 
-#define GDISP_FLG_NEEDFLUSH         (GDISP_FLG_DRIVER<<0)
+#define GDISP_FLG_NEEDFLUSH         (GDISP_FLG_DRIVER << 0)
 
 #include "CUBE0414.h"
 
@@ -69,33 +69,29 @@ static const uint8_t ram_addr_table[64] = {
 };
 
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
-    g->priv = gfxAlloc(GDISP_SCREEN_HEIGHT * GDISP_SCREEN_WIDTH * 3);
+    g->priv = gfxAlloc(GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*3);
     if (g->priv == NULL) {
         gfxHalt("GDISP CUBE0414: Failed to allocate private memory");
     }
 
-    for (int i=0; i<GDISP_SCREEN_HEIGHT*GDISP_SCREEN_WIDTH*3; i++) {
-        *((uint8_t *)g->priv + i) = 0x00;
-    }
+    memset(g->priv, 0x00, GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*3);
 
     // Initialise the board interface
     init_board(g);
 
-    // Write RAM Addr Table
-    write_cmd(g, CUBE0414_ADDR_WR);
-    write_buff(g, (uint8_t *)ram_addr_table, sizeof(ram_addr_table));
-
-    // Refresh GRAM
-    write_cmd(g, CUBE0414_DATA_WR);
-    write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_HEIGHT*GDISP_SCREEN_WIDTH*3);
+    write_cmd(g, CUBE0414_ADDR_WR);     //  1: Set write ram addr, 64 args, no delay:
+        write_buff(g, (uint8_t *)ram_addr_table, sizeof(ram_addr_table));
+    write_cmd(g, CUBE0414_DATA_WR);     //  2: Set write ram data, N args, no delay:
+        write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*3);
 
     /* Initialise the GDISP structure */
-    g->g.Height = GDISP_SCREEN_HEIGHT;
     g->g.Width  = GDISP_SCREEN_WIDTH;
+    g->g.Height = GDISP_SCREEN_HEIGHT;
     g->g.Orientation = GDISP_ROTATE_0;
     g->g.Powermode = powerOn;
     g->g.Backlight = GDISP_INITIAL_BACKLIGHT;
     g->g.Contrast  = GDISP_INITIAL_CONTRAST;
+
     return TRUE;
 }
 
@@ -110,126 +106,79 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
 #endif
 
 #if GDISP_HARDWARE_STREAM_WRITE
-    static int8_t stream_write_x  = 0;
-    static int8_t stream_write_cx = 0;
-    static int8_t stream_write_y  = 0;
-    static int8_t stream_write_cy = 0;
+    static uint8_t write_x  = 0;
+    static uint8_t write_cx = 0;
+    static uint8_t write_y  = 0;
+    static uint8_t write_cy = 0;
     LLDSPEC void gdisp_lld_write_start(GDisplay *g) {
-        stream_write_x  = g->p.x;
-        stream_write_cx = g->p.cx;
-        stream_write_y  = g->p.y;
-        stream_write_cy = g->p.cy;
+        write_x  = g->p.x;
+        write_cx = g->p.cx;
+        write_y  = g->p.y;
+        write_cy = g->p.cy;
     }
     LLDSPEC void gdisp_lld_write_color(GDisplay *g) {
+        uint16_t pos = write_y * g->g.Width + write_x;
         LLDCOLOR_TYPE c = gdispColor2Native(g->p.color);
 #ifdef CONFIG_CUBE0414_COLOR_GRB
-        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 0) = c >> 8;
-        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 1) = c >> 16;
-        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 2) = c;
+        *((uint8_t *)g->priv + pos * 3 + 0) = c >> 8;
+        *((uint8_t *)g->priv + pos * 3 + 1) = c >> 16;
+        *((uint8_t *)g->priv + pos * 3 + 2) = c;
 #else
-        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 0) = c >> 16;
-        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 1) = c >> 8;
-        *((uint8_t *)g->priv + (stream_write_x + stream_write_y * g->g.Width) * 3 + 2) = c;
+        *((uint8_t *)g->priv + pos * 3 + 0) = c >> 16;
+        *((uint8_t *)g->priv + pos * 3 + 1) = c >> 8;
+        *((uint8_t *)g->priv + pos * 3 + 2) = c;
 #endif
-        stream_write_x++;
-        if (--stream_write_cx <= 0) {
-            stream_write_x  = g->p.x;
-            stream_write_cx = g->p.cx;
-            stream_write_y++;
-            if (--stream_write_cy <= 0) {
-                stream_write_y  = g->p.y;
-                stream_write_cy = g->p.cy;
+        write_x++;
+        if (--write_cx == 0) {
+            write_x  = g->p.x;
+            write_cx = g->p.cx;
+            write_y++;
+            if (--write_cy == 0) {
+                write_y  = g->p.y;
+                write_cy = g->p.cy;
             }
         }
     }
     LLDSPEC void gdisp_lld_write_stop(GDisplay *g) {
-        stream_write_x  = 0;
-        stream_write_cx = 0;
-        stream_write_y  = 0;
-        stream_write_cy = 0;
         g->flags |= GDISP_FLG_NEEDFLUSH;
     }
 #endif
 
 #if GDISP_HARDWARE_STREAM_READ
-    static int8_t stream_read_x  = 0;
-    static int8_t stream_read_cx = 0;
-    static int8_t stream_read_y  = 0;
-    static int8_t stream_read_cy = 0;
+    static uint8_t read_x  = 0;
+    static uint8_t read_cx = 0;
+    static uint8_t read_y  = 0;
+    static uint8_t read_cy = 0;
     LLDSPEC void gdisp_lld_read_start(GDisplay *g) {
-        stream_read_x  = g->p.x;
-        stream_read_cx = g->p.cx;
-        stream_read_y  = g->p.y;
-        stream_read_cy = g->p.cy;
+        read_x  = g->p.x;
+        read_cx = g->p.cx;
+        read_y  = g->p.y;
+        read_cy = g->p.cy;
     }
     LLDSPEC color_t gdisp_lld_read_color(GDisplay *g) {
+        uint16_t pos = read_y * g->g.Width + read_x;
 #ifdef CONFIG_CUBE0414_COLOR_GRB
-        LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 0) << 8)
-                        | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 1) << 16)
-                        | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 2));
+        LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + pos * 3 + 0) << 8)
+                        | (*((uint8_t *)g->priv + pos * 3 + 1) << 16)
+                        | (*((uint8_t *)g->priv + pos * 3 + 2));
 #else
-        LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 0) << 16)
-                        | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 1) << 8)
-                        | (*((uint8_t *)g->priv + (stream_read_x + stream_read_y * g->g.Width) * 3 + 2));
+        LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + pos * 3 + 0) << 16)
+                        | (*((uint8_t *)g->priv + pos * 3 + 1) << 8)
+                        | (*((uint8_t *)g->priv + pos * 3 + 2));
 #endif
-        stream_read_x++;
-        if (--stream_read_cx <= 0) {
-            stream_read_x  = g->p.x;
-            stream_read_cx = g->p.cx;
-            stream_read_y++;
-            if (--stream_read_cy <= 0) {
-                stream_read_y  = g->p.y;
-                stream_read_cy = g->p.cy;
+        read_x++;
+        if (--read_cx == 0) {
+            read_x  = g->p.x;
+            read_cx = g->p.cx;
+            read_y++;
+            if (--read_cy == 0) {
+                read_y  = g->p.y;
+                read_cy = g->p.cy;
             }
         }
         return c;
     }
-    LLDSPEC void gdisp_lld_read_stop(GDisplay *g) {
-        stream_read_x  = 0;
-        stream_read_cx = 0;
-        stream_read_y  = 0;
-        stream_read_cy = 0;
-    }
-#endif
-
-#if GDISP_NEED_CONTROL && GDISP_HARDWARE_CONTROL
-LLDSPEC void gdisp_lld_control(GDisplay *g) {
-    switch(g->p.x) {
-    case GDISP_CONTROL_POWER:
-        if (g->g.Powermode == (powermode_t)g->p.ptr)
-            return;
-        switch ((powermode_t)g->p.ptr) {
-            case powerOff:
-            case powerSleep:
-            case powerDeepSleep:
-            case powerOn:
-            default:
-                return;
-        }
-        g->g.Powermode = (powermode_t)g->p.ptr;
-        return;
-    case GDISP_CONTROL_ORIENTATION:
-        if (g->g.Orientation == (orientation_t)g->p.ptr)
-            return;
-        switch ((orientation_t)g->p.ptr) {
-            case GDISP_ROTATE_0:
-            case GDISP_ROTATE_90:
-            case GDISP_ROTATE_180:
-            case GDISP_ROTATE_270:
-            default:
-                return;
-        }
-        g->g.Orientation = (orientation_t)g->p.ptr;
-        return;
-    case GDISP_CONTROL_BACKLIGHT:
-        if ((unsigned)g->p.ptr > 100)
-            g->p.ptr = (void *)100;
-        g->g.Backlight = (unsigned)g->p.ptr;
-        return;
-    default:
-        return;
-    }
-}
+    LLDSPEC void gdisp_lld_read_stop(GDisplay *g) {}
 #endif
 
 #endif /* GFX_USE_GDISP */
