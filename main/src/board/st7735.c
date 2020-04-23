@@ -64,6 +64,7 @@ void st7735_set_backlight(uint8_t val)
 void st7735_setpin_dc(spi_transaction_t *t)
 {
     int dc = (int)t->user;
+
     gpio_set_level(CONFIG_DEVICE_DC_PIN, dc);
 }
 
@@ -106,13 +107,12 @@ void st7735_refresh_gram(uint8_t *gram)
     hspi_trans[0].user = (void*)0;
     hspi_trans[0].flags = SPI_TRANS_USE_TXDATA;
 
+    spi_device_queue_trans(hspi, &hspi_trans[0], portMAX_DELAY);
+
     hspi_trans[1].length = ST7735_SCREEN_WIDTH*ST7735_SCREEN_HEIGHT*2*8;
     hspi_trans[1].tx_buffer = gram;
     hspi_trans[1].user = (void*)1;
 
-    // Queue all transactions.
-    for (int x=0; x<2; x++) {
-        spi_device_queue_trans(hspi, &hspi_trans[x], portMAX_DELAY);
-    }
+    spi_device_queue_trans(hspi, &hspi_trans[1], portMAX_DELAY);
 }
 #endif

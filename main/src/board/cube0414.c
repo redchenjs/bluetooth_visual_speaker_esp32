@@ -34,6 +34,7 @@ void cube0414_init_board(void)
 void cube0414_setpin_dc(spi_transaction_t *t)
 {
     int dc = (int)t->user;
+
     gpio_set_level(CONFIG_DEVICE_DC_PIN, dc);
 }
 
@@ -71,13 +72,12 @@ void cube0414_refresh_gram(uint8_t *gram)
     hspi_trans[0].user = (void*)0;
     hspi_trans[0].flags = SPI_TRANS_USE_TXDATA;
 
+    spi_device_queue_trans(hspi, &hspi_trans[0], portMAX_DELAY);
+
     hspi_trans[1].length = CUBE0414_X*CUBE0414_Y*CUBE0414_Z*3*8;
     hspi_trans[1].tx_buffer = gram;
     hspi_trans[1].user = (void*)1;
 
-    // Queue all transactions.
-    for (int x=0; x<2; x++) {
-        spi_device_queue_trans(hspi, &hspi_trans[x], portMAX_DELAY);
-    }
+    spi_device_queue_trans(hspi, &hspi_trans[1], portMAX_DELAY);
 }
 #endif
