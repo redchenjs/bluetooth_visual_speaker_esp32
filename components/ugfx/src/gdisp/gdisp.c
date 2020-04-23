@@ -26,7 +26,6 @@
 
 #if GDISP_NEED_TIMERFLUSH
 	static GTimer	FlushTimer;
-	static uint16_t FlushPeriod = GDISP_NEED_TIMERFLUSH;
 #endif
 
 GDisplay	*GDISP;
@@ -550,14 +549,6 @@ static void line_clip(GDisplay *g) {
 		for(g = (GDisplay *)gdriverGetNext(GDRIVER_TYPE_DISPLAY, 0); g; g = (GDisplay *)gdriverGetNext(GDRIVER_TYPE_DISPLAY, (GDriver *)g))
 			gdispGFlush(g);
 	}
-	void gdispGSetFlushPeriod(GDisplay *g, uint16_t period) {
-		if (period > GDISP_NEED_TIMERFLUSH) {
-			FlushPeriod = period;
-		} else {
-			FlushPeriod = GDISP_NEED_TIMERFLUSH;
-		}
-		gtimerStart(&FlushTimer, FlushTimerFn, 0, TRUE, FlushPeriod);
-	}
 #endif
 
 /*===========================================================================*/
@@ -620,7 +611,7 @@ void _gdispInit(void)
 	// Start the automatic timer flush (if required)
 	#if GDISP_NEED_TIMERFLUSH
 		gtimerInit(&FlushTimer);
-		gtimerStart(&FlushTimer, FlushTimerFn, 0, TRUE, FlushPeriod);
+		gtimerStart(&FlushTimer, FlushTimerFn, 0, TRUE, GDISP_NEED_TIMERFLUSH);
 	#endif
 }
 
