@@ -23,7 +23,6 @@ static i2s_config_t i2s_output_config = {
     .use_apll = 1,                                                          // Use APLL
     .sample_rate = 44100,
     .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
-    .intr_alloc_flags = ESP_INTR_FLAG_LEVEL3,
     .tx_desc_auto_clear = true,                                             // Auto clear tx descriptor on underflow
     .dma_buf_count = 2,
     .dma_buf_len = 128,
