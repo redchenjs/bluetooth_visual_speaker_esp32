@@ -43,7 +43,7 @@ static const char *img_file_ptr[][2] = {
     #ifdef CONFIG_VFX_OUTPUT_ST7735
         {ani0_160x80_gif_ptr, ani0_160x80_gif_end},     // "Nyan Cat"
         {ani1_160x80_gif_ptr, ani1_160x80_gif_end},     // "bilibili"
-    #elif defined(CONFIG_VFX_OUTPUT_ST7789)
+    #else
         {ani0_240x135_gif_ptr, ani0_240x135_gif_end},   // "Nyan Cat"
         {ani1_240x135_gif_ptr, ani1_240x135_gif_end},   // "bilibili"
     #endif

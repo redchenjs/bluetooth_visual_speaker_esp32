@@ -75,7 +75,7 @@ extern float vfx_fft_output[FFT_N];
         // ani1.gif
         extern const char ani1_160x80_gif_ptr[] asm("_binary_ani1_160x80_gif_start");
         extern const char ani1_160x80_gif_end[] asm("_binary_ani1_160x80_gif_end");
-    #elif defined(CONFIG_VFX_OUTPUT_ST7789)
+    #else
         // ani0.gif
         extern const char ani0_240x135_gif_ptr[] asm("_binary_ani0_240x135_gif_start");
         extern const char ani0_240x135_gif_end[] asm("_binary_ani0_240x135_gif_end");
