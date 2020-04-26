@@ -154,17 +154,17 @@ config ENABLE_VFX
 
 choice VFX_OUTPUT
     prompt "VFX Output Device"
-    default VFX_OUTPUT_ST7789
+    default VFX_OUTPUT_CUBE0414
     depends on ENABLE_VFX
     help
         Select which device to output VFX.
 
-config VFX_OUTPUT_CUBE0414
-    bool "CUBE0414 8x8x8 Music Light Cube"
 config VFX_OUTPUT_ST7735
     bool "ST7735 80x160 LCD Panel"
 config VFX_OUTPUT_ST7789
     bool "ST7789 135x240 LCD Panel"
+config VFX_OUTPUT_CUBE0414
+    bool "CUBE0414 8x8x8 Music Light Cube"
 endchoice
 
 choice BT_AUDIO_FFT_CHANNEL
