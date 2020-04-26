@@ -132,7 +132,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -201,7 +201,7 @@ static void vfx_task(void *pvParameter)
                     uint16_t fill_cy = fft_out[i];
 #endif
 
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
+                    gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
                     if (++color_h == 512) {
@@ -236,7 +236,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -305,7 +305,7 @@ static void vfx_task(void *pvParameter)
                     uint16_t fill_cy = fft_out[i];
 #endif
 
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, 0x000000);
+                    gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
                     if ((color_h += 8) == 512) {
@@ -356,7 +356,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -423,7 +423,7 @@ static void vfx_task(void *pvParameter)
                         vu_peak_delay[i] = vu_peak_delay_init - 1 + vu_peak_delay[i] % vu_drop_delay_init;
                     }
                     if (vu_peak_value[i] != vu_val_out) {
-                        gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
+                        gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, Black);
                     }
 
                     uint32_t peak_color = vfx_get_color(432, color_l);
@@ -438,7 +438,7 @@ static void vfx_task(void *pvParameter)
                         }
 
                         if (j > vu_val_out || ((j == 0) && (vu_val_out == 0))) { // Upside
-                            gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, 0x000000);
+                            gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, Black);
                         } else { // Underside
                             gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, pixel_color);
                         }
@@ -470,7 +470,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -541,8 +541,8 @@ static void vfx_task(void *pvParameter)
                     uint16_t fill_cy = fft_out[i] * 2 + 1;
 #endif
 
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_u_y, clear_cx, clear_cy, 0x000000);
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, 0x000000);
+                    gdispGFillArea(vfx_gdisp, clear_x, clear_u_y, clear_cx, clear_cy, Black);
+                    gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
                     if (++color_h == 512) {
@@ -578,7 +578,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -649,8 +649,8 @@ static void vfx_task(void *pvParameter)
                     uint16_t fill_cy = fft_out[i] * 2 + 1;
 #endif
 
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_u_y, clear_cx, clear_cy, 0x000000);
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, 0x000000);
+                    gdispGFillArea(vfx_gdisp, clear_x, clear_u_y, clear_cx, clear_cy, Black);
+                    gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
                     if ((color_h += 8) == 512) {
@@ -701,7 +701,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
@@ -768,7 +768,7 @@ static void vfx_task(void *pvParameter)
                         vu_peak_delay[i] = vu_peak_delay_init - 1 + vu_peak_delay[i] % vu_drop_delay_init;
                     }
                     if (vu_peak_value[i] != vu_val_out) {
-                        gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, 0x000000);
+                        gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, Black);
                     }
 
                     uint32_t peak_color = vfx_get_color(432, color_l);
@@ -783,7 +783,7 @@ static void vfx_task(void *pvParameter)
                         }
 
                         if (j > vu_val_out || ((j == 0) && (vu_val_out == 0))) { // Upside
-                            gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, 0x000000);
+                            gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, Black);
                         } else { // Underside
                             gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, pixel_color);
                         }
@@ -967,7 +967,7 @@ static void vfx_task(void *pvParameter)
             float color_l = vfx.lightness / 256.0;
             const uint16_t flush_period = 8;
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             for (uint16_t i=0; i<512; i++) {
@@ -1034,7 +1034,7 @@ static void vfx_task(void *pvParameter)
             float color_l = vfx.lightness / 256.0;
             const uint16_t flush_period = 8;
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             for (uint16_t i=0; i<512; i++) {
@@ -1101,7 +1101,7 @@ static void vfx_task(void *pvParameter)
             float color_l = vfx.lightness / 256.0;
             const uint16_t flush_period = 8;
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             for (uint16_t i=0; i<512; i++) {
@@ -1165,7 +1165,7 @@ star_sky_exit:
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 1000;
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             while (1) {
@@ -1203,7 +1203,7 @@ star_sky_exit:
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 80;
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             while (1) {
@@ -1261,7 +1261,7 @@ star_sky_exit:
             uint16_t frame_idx = 0;
             const uint16_t flush_period = 16;
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             while (1) {
@@ -1289,7 +1289,7 @@ star_sky_exit:
             uint16_t frame_idx = 0;
             const uint16_t flush_period = 40;
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             while (1) {
@@ -1326,7 +1326,7 @@ star_sky_exit:
             uint16_t frame_idx = 0;
             const uint16_t flush_period = 40;
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             while (1) {
@@ -1372,7 +1372,7 @@ star_sky_exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1475,7 +1475,7 @@ star_sky_exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1599,7 +1599,7 @@ star_sky_exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             for (uint16_t i=0; i<64; i++) {
@@ -1709,7 +1709,7 @@ star_sky_exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1812,7 +1812,7 @@ star_sky_exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1936,7 +1936,7 @@ star_sky_exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             for (uint16_t i=0; i<64; i++) {
@@ -2049,7 +2049,7 @@ star_sky_exit:
 
             vTaskDelay(500 / portTICK_RATE_MS);
 
-            gdispGClear(vfx_gdisp, 0x000000);
+            gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
             xEventGroupWaitBits(
