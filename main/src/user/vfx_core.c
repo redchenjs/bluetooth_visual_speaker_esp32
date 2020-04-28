@@ -79,6 +79,10 @@ void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_
     uint8_t pixel_x = (7 - x) + (7 - y) * 8;
     uint8_t pixel_y = z;
 #endif
+#ifdef CONFIG_CUBE0414_LAYER_H_ZI
+    uint8_t pixel_x = x + y * 8;
+    uint8_t pixel_y = 7 - z;
+#endif
 #ifdef CONFIG_CUBE0414_LAYER_V
     uint8_t pixel_x = x + z * 8;
     uint8_t pixel_y = y;
@@ -86,6 +90,10 @@ void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_
 #ifdef CONFIG_CUBE0414_LAYER_V_XYI
     uint8_t pixel_x = (7 - x) + (7 - z) * 8;
     uint8_t pixel_y = y;
+#endif
+#ifdef CONFIG_CUBE0414_LAYER_V_ZI
+    uint8_t pixel_x = x + z * 8;
+    uint8_t pixel_y = 7 - y;
 #endif
 
     gdispGDrawPixel(vfx_gdisp, pixel_x, pixel_y, pixel_color);

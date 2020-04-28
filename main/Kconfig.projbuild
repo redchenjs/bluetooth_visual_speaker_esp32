@@ -208,10 +208,14 @@ config CUBE0414_LAYER_H
     bool "Horizontal"
 config CUBE0414_LAYER_H_XYI
     bool "Horizontal XY-Inverted"
+config CUBE0414_LAYER_H_ZI
+    bool "Horizontal Z-Inverted"
 config CUBE0414_LAYER_V
     bool "Vertical"
 config CUBE0414_LAYER_V_XYI
     bool "Vertical XY-Inverted"
+config CUBE0414_LAYER_V_ZI
+    bool "Vertical Z-Inverted"
 endchoice
 
 choice CUBE0414_LINE_TYPE
