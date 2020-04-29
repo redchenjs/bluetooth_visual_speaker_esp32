@@ -13,6 +13,8 @@
 #include "driver/ledc.h"
 #include "driver/spi_master.h"
 
+#include "drivers/gdisp/ST7735/ST7735.h"
+
 #include "chip/spi.h"
 #include "board/st7735.h"
 
@@ -26,10 +28,11 @@ void st7735_init_board(void)
 {
     memset(hspi_trans, 0x00, sizeof(hspi_trans));
 
-    gpio_set_direction(CONFIG_DEVICE_DC_PIN,  GPIO_MODE_OUTPUT);
-    gpio_set_direction(CONFIG_DEVICE_RST_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_level(CONFIG_DEVICE_DC_PIN,  0);
-    gpio_set_level(CONFIG_DEVICE_RST_PIN, 0);
+    gpio_config_t io_conf = {
+        .mode = GPIO_MODE_OUTPUT,
+        .pin_bit_mask = BIT64(CONFIG_DEVICE_DC_PIN) | BIT64(CONFIG_DEVICE_RST_PIN),
+    };
+    gpio_config(&io_conf);
 
     ledc_timer_config_t ledc_timer = {
         .duty_resolution = LEDC_TIMER_8_BIT,
@@ -103,7 +106,7 @@ void st7735_write_buff(uint8_t *buff, uint32_t n)
 void st7735_refresh_gram(uint8_t *gram)
 {
     hspi_trans[0].length = 8,
-    hspi_trans[0].tx_data[0] = 0x2C;    // Set Write RAM
+    hspi_trans[0].tx_data[0] = ST7735_RAMWR;
     hspi_trans[0].user = (void*)0;
     hspi_trans[0].flags = SPI_TRANS_USE_TXDATA;
 
