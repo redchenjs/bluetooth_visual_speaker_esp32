@@ -19,6 +19,7 @@
 extern void cube0414_init_board(void);
 
 extern void cube0414_setpin_dc(spi_transaction_t *);
+extern void cube0414_setpin_reset(uint8_t val);
 
 extern void cube0414_write_cmd(uint8_t cmd);
 extern void cube0414_write_data(uint8_t data);

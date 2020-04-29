@@ -12,6 +12,8 @@
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 
+#include "drivers/gdisp/CUBE0414/CUBE0414.h"
+
 #include "chip/spi.h"
 #include "board/cube0414.h"
 
@@ -25,10 +27,13 @@ void cube0414_init_board(void)
 {
     memset(hspi_trans, 0x00, sizeof(hspi_trans));
 
-    gpio_set_direction(CONFIG_DEVICE_DC_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_level(CONFIG_DEVICE_DC_PIN, 0);
+    gpio_config_t io_conf = {
+        .mode = GPIO_MODE_OUTPUT,
+        .pin_bit_mask = BIT64(CONFIG_DEVICE_DC_PIN) | BIT64(CONFIG_DEVICE_RST_PIN),
+    };
+    gpio_config(&io_conf);
 
-    ESP_LOGI(TAG, "initialized, dc: %d", CONFIG_DEVICE_DC_PIN);
+    ESP_LOGI(TAG, "initialized, dc: %d, rst: %d", CONFIG_DEVICE_DC_PIN, CONFIG_DEVICE_RST_PIN);
 }
 
 void cube0414_setpin_dc(spi_transaction_t *t)
@@ -36,6 +41,11 @@ void cube0414_setpin_dc(spi_transaction_t *t)
     int dc = (int)t->user;
 
     gpio_set_level(CONFIG_DEVICE_DC_PIN, dc);
+}
+
+void cube0414_setpin_reset(uint8_t val)
+{
+    gpio_set_level(CONFIG_DEVICE_RST_PIN, val);
 }
 
 void cube0414_write_cmd(uint8_t cmd)
@@ -68,7 +78,7 @@ void cube0414_write_buff(uint8_t *buff, uint32_t n)
 void cube0414_refresh_gram(uint8_t *gram)
 {
     hspi_trans[0].length = 8,
-    hspi_trans[0].tx_data[0] = 0xDA;    // Write Frame Data
+    hspi_trans[0].tx_data[0] = CUBE0414_DATA_WR;
     hspi_trans[0].user = (void*)0;
     hspi_trans[0].flags = SPI_TRANS_USE_TXDATA;
 

@@ -244,10 +244,40 @@ config CUBE0414_COLOR_GRB
     bool "GRB"
 endchoice
 
+config CUBE0414_LED_T1H
+    int "CUBE0414 LED T1H Time (ns)"
+    default 1360
+    range 10 2500
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+
+config CUBE0414_LED_T1L
+    int "CUBE0414 LED T1L Time (ns)"
+    default 350
+    range 10 2500
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+
+config CUBE0414_LED_T0H
+    int "CUBE0414 LED T0H Time (ns)"
+    default 350
+    range 10 2500
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+
+config CUBE0414_LED_T0L
+    int "CUBE0414 LED T0L Time (ns)"
+    default 1360
+    range 10 2500
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+
+config CUBE0414_LED_RST
+    int "CUBE0414 LED RST Time (us)"
+    default 280
+    range 10 650
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+
 config DEVICE_RST_PIN
     int "Device RST Pin"
     default 14
-    depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
+    depends on ENABLE_VFX
 
 config DEVICE_DC_PIN
     int "Device DC Pin"

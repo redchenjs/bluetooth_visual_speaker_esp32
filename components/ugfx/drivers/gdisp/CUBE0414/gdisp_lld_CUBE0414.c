@@ -79,9 +79,22 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     // Initialise the board interface
     init_board(g);
 
-    write_cmd(g, CUBE0414_ADDR_WR);     //  1: Set write ram addr, 64 args, no delay:
+    // Hardware reset
+    setpin_reset(g, 0);
+    gfxSleepMilliseconds(120);
+    setpin_reset(g, 1);
+    gfxSleepMilliseconds(120);
+
+    write_cmd(g, CUBE0414_CONF_WR);     //  1: Set write reg conf, 6 args, no delay:
+        write_data(g, CONFIG_CUBE0414_LED_T1H / 10);    // T1H Time (ns)
+        write_data(g, CONFIG_CUBE0414_LED_T1L / 10);    // T1L Time (ns)
+        write_data(g, CONFIG_CUBE0414_LED_T0H / 10);    // T0H Time (ns)
+        write_data(g, CONFIG_CUBE0414_LED_T0L / 10);    // T0L Time (ns)
+        write_data(g, CONFIG_CUBE0414_LED_RST * 100 >> 8);    // RST Time H (us)
+        write_data(g, CONFIG_CUBE0414_LED_RST * 100 & 0xff);  // RST Time L (us)
+    write_cmd(g, CUBE0414_ADDR_WR);     //  2: Set write ram addr, 64 args, no delay:
         write_buff(g, (uint8_t *)ram_addr_table, sizeof(ram_addr_table));
-    write_cmd(g, CUBE0414_DATA_WR);     //  2: Set write ram data, N args, no delay:
+    write_cmd(g, CUBE0414_DATA_WR);     //  3: Set write ram data, N args, no delay:
         write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*3);
 
     /* Initialise the GDISP structure */
