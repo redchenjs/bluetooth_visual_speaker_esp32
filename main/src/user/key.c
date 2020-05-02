@@ -48,17 +48,24 @@ static void (*key_handle[])(void) = {
 static void key_task(void *pvParameter)
 {
     portTickType xLastWakeTime;
+    gpio_config_t io_conf = {0};
     uint16_t count[sizeof(gpio_pin)] = {0};
 
     for (int i=0; i<sizeof(gpio_pin); i++) {
-        gpio_set_direction(gpio_pin[i], GPIO_MODE_INPUT);
+        io_conf.pin_bit_mask = BIT64(gpio_pin[i]);
+        io_conf.mode = GPIO_MODE_INPUT;
+
         if (gpio_val[i] == 0) {
-            gpio_pulldown_dis(gpio_pin[i]);
-            gpio_pullup_en(gpio_pin[i]);
+            io_conf.pull_up_en = true;
+            io_conf.pull_down_en = false;
         } else {
-            gpio_pullup_dis(gpio_pin[i]);
-            gpio_pulldown_en(gpio_pin[i]);
+            io_conf.pull_up_en = false;
+            io_conf.pull_down_en = true;
         }
+
+        io_conf.intr_type = GPIO_INTR_DISABLE;
+
+        gpio_config(&io_conf);
     }
 
     ESP_LOGI(TAG, "started.");
