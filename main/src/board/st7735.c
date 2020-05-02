@@ -29,8 +29,11 @@ void st7735_init_board(void)
     memset(hspi_trans, 0x00, sizeof(hspi_trans));
 
     gpio_config_t io_conf = {
-        .mode = GPIO_MODE_OUTPUT,
         .pin_bit_mask = BIT64(CONFIG_DEVICE_DC_PIN) | BIT64(CONFIG_DEVICE_RST_PIN),
+        .mode = GPIO_MODE_OUTPUT,
+        .pull_up_en = false,
+        .pull_down_en = false,
+        .intr_type = GPIO_INTR_DISABLE,
     };
     gpio_config(&io_conf);
 
