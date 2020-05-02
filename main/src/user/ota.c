@@ -137,7 +137,7 @@ static void ota_write_task(void *pvParameter)
         data_length -= size;
 
         if (data_length == 0) {
-            esp_err_t err = esp_ota_end(update_handle);
+            err = esp_ota_end(update_handle);
             if (err != ESP_OK) {
                 ESP_LOGE(OTA_TAG, "image data error.");
 
