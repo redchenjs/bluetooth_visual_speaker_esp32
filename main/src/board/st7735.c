@@ -69,9 +69,7 @@ void st7735_set_backlight(uint8_t val)
 
 void st7735_setpin_dc(spi_transaction_t *t)
 {
-    int dc = (int)t->user;
-
-    gpio_set_level(CONFIG_DEVICE_DC_PIN, dc);
+    gpio_set_level(CONFIG_DEVICE_DC_PIN, (int)t->user);
 }
 
 void st7735_setpin_reset(uint8_t val)
