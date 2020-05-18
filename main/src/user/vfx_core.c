@@ -67,10 +67,8 @@ uint32_t vfx_get_color(float color_h, float color_l)
 }
 
 #ifdef CONFIG_VFX_OUTPUT_CUBE0414
-void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
+void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color)
 {
-    uint32_t pixel_color = vfx_get_color(color_h, color_l);
-
 #ifdef CONFIG_CUBE0414_LAYER_H
     uint8_t pixel_x = x + y * 8;
     uint8_t pixel_y = z;
@@ -96,15 +94,24 @@ void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_
     uint8_t pixel_y = 7 - y;
 #endif
 
-    gdispGDrawPixel(vfx_gdisp, pixel_x, pixel_y, pixel_color);
+    gdispGDrawPixel(vfx_gdisp, pixel_x, pixel_y, color);
+}
+
+void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
+{
+    uint32_t pixel_color = vfx_get_color(color_h, color_l);
+
+    vfx_draw_pixel_raw(x, y, z, pixel_color);
 }
 
 void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint8_t cz, float color_h, float color_l)
 {
+    uint32_t pixel_color = vfx_get_color(color_h, color_l);
+
     for (uint8_t i=0; i<cx; i++) {
         for (uint8_t j=0; j<cy; j++) {
             for (uint8_t k=0; k<cz; k++) {
-                vfx_draw_pixel(x+i, y+j, z+k, color_h, color_l);
+                vfx_draw_pixel_raw(x+i, y+j, z+k, pixel_color);
             }
         }
     }
