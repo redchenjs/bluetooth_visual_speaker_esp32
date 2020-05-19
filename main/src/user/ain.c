@@ -31,7 +31,7 @@ static void ain_task(void *pvParameters)
     while (1) {
         xEventGroupWaitBits(
             user_event_group,
-            AUDIO_INPUT_RUN_BIT | AUDIO_INPUT_FFT_BIT,
+            AUDIO_INPUT_RUN_BIT | AUDIO_INPUT_FFT_BIT | VFX_FFT_NULL_BIT,
             pdFALSE,
             pdTRUE,
             portMAX_DELAY
@@ -41,11 +41,6 @@ static void ain_task(void *pvParameters)
         i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, data, FFT_N * 4, &bytes_read, portMAX_DELAY);
 
 #ifdef CONFIG_ENABLE_VFX
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (!(uxBits & VFX_FFT_NULL_BIT)) {
-            continue;
-        }
-
         // Copy data to FFT input buffer
         uint32_t idx = 0;
 
@@ -73,7 +68,7 @@ static void ain_task(void *pvParameters)
         }
 #endif
 
-        uxBits = xEventGroupGetBits(user_event_group);
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (!(uxBits & AUDIO_INPUT_RUN_BIT)) {
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
         }
