@@ -35,7 +35,7 @@ static float hue2rgb(float v1, float v2, float vH)
     }
 }
 
-static uint32_t hsl2rgb(float H, float S, float L)
+uint32_t hsl2rgb(float H, float S, float L)
 {
     float v1, v2;
     uint8_t R, G, B;
@@ -59,11 +59,6 @@ static uint32_t hsl2rgb(float H, float S, float L)
     }
 
     return (uint32_t)(R << 16 | G << 8 | B);
-}
-
-uint32_t vfx_get_color(float color_h, float color_l)
-{
-    return hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 }
 
 #ifdef CONFIG_VFX_OUTPUT_CUBE0414
@@ -99,14 +94,12 @@ void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color)
 
 void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
 {
-    uint32_t pixel_color = vfx_get_color(color_h, color_l);
-
-    vfx_draw_pixel_raw(x, y, z, pixel_color);
+    vfx_draw_pixel_raw(x, y, z, hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0));
 }
 
 void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint8_t cz, float color_h, float color_l)
 {
-    uint32_t pixel_color = vfx_get_color(color_h, color_l);
+    uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
     for (uint8_t i=0; i<cx; i++) {
         for (uint8_t j=0; j<cy; j++) {

@@ -122,7 +122,7 @@ static void vfx_task(void *pvParameter)
             break;
         }
         case 0x0D: {   // 音樂頻譜-漸變-線性
-            uint16_t color_tmp = 0;
+            uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
@@ -175,9 +175,9 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                color_tmp = color_h;
+                color_p = color_h;
                 for (uint16_t i=0; i<vfx_disp_width; i++) {
-                    uint32_t pixel_color = vfx_get_color(color_h, color_l);
+                    uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
@@ -209,10 +209,10 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                if (++color_tmp == 512) {
+                if (++color_p == 512) {
                     color_h = 0;
                 } else {
-                    color_h = color_tmp;
+                    color_h = color_p;
                 }
 
                 gtimerJab(&vfx_flush_timer);
@@ -281,7 +281,7 @@ static void vfx_task(void *pvParameter)
 
                 color_h = 0;
                 for (uint16_t i=0; i<vfx_disp_width; i++) {
-                    uint32_t pixel_color = vfx_get_color(color_h, color_l);
+                    uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
@@ -426,12 +426,12 @@ static void vfx_task(void *pvParameter)
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, Black);
                     }
 
-                    uint32_t peak_color = vfx_get_color(432, color_l);
+                    uint32_t peak_color = hsl2rgb(432 / 511.0, 1.0, color_l / 511.0);
                     gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
 
                     color_h = 0;
                     for (int8_t j=vu_val_max; j>=vu_val_min; j--) {
-                        uint32_t pixel_color = vfx_get_color(color_h, color_l);
+                        uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
                         if (j == vu_peak_value[i]) {
                             continue;
@@ -459,7 +459,7 @@ static void vfx_task(void *pvParameter)
             break;
         }
         case 0x10: {   // 音樂頻譜-漸變-對數
-            uint16_t color_tmp = 0;
+            uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
@@ -513,9 +513,9 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                color_tmp = color_h;
+                color_p = color_h;
                 for (uint16_t i=0; i<vfx_disp_width; i++) {
-                    uint32_t pixel_color = vfx_get_color(color_h, color_l);
+                    uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
@@ -550,10 +550,10 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                if (++color_tmp == 512) {
+                if (++color_p == 512) {
                     color_h = 0;
                 } else {
-                    color_h = color_tmp;
+                    color_h = color_p;
                 }
 
                 gtimerJab(&vfx_flush_timer);
@@ -623,7 +623,7 @@ static void vfx_task(void *pvParameter)
 
                 color_h = 0;
                 for (uint16_t i=0; i<vfx_disp_width; i++) {
-                    uint32_t pixel_color = vfx_get_color(color_h, color_l);
+                    uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
@@ -771,12 +771,12 @@ static void vfx_task(void *pvParameter)
                         gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, Black);
                     }
 
-                    uint32_t peak_color = vfx_get_color(432, color_l);
+                    uint32_t peak_color = hsl2rgb(432 / 511.0, 1.0, color_l / 511.0);
                     gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
 
                     color_h = 0;
                     for (int8_t j=vu_val_max; j>=vu_val_min; j--) {
-                        uint32_t pixel_color = vfx_get_color(color_h, color_l);
+                        uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
                         if (j == vu_peak_value[i]) {
                             continue;
@@ -854,7 +854,7 @@ static void vfx_task(void *pvParameter)
         case VFX_MODE_IDX_RIBBON: {   // 彩帶
             uint8_t x = 0;
             uint8_t y = 0;
-            uint16_t color_tmp = 0;
+            uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 16;
@@ -867,7 +867,7 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                color_tmp = color_h;
+                color_p = color_h;
                 while (1) {
                     for (uint8_t i=0; i<8; i++) {
                         vfx_draw_pixel(x, y, i, color_h, color_l);
@@ -886,10 +886,10 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                if (++color_tmp == 512) {
+                if (++color_p == 512) {
                     color_h = 0;
                 } else {
-                    color_h = color_tmp;
+                    color_h = color_p;
                 }
 
                 gtimerJab(&vfx_flush_timer);
@@ -927,7 +927,7 @@ static void vfx_task(void *pvParameter)
             uint8_t scale_dir = 0;
             uint16_t fade_cnt = 0;
             uint16_t color_h = esp_random() % 512;
-            float color_l = vfx.lightness / 256.0;
+            uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 8;
 
             while (1) {
@@ -938,7 +938,7 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, fade_cnt * color_l);
+                vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, fade_cnt * color_l / 256.0);
 
                 if (scale_dir == 0) {   // 暗->明
                     if (++fade_cnt == 256) {
@@ -964,7 +964,7 @@ static void vfx_task(void *pvParameter)
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
-            float color_l = vfx.lightness / 256.0;
+            uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 8;
 
             gdispGClear(vfx_gdisp, Black);
@@ -1003,14 +1003,14 @@ static void vfx_task(void *pvParameter)
                         x = (led_idx[idx_base] % 64) % 8;
                         y = (led_idx[idx_base] % 64) / 8;
                         z = led_idx[idx_base] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l / 256.0);
                     }
 
                     if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l / 256.0);
                     }
 
                     gtimerJab(&vfx_flush_timer);
@@ -1031,7 +1031,7 @@ static void vfx_task(void *pvParameter)
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
-            float color_l = vfx.lightness / 256.0;
+            uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 8;
 
             gdispGClear(vfx_gdisp, Black);
@@ -1070,14 +1070,14 @@ static void vfx_task(void *pvParameter)
                         x = (led_idx[idx_base] % 64) % 8;
                         y = (led_idx[idx_base] % 64) / 8;
                         z = led_idx[idx_base] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l / 256.0);
                     }
 
                     if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l / 256.0);
                     }
 
                     gtimerJab(&vfx_flush_timer);
@@ -1098,7 +1098,7 @@ static void vfx_task(void *pvParameter)
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
-            float color_l = vfx.lightness / 256.0;
+            uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 8;
 
             gdispGClear(vfx_gdisp, Black);
@@ -1137,14 +1137,14 @@ static void vfx_task(void *pvParameter)
                         x = (led_idx[idx_base] % 64) % 8;
                         y = (led_idx[idx_base] % 64) / 8;
                         z = led_idx[idx_base] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l / 256.0);
                     }
 
                     if ((idx_base + led_num) < 512) {
                         x = (led_idx[idx_base + led_num] % 64) % 8;
                         y = (led_idx[idx_base + led_num] % 64) / 8;
                         z = led_idx[idx_base + led_num] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l);
+                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l / 256.0);
                     }
 
                     gtimerJab(&vfx_flush_timer);
@@ -1258,11 +1258,9 @@ star_sky_exit:
             break;
         }
         case VFX_MODE_IDX_MAGIC_CARPET: {   // 魔毯
-            uint16_t frame_idx = 0;
+            uint16_t frame_i = 0;
+            uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 16;
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1272,10 +1270,10 @@ star_sky_exit:
                     break;
                 }
 
-                vfx_draw_cube_bitmap(vfx_bitmap_wave[frame_idx], vfx.lightness);
+                vfx_draw_cube_bitmap(vfx_bitmap_wave[frame_i], color_l);
 
-                if (++frame_idx == 45) {
-                    frame_idx = 8;
+                if (++frame_i == 45) {
+                    frame_i = 8;
                 }
 
                 gtimerJab(&vfx_flush_timer);
@@ -1285,12 +1283,10 @@ star_sky_exit:
             break;
         }
         case VFX_MODE_IDX_ROTATING_F: {   // 旋轉曲面-正
-            uint16_t frame_pre = 0;
-            uint16_t frame_idx = 0;
+            uint16_t frame_p = 0;
+            uint16_t frame_i = 0;
+            uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 40;
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1300,19 +1296,19 @@ star_sky_exit:
                     break;
                 }
 
-                frame_pre = frame_idx;
+                frame_p = frame_i;
                 for (uint8_t i=0; i<8; i++) {
-                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx], vfx.lightness);
+                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_i], color_l);
 
-                    if (frame_idx-- == 0) {
-                        frame_idx = 27;
+                    if (frame_i-- == 0) {
+                        frame_i = 27;
                     }
                 }
 
-                if (frame_pre-- == 0) {
-                    frame_idx = 27;
+                if (frame_p-- == 0) {
+                    frame_i = 27;
                 } else {
-                    frame_idx = frame_pre;
+                    frame_i = frame_p;
                 }
 
                 gtimerJab(&vfx_flush_timer);
@@ -1322,12 +1318,10 @@ star_sky_exit:
             break;
         }
         case VFX_MODE_IDX_ROTATING_B: {   // 旋轉曲面-反
-            uint16_t frame_pre = 0;
-            uint16_t frame_idx = 0;
+            uint16_t frame_p = 0;
+            uint16_t frame_i = 0;
+            uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 40;
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -1337,19 +1331,19 @@ star_sky_exit:
                     break;
                 }
 
-                frame_pre = frame_idx;
+                frame_p = frame_i;
                 for (uint8_t i=0; i<8; i++) {
-                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_idx], vfx.lightness);
+                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_i], color_l);
 
-                    if (++frame_idx == 28) {
-                        frame_idx = 0;
+                    if (++frame_i == 28) {
+                        frame_i = 0;
                     }
                 }
 
-                if (++frame_pre == 28) {
-                    frame_idx = 0;
+                if (++frame_p == 28) {
+                    frame_i = 0;
                 } else {
-                    frame_idx = frame_pre;
+                    frame_i = frame_p;
                 }
 
                 gtimerJab(&vfx_flush_timer);
@@ -1371,9 +1365,6 @@ star_sky_exit:
             const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -1462,8 +1453,8 @@ star_sky_exit:
         case VFX_MODE_IDX_FOUNTAIN_G_N: {   // 音樂噴泉-漸變-線性
             uint8_t x = 0;
             uint8_t y = 0;
-            uint8_t  color_cnt = 0;
-            uint16_t color_tmp = 0;
+            uint8_t  color_d = 0;
+            uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
@@ -1474,9 +1465,6 @@ star_sky_exit:
             const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -1516,7 +1504,7 @@ star_sky_exit:
                     }
                 }
 
-                color_h = color_tmp;
+                color_h = color_p;
                 for (uint16_t i=0; i<canvas_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
@@ -1551,10 +1539,10 @@ star_sky_exit:
                     }
                 }
 
-                if (++color_cnt == 8) {
-                    color_cnt = 0;
-                    if ((color_tmp += 8) == 512) {
-                        color_tmp = 0;
+                if (++color_d == 8) {
+                    color_d = 0;
+                    if ((color_p += 8) == 512) {
+                        color_p = 0;
                     }
                 }
 
@@ -1572,10 +1560,10 @@ star_sky_exit:
         case VFX_MODE_IDX_FOUNTAIN_H_N: {   // 音樂噴泉-螺旋-線性
             uint8_t x = 0;
             uint8_t y = 0;
-            uint8_t color_flg = 0;
-            uint8_t color_cnt = 0;
+            uint8_t color_n = 0;
+            uint8_t color_d = 0;
             uint16_t color_h[64] = {0};
-            uint16_t color_l[64] = {vfx.lightness};
+            uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             int16_t fft_out[64] = {0};
@@ -1599,12 +1587,8 @@ star_sky_exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
             for (uint16_t i=0; i<64; i++) {
                 color_h[i] = i * 8;
-                color_l[i] = vfx.lightness;
             }
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -1668,20 +1652,20 @@ star_sky_exit:
                                   0, 0);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
                                   fill_cx, fill_cy, fill_cz,
-                                  color_h[i], color_l[i]);
+                                  color_h[i], color_l);
 
-                    if (color_flg) {
+                    if (color_n) {
                         if (++color_h[i] == 512) {
                             color_h[i] = 0;
                         }
                     }
                 }
 
-                if (++color_cnt == 2) {
-                    color_cnt = 0;
-                    color_flg = 1;
+                if (++color_d == 2) {
+                    color_d = 0;
+                    color_n = 1;
                 } else {
-                    color_flg = 0;
+                    color_n = 0;
                 }
 
                 gtimerJab(&vfx_flush_timer);
@@ -1708,9 +1692,6 @@ star_sky_exit:
             const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -1799,8 +1780,8 @@ star_sky_exit:
         case VFX_MODE_IDX_FOUNTAIN_G_L: {   // 音樂噴泉-漸變-對數
             uint8_t x = 0;
             uint8_t y = 0;
-            uint8_t  color_cnt = 0;
-            uint16_t color_tmp = 0;
+            uint8_t  color_d = 0;
+            uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
@@ -1811,9 +1792,6 @@ star_sky_exit:
             const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -1853,7 +1831,7 @@ star_sky_exit:
                     }
                 }
 
-                color_h = color_tmp;
+                color_h = color_p;
                 for (uint16_t i=0; i<canvas_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
@@ -1888,10 +1866,10 @@ star_sky_exit:
                     }
                 }
 
-                if (++color_cnt == 8) {
-                    color_cnt = 0;
-                    if ((color_tmp += 8) == 512) {
-                        color_tmp = 0;
+                if (++color_d == 8) {
+                    color_d = 0;
+                    if ((color_p += 8) == 512) {
+                        color_p = 0;
                     }
                 }
 
@@ -1909,10 +1887,10 @@ star_sky_exit:
         case VFX_MODE_IDX_FOUNTAIN_H_L: {   // 音樂噴泉-螺旋-對數
             uint8_t x = 0;
             uint8_t y = 0;
-            uint8_t color_flg = 0;
-            uint8_t color_cnt = 0;
+            uint8_t color_n = 0;
+            uint8_t color_d = 0;
             uint16_t color_h[64] = {0};
-            uint16_t color_l[64] = {vfx.lightness};
+            uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             int16_t fft_out[64] = {0};
@@ -1936,12 +1914,8 @@ star_sky_exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
             for (uint16_t i=0; i<64; i++) {
                 color_h[i] = i * 8;
-                color_l[i] = vfx.lightness;
             }
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
@@ -2005,20 +1979,20 @@ star_sky_exit:
                                   0, 0);
                     vfx_fill_cube(fill_x, fill_y, fill_z,
                                   fill_cx, fill_cy, fill_cz,
-                                  color_h[i], color_l[i]);
+                                  color_h[i], color_l);
 
-                    if (color_flg) {
+                    if (color_n) {
                         if (++color_h[i] == 512) {
                             color_h[i] = 0;
                         }
                     }
                 }
 
-                if (++color_cnt == 2) {
-                    color_cnt = 0;
-                    color_flg = 1;
+                if (++color_d == 2) {
+                    color_d = 0;
+                    color_n = 1;
                 } else {
-                    color_flg = 0;
+                    color_n = 0;
                 }
 
                 gtimerJab(&vfx_flush_timer);
