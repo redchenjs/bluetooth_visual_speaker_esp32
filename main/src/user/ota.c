@@ -198,7 +198,7 @@ void ota_exec(esp_spp_cb_param_t *param)
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
                 if (data_length != 0 && !(uxBits & BT_OTA_LOCK_BIT)
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-                    && (uxBits & BLE_GATTS_IDLE_BIT)
+                && (uxBits & BLE_GATTS_IDLE_BIT)
 #endif
                 ) {
                     if (!update_handle) {
@@ -261,7 +261,7 @@ void ota_exec(esp_spp_cb_param_t *param)
                     }
                 } else if ((uxBits & BT_OTA_LOCK_BIT)
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-                        || !(uxBits & BLE_GATTS_IDLE_BIT)
+                       || !(uxBits & BLE_GATTS_IDLE_BIT)
 #endif
                 ) {
                     ota_send_response(RSP_IDX_FAIL);
