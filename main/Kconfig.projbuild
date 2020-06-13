@@ -7,24 +7,11 @@ config BT_NAME
     help
         Bluetooth name exposed by the device.
 
-menuconfig ENABLE_OTA_OVER_SPP
-    bool "Enable OTA over SPP"
-    default n
-    help
-        Enable OTA feature, you can use the SPP profile to upload the new firmware.
-
-config BT_SPP_SERVER_NAME
-    string "SPP Server Name"
-    default "OTA"
-    depends on ENABLE_OTA_OVER_SPP
-    help
-        Bluetooth SPP server name.
-
 config ENABLE_BLE_CONTROL_IF
     bool "Enable BLE Control Interface"
     default n
     help
-        Select this to enable BLE Control Interface.
+        Select this to enable BLE OTA and RC features.
 endmenu
 
 menu "Audio Configuration"

@@ -20,7 +20,7 @@
 
 EventGroupHandle_t user_event_group;
 
-#if defined(CONFIG_ENABLE_WAKEUP_KEY) || defined(CONFIG_ENABLE_SLEEP_KEY) || defined(CONFIG_ENABLE_OTA_OVER_SPP)
+#if defined(CONFIG_ENABLE_WAKEUP_KEY) || defined(CONFIG_ENABLE_SLEEP_KEY) || defined(CONFIG_ENABLE_BLE_CONTROL_IF)
 static EventBits_t sleep_wait_bits = 0;
 static EventBits_t restart_wait_bits = 0;
 
@@ -153,7 +153,7 @@ void os_init(void)
 #endif
 #endif // CONFIG_ENABLE_WAKEUP_KEY
 
-#if defined(CONFIG_ENABLE_WAKEUP_KEY) || defined(CONFIG_ENABLE_SLEEP_KEY) || defined(CONFIG_ENABLE_OTA_OVER_SPP)
+#if defined(CONFIG_ENABLE_WAKEUP_KEY) || defined(CONFIG_ENABLE_SLEEP_KEY) || defined(CONFIG_ENABLE_BLE_CONTROL_IF)
     xTaskCreatePinnedToCore(os_power_task_handle, "osPowerT", 2048, NULL, 5, NULL, 0);
 #endif
 }

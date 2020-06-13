@@ -136,6 +136,11 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_DISCONNECTED) {
             memset(&a2d_remote_bda, 0x00, sizeof(esp_bd_addr_t));
 
+            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESTART_BIT)) {
+                esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+            }
+
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
             audio_player_play_file(1);
 #endif
@@ -144,10 +149,8 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 #endif
 
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
-            xEventGroupClearBits(user_event_group, BT_OTA_LOCK_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
-            xEventGroupSetBits(user_event_group, BT_OTA_LOCK_BIT);
 
             memcpy(&a2d_remote_bda, a2d->conn_stat.remote_bda, sizeof(esp_bd_addr_t));
 
@@ -155,6 +158,8 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                 memcpy(&last_remote_bda, &a2d_remote_bda, sizeof(esp_bd_addr_t));
                 app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
             }
+
+            esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
             audio_player_play_file(0);

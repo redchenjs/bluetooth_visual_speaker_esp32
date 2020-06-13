@@ -11,8 +11,8 @@
 #include "esp_gatts_api.h"
 
 enum gatts_profile_idx {
+    PROFILE_IDX_OTA,
     PROFILE_IDX_VFX,
-    PROFILE_IDX_VER,
 
     PROFILE_IDX_MAX,
 };
@@ -33,6 +33,8 @@ typedef struct gatts_profile_inst {
 } gatts_profile_inst_t;
 
 extern gatts_profile_inst_t gatts_profile_tbl[];
+
+extern void gatts_ota_send_notification(const char *data, uint32_t len);
 
 extern void ble_gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 

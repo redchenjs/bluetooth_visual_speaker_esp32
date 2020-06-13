@@ -9,7 +9,7 @@
 
 #include "esp_log.h"
 #include "esp_ota_ops.h"
-#include "esp_spp_api.h"
+#include "esp_gap_bt_api.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/ringbuf.h"
@@ -17,21 +17,23 @@
 
 #include "core/os.h"
 #include "core/app.h"
+#include "user/led.h"
 #include "user/vfx.h"
 #include "user/ain.h"
 #include "user/bt_av.h"
 #include "user/bt_app.h"
-#include "user/bt_spp.h"
 #include "user/ble_app.h"
 #include "user/ble_gatts.h"
 
 #define OTA_TAG "ota"
 
 #define ota_send_response(X) \
-    esp_spp_write(spp_conn_handle, strlen(rsp_str[X]), (uint8_t *)rsp_str[X])
+    gatts_ota_send_notification((const char *)rsp_str[X], strlen(rsp_str[X]))
 
 #define ota_send_data(X, N) \
-    esp_spp_write(spp_conn_handle, N, (uint8_t *)X)
+    gatts_ota_send_notification((const char *)X, N)
+
+#define RX_BUF_SIZE 512
 
 #define CMD_FMT_UPD "FW+UPD:%u"
 #define CMD_FMT_RST "FW+RST!"
@@ -88,10 +90,10 @@ static RingbufHandle_t ota_buff = NULL;
 static const esp_partition_t *update_partition = NULL;
 static esp_ota_handle_t update_handle = 0;
 
-static int ota_parse_command(esp_spp_cb_param_t *param)
+static int ota_parse_command(const char *data)
 {
     for (int i=0; i<sizeof(cmd_fmt)/sizeof(cmd_fmt_t); i++) {
-        if (strncmp(cmd_fmt[i].format, (const char *)param->data_ind.data, cmd_fmt[i].prefix) == 0) {
+        if (strncmp(cmd_fmt[i].format, data, cmd_fmt[i].prefix) == 0) {
             return i;
         }
     }
@@ -113,8 +115,8 @@ static void ota_write_task(void *pvParameter)
             goto write_fail;
         }
 
-        if (data_length >= 990) {
-            data = (uint8_t *)xRingbufferReceiveUpTo(ota_buff, &size, 10 / portTICK_RATE_MS, 990);
+        if (data_length >= RX_BUF_SIZE) {
+            data = (uint8_t *)xRingbufferReceiveUpTo(ota_buff, &size, 10 / portTICK_RATE_MS, RX_BUF_SIZE);
         } else {
             data = (uint8_t *)xRingbufferReceiveUpTo(ota_buff, &size, 10 / portTICK_RATE_MS, data_length);
         }
@@ -176,7 +178,7 @@ write_fail:
     vTaskDelete(NULL);
 }
 
-void ota_exec(esp_spp_cb_param_t *param)
+void ota_exec(const char *data, uint32_t len)
 {
     if (data_err) {
         return;
@@ -187,27 +189,32 @@ void ota_exec(esp_spp_cb_param_t *param)
         vfx = vfx_get_conf();
 #endif
 
-        int cmd_idx = ota_parse_command(param);
+        if (len <= 2) {
+            return;
+        }
+
+        int cmd_idx = ota_parse_command(data);
 
         switch (cmd_idx) {
             case CMD_IDX_UPD: {
                 data_length = 0;
-                sscanf((const char *)param->data_ind.data, CMD_FMT_UPD, &data_length);
+                sscanf(data, CMD_FMT_UPD, &data_length);
                 ESP_LOGI(OTA_TAG, "GET command: "CMD_FMT_UPD, data_length);
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-                if (data_length != 0 && !(uxBits & BT_OTA_LOCK_BIT)
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-                && (uxBits & BLE_GATTS_IDLE_BIT)
-#endif
-                ) {
+                if (data_length == 0) {
+                    ota_send_response(RSP_IDX_ERROR);
+                } else if (!(uxBits & BT_A2DP_IDLE_BIT) || (uxBits & BLE_GATTS_LOCK_BIT)) {
+                    ota_send_response(RSP_IDX_FAIL);
+                } else {
                     if (!update_handle) {
                         xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
 
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-                        esp_ble_gap_stop_advertising();
-#endif
+                        esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
+#ifdef CONFIG_ENABLE_LED
+                        led_set_mode(7);
+#endif
 #ifdef CONFIG_ENABLE_VFX
                         vfx_prev_mode = vfx->mode;
                         vfx->mode = VFX_MODE_IDX_OFF;
@@ -249,7 +256,7 @@ void ota_exec(esp_spp_cb_param_t *param)
                         break;
                     }
 
-                    ota_buff = xRingbufferCreate(990, RINGBUF_TYPE_BYTEBUF);
+                    ota_buff = xRingbufferCreate(RX_BUF_SIZE, RINGBUF_TYPE_BYTEBUF);
                     if (!ota_buff) {
                         ota_send_response(RSP_IDX_ERROR);
                     } else {
@@ -257,16 +264,8 @@ void ota_exec(esp_spp_cb_param_t *param)
 
                         ota_send_response(RSP_IDX_OK);
 
-                        xTaskCreatePinnedToCore(ota_write_task, "otaWriteT", 1920, NULL, 9, NULL, 1);
+                        xTaskCreatePinnedToCore(ota_write_task, "otaWriteT", 1920, NULL, 10, NULL, 1);
                     }
-                } else if ((uxBits & BT_OTA_LOCK_BIT)
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-                       || !(uxBits & BLE_GATTS_IDLE_BIT)
-#endif
-                ) {
-                    ota_send_response(RSP_IDX_FAIL);
-                } else {
-                    ota_send_response(RSP_IDX_ERROR);
                 }
 
                 break;
@@ -274,7 +273,7 @@ void ota_exec(esp_spp_cb_param_t *param)
             case CMD_IDX_RST: {
                 ESP_LOGI(OTA_TAG, "GET command: "CMD_FMT_RST);
 
-                xEventGroupSetBits(user_event_group, BT_OTA_LOCK_BIT);
+                xEventGroupSetBits(user_event_group, BLE_GATTS_LOCK_BIT);
 
                 memset(&last_remote_bda, 0x00, sizeof(esp_bd_addr_t));
                 app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
@@ -293,18 +292,13 @@ void ota_exec(esp_spp_cb_param_t *param)
                 if (!(uxBits & BT_A2DP_IDLE_BIT)) {
                     esp_a2d_sink_disconnect(a2d_remote_bda);
                 }
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-                if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
-                    esp_ble_gatts_close(gatts_profile_tbl[0].gatts_if, gatts_profile_tbl[0].conn_id);
-                }
-                os_power_restart_wait(BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT);
-#else
-                os_power_restart_wait(BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT);
-#endif
+
+                esp_ble_gatts_close(gatts_profile_tbl[PROFILE_IDX_OTA].gatts_if,
+                                    gatts_profile_tbl[PROFILE_IDX_OTA].conn_id);
+
+                os_power_restart_wait(BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT);
 
                 update_handle = 0;
-
-                esp_spp_disconnect(param->write.handle);
 
                 break;
             }
@@ -339,7 +333,7 @@ void ota_exec(esp_spp_cb_param_t *param)
         }
     } else {
         if (ota_buff) {
-            xRingbufferSend(ota_buff, (void *)param->data_ind.data, param->data_ind.len, portMAX_DELAY);
+            xRingbufferSend(ota_buff, (void *)data, len, portMAX_DELAY);
         }
     }
 }
@@ -353,7 +347,10 @@ void ota_end(void)
         esp_ota_end(update_handle);
         update_handle = 0;
 
-        data_length = 0;
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+        if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESTART_BIT)) {
+            esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+        }
 
 #ifndef CONFIG_AUDIO_INPUT_NONE
         ain_set_mode(ain_prev_mode);
@@ -362,9 +359,8 @@ void ota_end(void)
         vfx->mode = vfx_prev_mode;
         vfx_set_conf(vfx);
 #endif
-
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-        esp_ble_gap_start_advertising(&adv_params);
+#ifdef CONFIG_ENABLE_LED
+        led_set_mode(3);
 #endif
 
         xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);

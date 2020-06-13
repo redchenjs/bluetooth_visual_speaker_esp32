@@ -18,7 +18,6 @@
 #include "core/os.h"
 #include "core/app.h"
 #include "user/bt_av.h"
-#include "user/bt_spp.h"
 #include "user/bt_app.h"
 #include "user/bt_app_core.h"
 
@@ -58,11 +57,6 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
         /* register GAP callback */
         esp_bt_gap_register_callback(bt_app_gap_cb);
 
-#ifdef CONFIG_ENABLE_OTA_OVER_SPP
-        esp_spp_register_callback(bt_app_spp_cb);
-        esp_spp_init(ESP_SPP_MODE_CB);
-#endif
-
         /* initialize AVRCP controller */
         esp_avrc_ct_init();
         esp_avrc_ct_register_callback(bt_app_avrc_ct_cb);
@@ -88,7 +82,6 @@ void bt_app_init(void)
     size_t length = sizeof(esp_bd_addr_t);
     app_getenv("LAST_REMOTE_BDA", &last_remote_bda, &length);
 
-    xEventGroupSetBits(user_event_group, BT_SPP_IDLE_BIT);
     xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
 
     /* create application task */

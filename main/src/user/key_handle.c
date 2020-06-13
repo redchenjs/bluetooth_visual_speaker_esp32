@@ -18,7 +18,6 @@
 #include "user/vfx.h"
 #include "user/ain.h"
 #include "user/bt_av.h"
-#include "user/bt_spp.h"
 #include "user/ble_gatts.h"
 #include "user/audio_player.h"
 
@@ -45,22 +44,15 @@ void sleep_key_handle(void)
     if (!(uxBits & BT_A2DP_IDLE_BIT)) {
         esp_a2d_sink_disconnect(a2d_remote_bda);
     }
-#ifdef CONFIG_ENABLE_OTA_OVER_SPP
-    if (!(uxBits & BT_SPP_IDLE_BIT)) {
-        esp_spp_disconnect(spp_conn_handle);
-    }
-#endif
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
     if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
-        esp_ble_gatts_close(gatts_profile_tbl[0].gatts_if, gatts_profile_tbl[0].conn_id);
+        esp_ble_gatts_close(gatts_profile_tbl[PROFILE_IDX_OTA].gatts_if,
+                            gatts_profile_tbl[PROFILE_IDX_OTA].conn_id);
     }
 #endif
 
     os_power_sleep_wait(
-        BT_SPP_IDLE_BIT | BT_A2DP_IDLE_BIT
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-        | BLE_GATTS_IDLE_BIT
-#endif
+        BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
         | AUDIO_PLAYER_IDLE_BIT
 #endif
