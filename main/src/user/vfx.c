@@ -128,7 +128,7 @@ static void vfx_task(void *pvParameter)
             fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             int16_t fft_out[64] = {0};
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
@@ -232,7 +232,7 @@ static void vfx_task(void *pvParameter)
             fft_config_t *fft = NULL;
             float   fft_amp[64] = {0};
             int16_t fft_out[64] = {0};
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
@@ -352,7 +352,7 @@ static void vfx_task(void *pvParameter)
             static uint8_t vu_drop_delay[24] = {0};
             const uint8_t vu_peak_delay_init = 9;
             const uint8_t vu_drop_delay_init = 3;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
@@ -466,7 +466,7 @@ static void vfx_task(void *pvParameter)
             float   fft_amp[64] = {0};
             int16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
@@ -574,7 +574,7 @@ static void vfx_task(void *pvParameter)
             float   fft_amp[64] = {0};
             int16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
@@ -697,7 +697,7 @@ static void vfx_task(void *pvParameter)
             static uint8_t vu_drop_delay[24] = {0};
             const uint8_t vu_peak_delay_init = 9;
             const uint8_t vu_drop_delay_init = 3;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
