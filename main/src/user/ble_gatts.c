@@ -139,6 +139,8 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
     case ESP_GATTS_CONNECT_EVT: {
         xEventGroupClearBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
+        esp_ble_gap_stop_advertising();
+
         uint8_t *bda = param->connect.remote_bda;
         ESP_LOGI(GATTS_OTA_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[1], bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
