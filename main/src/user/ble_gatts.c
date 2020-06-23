@@ -57,8 +57,6 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 {
     switch (event) {
     case ESP_GATTS_REG_EVT:
-        ble_gap_init_adv_data(CONFIG_BT_NAME);
-
         gatts_profile_tbl[PROFILE_IDX_OTA].service_id.is_primary = true;
         gatts_profile_tbl[PROFILE_IDX_OTA].service_id.id.inst_id = 0x00;
         gatts_profile_tbl[PROFILE_IDX_OTA].service_id.id.uuid.len = ESP_UUID_LEN_16;

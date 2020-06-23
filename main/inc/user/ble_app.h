@@ -12,8 +12,6 @@
 
 extern esp_ble_adv_params_t adv_params;
 
-extern void ble_gap_init_adv_data(const char *name);
-
 extern void ble_app_init(void);
 
 #endif /* INC_USER_BLE_APP_H_ */
