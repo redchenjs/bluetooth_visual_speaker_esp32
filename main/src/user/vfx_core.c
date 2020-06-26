@@ -61,31 +61,39 @@ uint32_t hsl2rgb(float H, float S, float L)
     return (uint32_t)(R << 16 | G << 8 | B);
 }
 
-#ifdef CONFIG_VFX_OUTPUT_CUBE0414
+#if defined(CONFIG_VFX_OUTPUT_WS2812) || defined(CONFIG_VFX_OUTPUT_CUBE0414)
 void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color)
 {
-#ifdef CONFIG_CUBE0414_LAYER_H
+#ifdef CONFIG_LED_LAYER_H
     uint8_t pixel_x = x + y * 8;
     uint8_t pixel_y = z;
 #endif
-#ifdef CONFIG_CUBE0414_LAYER_H_XYI
-    uint8_t pixel_x = (7 - x) + (7 - y) * 8;
-    uint8_t pixel_y = z;
-#endif
-#ifdef CONFIG_CUBE0414_LAYER_H_ZI
+#ifdef CONFIG_LED_LAYER_H_ZI
     uint8_t pixel_x = x + y * 8;
     uint8_t pixel_y = 7 - z;
 #endif
-#ifdef CONFIG_CUBE0414_LAYER_V
+#ifdef CONFIG_LED_LAYER_H_XYI
+    uint8_t pixel_x = (7 - x) + (7 - y) * 8;
+    uint8_t pixel_y = z;
+#endif
+#ifdef CONFIG_LED_LAYER_H_XYZI
+    uint8_t pixel_x = (7 - x) + (7 - y) * 8;
+    uint8_t pixel_y = 7 - z;
+#endif
+#ifdef CONFIG_LED_LAYER_V
     uint8_t pixel_x = x + z * 8;
     uint8_t pixel_y = y;
 #endif
-#ifdef CONFIG_CUBE0414_LAYER_V_XYI
+#ifdef CONFIG_LED_LAYER_V_ZI
+    uint8_t pixel_x = x + z * 8;
+    uint8_t pixel_y = 7 - y;
+#endif
+#ifdef CONFIG_LED_LAYER_V_XYI
     uint8_t pixel_x = (7 - x) + (7 - z) * 8;
     uint8_t pixel_y = y;
 #endif
-#ifdef CONFIG_CUBE0414_LAYER_V_ZI
-    uint8_t pixel_x = x + z * 8;
+#ifdef CONFIG_LED_LAYER_V_XYZI
+    uint8_t pixel_x = (7 - x) + (7 - z) * 8;
     uint8_t pixel_y = 7 - y;
 #endif
 
@@ -219,4 +227,4 @@ void vfx_draw_layer_number(uint8_t num, uint8_t layer, float color_h, float colo
         }
     }
 }
-#endif // CONFIG_VFX_OUTPUT_CUBE0414
+#endif

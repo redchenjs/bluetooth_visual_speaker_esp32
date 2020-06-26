@@ -50,7 +50,7 @@ typedef struct {
 
 #define FFT_N 128
 
-#ifdef CONFIG_VFX_OUTPUT_CUBE0414
+#if defined(CONFIG_VFX_OUTPUT_WS2812) || defined(CONFIG_VFX_OUTPUT_CUBE0414)
     #define DEFAULT_VFX_MODE            VFX_MODE_IDX_FOUNTAIN_H_N
     #define DEFAULT_VFX_SCALE_FACTOR    0xFF
     #define DEFAULT_VFX_LIGHTNESS       0x006F

@@ -146,6 +146,8 @@ choice VFX_OUTPUT
     help
         Select which device to output VFX.
 
+config VFX_OUTPUT_WS2812
+    bool "WS2812 8x8 LED Panel"
 config VFX_OUTPUT_ST7735
     bool "ST7735 80x160 LCD Panel"
 config VFX_OUTPUT_ST7789
@@ -184,26 +186,48 @@ choice AUDIO_INPUT_FFT_CHANNEL
         bool "Both Channel"
 endchoice
 
-choice CUBE0414_LAYER_DIR
-    prompt "CUBE0414 Layer Direction"
-    default CUBE0414_LAYER_H
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+choice LED_LAYER_DIR
+    prompt "LED Layer Direction"
+    default LED_LAYER_H
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
     help
-        Select CUBE0414 layer direction.
+        Select LED layer direction.
 
-config CUBE0414_LAYER_H
+config LED_LAYER_H
     bool "Horizontal"
-config CUBE0414_LAYER_H_XYI
-    bool "Horizontal XY-Inverted"
-config CUBE0414_LAYER_H_ZI
+config LED_LAYER_H_ZI
     bool "Horizontal Z-Inverted"
-config CUBE0414_LAYER_V
+config LED_LAYER_H_XYI
+    bool "Horizontal XY-Inverted"
+config LED_LAYER_H_XYZI
+    bool "Horizontal XYZ-Inverted"
+config LED_LAYER_V
     bool "Vertical"
-config CUBE0414_LAYER_V_XYI
-    bool "Vertical XY-Inverted"
-config CUBE0414_LAYER_V_ZI
+config LED_LAYER_V_ZI
     bool "Vertical Z-Inverted"
+config LED_LAYER_V_XYI
+    bool "Vertical XY-Inverted"
+config LED_LAYER_V_XYZI
+    bool "Vertical XYZ-Inverted"
 endchoice
+
+choice LED_COLOR_ORDER
+    prompt "LED Color Order"
+    default LED_COLOR_RGB
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
+    help
+        Select LED color order.
+
+config LED_COLOR_RGB
+    bool "RGB"
+config LED_COLOR_GRB
+    bool "GRB"
+endchoice
+
+config WS2812_DIN_PIN
+    int "WS2812 DIN Pin"
+    default 18
+    depends on ENABLE_VFX && VFX_OUTPUT_WS2812
 
 choice CUBE0414_LINE_TYPE
     prompt "CUBE0414 Line Type"
@@ -216,19 +240,6 @@ config CUBE0414_LINE_NORMAL
     bool "Normal"
 config CUBE0414_LINE_S_CURVE
     bool "S Curve"
-endchoice
-
-choice CUBE0414_COLOR_ORDER
-    prompt "CUBE0414 Color Order"
-    default CUBE0414_COLOR_RGB
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
-    help
-        Select CUBE0414 color order.
-
-config CUBE0414_COLOR_RGB
-    bool "RGB"
-config CUBE0414_COLOR_GRB
-    bool "GRB"
 endchoice
 
 config CUBE0414_LED_T0H
@@ -264,32 +275,32 @@ config CUBE0414_LED_RST
 config DEVICE_RST_PIN
     int "Device RST Pin"
     default 14
-    depends on ENABLE_VFX
+    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812
 
 config DEVICE_DC_PIN
     int "Device DC Pin"
     default 23
-    depends on ENABLE_VFX
+    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812
 
 config DEVICE_BL_PIN
     int "Device BL Pin"
     default 4
-    depends on ENABLE_VFX && !VFX_OUTPUT_CUBE0414
+    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812 && !VFX_OUTPUT_CUBE0414
 
 config SPI_SCLK_PIN
     int "SPI SCLK Pin"
     default 5
-    depends on ENABLE_VFX
+    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812
 
 config SPI_MOSI_PIN
     int "SPI MOSI Pin"
     default 18
-    depends on ENABLE_VFX
+    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812
 
 config SPI_CS_PIN
     int "SPI CS Pin"
     default 27
-    depends on ENABLE_VFX
+    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812
 endmenu
 
 menu "LED Configuration"

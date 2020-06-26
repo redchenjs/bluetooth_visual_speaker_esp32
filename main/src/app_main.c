@@ -41,7 +41,7 @@ static void chip_init(void)
     i2s_input_init();
 #endif
 
-#ifdef CONFIG_ENABLE_VFX
+#if defined(CONFIG_ENABLE_VFX) && !defined(CONFIG_VFX_OUTPUT_WS2812)
     hspi_init();
 #endif
 }

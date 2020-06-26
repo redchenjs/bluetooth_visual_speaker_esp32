@@ -72,6 +72,10 @@ idf.py flash monitor
 
 <img src="docs/st7789log.png">
 
+## VFX on WS2812 8x8 LED Panel (Rainbow)
+
+<img src="docs/ws2812.png">
+
 ## VFX on CUBE0414 8x8x8 Music Light Cube
 
 <img src="docs/cube0414.png">

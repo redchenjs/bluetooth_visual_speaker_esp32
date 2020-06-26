@@ -38,7 +38,7 @@ static coord_t vfx_disp_height = 0;
 
 static GTimer vfx_flush_timer;
 
-#ifndef CONFIG_VFX_OUTPUT_CUBE0414
+#if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
 static const char *img_file_ptr[][2] = {
     #ifdef CONFIG_VFX_OUTPUT_ST7735
         {ani0_160x80_gif_ptr, ani0_160x80_gif_end},     // "Nyan Cat"
@@ -75,7 +75,7 @@ static void vfx_task(void *pvParameter)
 
     while (1) {
         switch (vfx.mode) {
-#ifndef CONFIG_VFX_OUTPUT_CUBE0414
+#if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
         // LCD Output
         case 0x00:
         case 0x01: {   // 動態貼圖
@@ -2006,7 +2006,7 @@ star_sky_exit:
 
             break;
         }
-#endif // CONFIG_VFX_OUTPUT_CUBE0414
+#endif
         case VFX_MODE_IDX_PAUSE:
             xEventGroupWaitBits(
                 user_event_group,

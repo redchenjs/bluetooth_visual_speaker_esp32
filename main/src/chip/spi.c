@@ -15,7 +15,7 @@
 
 #define HSPI_TAG "hspi"
 
-#ifdef CONFIG_ENABLE_VFX
+#if defined(CONFIG_ENABLE_VFX) && !defined(CONFIG_VFX_OUTPUT_WS2812)
 spi_device_handle_t hspi;
 
 void hspi_init(void)
