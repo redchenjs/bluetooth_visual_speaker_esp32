@@ -86,12 +86,10 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     gfxSleepMilliseconds(120);
 
     write_cmd(g, CUBE0414_CONF_WR);     //  1: Set write reg conf, 6 args, no delay:
-        write_data(g, CONFIG_CUBE0414_LED_T0H / 10);    // T0H Time: val * 10 ns
-        write_data(g, CONFIG_CUBE0414_LED_T0L / 10);    // T0L Time: val * 10 ns
-        write_data(g, CONFIG_CUBE0414_LED_T1H / 10);    // T1H Time: val * 10 ns
-        write_data(g, CONFIG_CUBE0414_LED_T1L / 10);    // T1L Time: val * 10 ns
-        write_data(g, CONFIG_CUBE0414_LED_RST * 100 >> 8);    // RST Time H: val * 10 ns
-        write_data(g, CONFIG_CUBE0414_LED_RST * 100 & 0xff);  // RST Time L: val * 10 ns
+        write_data(g, CONFIG_CUBE0414_LED_T0H);    // T0H Time: val * 10 ns
+        write_data(g, CONFIG_CUBE0414_LED_T0L);    // T0L Time: val * 10 ns
+        write_data(g, CONFIG_CUBE0414_LED_T1H);    // T1H Time: val * 10 ns
+        write_data(g, CONFIG_CUBE0414_LED_T1L);    // T1L Time: val * 10 ns
     write_cmd(g, CUBE0414_ADDR_WR);     //  2: Set write ram addr, 64 args, no delay:
         write_buff(g, (uint8_t *)ram_addr_table, sizeof(ram_addr_table));
     write_cmd(g, CUBE0414_DATA_WR);     //  3: Set write ram data, N args, no delay:

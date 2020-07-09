@@ -242,34 +242,34 @@ config CUBE0414_LINE_S_CURVE
     bool "S Curve"
 endchoice
 
+comment "Limit: T0H + T0L <= 257"
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+
 config CUBE0414_LED_T0H
-    int "CUBE0414 LED T0H Time (ns)"
-    default 350
-    range 10 2500
+    int "CUBE0414 LED T0H Time (10 ns)"
+    default 35
+    range 1 255
     depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
 
 config CUBE0414_LED_T0L
-    int "CUBE0414 LED T0L Time (ns)"
-    default 1360
-    range 10 2500
+    int "CUBE0414 LED T0L Time (10 ns)"
+    default 136
+    range 1 255
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+
+comment "Limit: T1H + T1L <= 257"
     depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
 
 config CUBE0414_LED_T1H
-    int "CUBE0414 LED T1H Time (ns)"
-    default 1360
-    range 10 2500
+    int "CUBE0414 LED T1H Time (10 ns)"
+    default 136
+    range 1 255
     depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
 
 config CUBE0414_LED_T1L
-    int "CUBE0414 LED T1L Time (ns)"
-    default 350
-    range 10 2500
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
-
-config CUBE0414_LED_RST
-    int "CUBE0414 LED RST Time (us)"
-    default 280
-    range 10 650
+    int "CUBE0414 LED T1L Time (10 ns)"
+    default 35
+    range 1 255
     depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
 
 config DEVICE_RST_PIN
