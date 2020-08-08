@@ -34,6 +34,9 @@
 #define GATTS_CHAR_UUID_VFX     0x5301
 #define GATTS_NUM_HANDLE_VFX    4
 
+static uint16_t desc_val_ota = 0x0000;
+static uint16_t desc_val_vfx = 0x0000;
+
 static const char *s_gatts_conn_state_str[] = {"disconnected", "connected"};
 
 static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
@@ -69,19 +72,29 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
-        rsp.attr_value.len = strlen(app_get_version()) < (ESP_GATT_DEF_BLE_MTU_SIZE - 3) ?
-                             strlen(app_get_version()) : (ESP_GATT_DEF_BLE_MTU_SIZE - 3);
-        memcpy(rsp.attr_value.value, app_get_version(), rsp.attr_value.len);
+
+        if (param->read.handle == gatts_profile_tbl[PROFILE_IDX_OTA].descr_handle) {
+            rsp.attr_value.len = 2;
+            memcpy(rsp.attr_value.value, &desc_val_ota, sizeof(desc_val_ota));
+        } else {
+            rsp.attr_value.len = strlen(app_get_version()) < (ESP_GATT_DEF_BLE_MTU_SIZE - 3) ?
+                                 strlen(app_get_version()) : (ESP_GATT_DEF_BLE_MTU_SIZE - 3);
+            memcpy(rsp.attr_value.value, app_get_version(), rsp.attr_value.len);
+        }
 
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
         break;
     }
     case ESP_GATTS_WRITE_EVT: {
-        if (!param->write.need_rsp) {
-            if (!param->write.is_prep) {
+        if (!param->write.is_prep) {
+            if (param->write.handle == gatts_profile_tbl[PROFILE_IDX_OTA].descr_handle) {
+                desc_val_ota = param->write.value[1] << 8 | param->write.value[0];
+            } else {
                 ota_exec((const char *)param->write.value, param->write.len);
             }
-        } else {
+        }
+
+        if (param->write.need_rsp) {
             esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
         }
         break;
@@ -188,102 +201,111 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
     case ESP_GATTS_READ_EVT: {
         esp_gatt_rsp_t rsp;
 
-#ifdef CONFIG_ENABLE_VFX
-        vfx_config_t *vfx = vfx_get_conf();
-    #ifndef CONFIG_AUDIO_INPUT_NONE
-        uint8_t ain_mode = ain_get_mode();
-    #endif
-#endif
-
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
-        rsp.attr_value.len = 8;
-        /*
-            BTT0: VFX Enabled
-            BIT1: Backlight Enabled
-            BIT2: Cube Mode Enabled
-            BIT3: Audio Input Enabled
-        */
-        rsp.attr_value.value[0] = (
-            0
+
+        if (param->read.handle == gatts_profile_tbl[PROFILE_IDX_VFX].descr_handle) {
+            rsp.attr_value.len = 2;
+            memcpy(rsp.attr_value.value, &desc_val_vfx, sizeof(desc_val_vfx));
+        } else {
+            rsp.attr_value.len = 8;
+            /*
+                BTT0: VFX Enabled
+                BIT1: Backlight Enabled
+                BIT2: Cube Mode Enabled
+                BIT3: Audio Input Enabled
+            */
+            rsp.attr_value.value[0] = (
+                0
 #ifdef CONFIG_ENABLE_VFX
-            | BIT0
+                | BIT0
     #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
-            | BIT1
+                | BIT1
     #endif
     #if defined(CONFIG_VFX_OUTPUT_WS2812) || defined(CONFIG_VFX_OUTPUT_CUBE0414)
-            | BIT2
+                | BIT2
     #endif
     #ifndef CONFIG_AUDIO_INPUT_NONE
-            | BIT3
+                | BIT3
     #endif
 #endif
-        );
+            );
 #ifdef CONFIG_ENABLE_VFX
-        rsp.attr_value.value[1] = vfx->mode;
-        rsp.attr_value.value[2] = vfx->scale_factor >> 8;
-        rsp.attr_value.value[3] = vfx->scale_factor & 0xFF;
-        rsp.attr_value.value[4] = vfx->lightness >> 8;
-        rsp.attr_value.value[5] = vfx->lightness & 0xFF;
-        rsp.attr_value.value[6] = vfx->backlight;
+            vfx_config_t *vfx = vfx_get_conf();
     #ifndef CONFIG_AUDIO_INPUT_NONE
-        rsp.attr_value.value[7] = ain_mode;
+            uint8_t ain_mode = ain_get_mode();
+    #endif
+            rsp.attr_value.value[1] = vfx->mode;
+            rsp.attr_value.value[2] = vfx->scale_factor >> 8;
+            rsp.attr_value.value[3] = vfx->scale_factor & 0xFF;
+            rsp.attr_value.value[4] = vfx->lightness >> 8;
+            rsp.attr_value.value[5] = vfx->lightness & 0xFF;
+            rsp.attr_value.value[6] = vfx->backlight;
+    #ifndef CONFIG_AUDIO_INPUT_NONE
+            rsp.attr_value.value[7] = ain_mode;
     #endif
 #endif
+        }
 
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
         break;
     }
     case ESP_GATTS_WRITE_EVT: {
-#ifdef CONFIG_ENABLE_VFX
-        vfx_config_t *vfx = vfx_get_conf();
-    #ifndef CONFIG_AUDIO_INPUT_NONE
-        uint8_t ain_mode = ain_get_mode();
-    #endif
-#endif
         if (!param->write.is_prep) {
-            switch (param->write.value[0]) {
-            case 0xEF: {
-                if (param->write.len == 1) {            // Restore Default Configuration
+            if (param->write.handle == gatts_profile_tbl[PROFILE_IDX_VFX].descr_handle) {
+                desc_val_vfx = param->write.value[1] << 8 | param->write.value[0];
+            } else {
 #ifdef CONFIG_ENABLE_VFX
-                    vfx->mode = DEFAULT_VFX_MODE;
-                    vfx->scale_factor = DEFAULT_VFX_SCALE_FACTOR;
-                    vfx->lightness = DEFAULT_VFX_LIGHTNESS;
-                    vfx->backlight = DEFAULT_VFX_BACKLIGHT;
-                    vfx_set_conf(vfx);
-                    app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
+                vfx_config_t *vfx = vfx_get_conf();
     #ifndef CONFIG_AUDIO_INPUT_NONE
-                    ain_mode = DEFAULT_AIN_MODE;
-                    ain_set_mode(ain_mode);
-                    app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
+                uint8_t ain_mode = ain_get_mode();
     #endif
 #endif
-                } else if (param->write.len == 8) {     // Update with New Configuration
+                switch (param->write.value[0]) {
+                case 0xEF: {
+                    if (param->write.len == 1) {            // Restore Default Configuration
 #ifdef CONFIG_ENABLE_VFX
-                    vfx->mode = param->write.value[1];
-                    vfx->scale_factor = param->write.value[2] << 8 | param->write.value[3];
-                    vfx->lightness = (param->write.value[4] << 8 | param->write.value[5]) % 0x0200;
-                    vfx->backlight = param->write.value[6];
-                    vfx_set_conf(vfx);
-                    app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
+                        vfx->mode = DEFAULT_VFX_MODE;
+                        vfx->scale_factor = DEFAULT_VFX_SCALE_FACTOR;
+                        vfx->lightness = DEFAULT_VFX_LIGHTNESS;
+                        vfx->backlight = DEFAULT_VFX_BACKLIGHT;
+                        vfx_set_conf(vfx);
+                        app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
     #ifndef CONFIG_AUDIO_INPUT_NONE
-                    ain_mode = param->write.value[7];
-                    ain_set_mode(ain_mode);
-                    app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
+                        ain_mode = DEFAULT_AIN_MODE;
+                        ain_set_mode(ain_mode);
+                        app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
     #endif
 #endif
-                } else {
-                    ESP_LOGE(GATTS_VFX_TAG, "command 0x%02X error", param->write.value[0]);
+                    } else if (param->write.len == 8) {     // Update with New Configuration
+#ifdef CONFIG_ENABLE_VFX
+                        vfx->mode = param->write.value[1];
+                        vfx->scale_factor = param->write.value[2] << 8 | param->write.value[3];
+                        vfx->lightness = (param->write.value[4] << 8 | param->write.value[5]) % 0x0200;
+                        vfx->backlight = param->write.value[6];
+                        vfx_set_conf(vfx);
+                        app_setenv("VFX_INIT_CFG", vfx, sizeof(vfx_config_t));
+    #ifndef CONFIG_AUDIO_INPUT_NONE
+                        ain_mode = param->write.value[7];
+                        ain_set_mode(ain_mode);
+                        app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
+    #endif
+#endif
+                    } else {
+                        ESP_LOGE(GATTS_VFX_TAG, "command 0x%02X error", param->write.value[0]);
+                    }
+                    break;
                 }
-                break;
-            }
-            default:
-                ESP_LOGW(GATTS_VFX_TAG, "unknown command: 0x%02X", param->write.value[0]);
-                break;
+                default:
+                    ESP_LOGW(GATTS_VFX_TAG, "unknown command: 0x%02X", param->write.value[0]);
+                    break;
+                }
             }
         }
 
-        esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
+        if (param->write.need_rsp) {
+            esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
+        }
         break;
     }
     case ESP_GATTS_EXEC_WRITE_EVT:
