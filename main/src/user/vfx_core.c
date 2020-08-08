@@ -123,10 +123,10 @@ void vfx_draw_cube_bitmap(const uint8_t *bitmap, float color_l)
     uint8_t x = 0;
     uint8_t y = 0;
     uint8_t z = 0;
-    static uint16_t color_pre = 0;
+    static uint16_t color_p = 0;
     static uint16_t color_h = 0;
 
-    color_pre = color_h;
+    color_p = color_h;
     for (uint8_t i=0; i<64; i++) {
         uint8_t temp = *(bitmap + i);
 
@@ -156,7 +156,7 @@ void vfx_draw_cube_bitmap(const uint8_t *bitmap, float color_l)
         }
     }
 
-    if ((color_h = color_pre + 1) == 512) {
+    if ((color_h = ++color_p) == 512) {
         color_h = 0;
     }
 }
@@ -166,10 +166,10 @@ void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, float color_l)
     uint8_t x = 0;
     uint8_t y = 0;
     uint8_t z = layer;
-    static uint16_t color_pre = 0;
+    static uint16_t color_p = 0;
     static uint16_t color_h = 0;
 
-    color_pre = color_h;
+    color_p = color_h;
     for (uint8_t i=0; i<8; i++) {
         uint8_t temp = *(bitmap + i);
 
@@ -195,7 +195,7 @@ void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, float color_l)
         }
     }
 
-    if ((color_h = color_pre + 1) == 512) {
+    if ((color_h = ++color_p) == 512) {
         color_h = 0;
     }
 }
