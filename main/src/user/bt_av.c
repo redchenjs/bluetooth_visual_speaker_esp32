@@ -167,6 +167,8 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 #ifdef CONFIG_ENABLE_LED
             led_set_mode(2);
 #endif
+        } else {
+            xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
         }
         break;
     }
