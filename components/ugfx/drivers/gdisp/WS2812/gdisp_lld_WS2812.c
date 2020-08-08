@@ -30,10 +30,10 @@
 /*===========================================================================*/
 
 #ifndef GDISP_SCREEN_WIDTH
-    #define GDISP_SCREEN_WIDTH      WS2812_X
+    #define GDISP_SCREEN_WIDTH      WS2812_X*WS2812_Y
 #endif
 #ifndef GDISP_SCREEN_HEIGHT
-    #define GDISP_SCREEN_HEIGHT     WS2812_Y
+    #define GDISP_SCREEN_HEIGHT     1
 #endif
 #ifndef GDISP_INITIAL_CONTRAST
     #define GDISP_INITIAL_CONTRAST  100

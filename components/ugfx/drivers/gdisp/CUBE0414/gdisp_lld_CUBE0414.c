@@ -85,7 +85,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     setpin_reset(g, 1);
     gfxSleepMilliseconds(120);
 
-    write_cmd(g, CUBE0414_CONF_WR);     //  1: Set write reg conf, 6 args, no delay:
+    write_cmd(g, CUBE0414_CONF_WR);     //  1: Set write reg conf, 4 args, no delay:
         write_data(g, CONFIG_CUBE0414_LED_T0H);    // T0H Time: val * 10 ns
         write_data(g, CONFIG_CUBE0414_LED_T0L);    // T0L Time: val * 10 ns
         write_data(g, CONFIG_CUBE0414_LED_T1H);    // T1H Time: val * 10 ns
