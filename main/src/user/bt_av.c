@@ -256,7 +256,7 @@ static void bt_av_notify_evt_handler(uint8_t event_id, esp_avrc_rn_param_t *even
         bt_av_play_status_changed();
         break;
     case ESP_AVRC_RN_PLAY_POS_CHANGED:
-        ESP_LOGI(BT_RC_RN_TAG, "Play position changed: %d-ms", event_parameter->play_pos);
+        ESP_LOGI(BT_RC_RN_TAG, "Play position changed: %d ms", event_parameter->play_pos);
         bt_av_play_pos_changed();
         break;
     }
