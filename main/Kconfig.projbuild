@@ -188,7 +188,7 @@ endchoice
 
 choice LED_LAYER_DIR
     prompt "LED Layer Direction"
-    default LED_LAYER_H_ZI
+    default LED_LAYER_H
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
     help
         Select LED layer direction.
