@@ -5,12 +5,12 @@ Bluetooth Visual Speaker based on ESP32 chip.
 
 ## Main Features
 
-* A2DP Audio Streaming
-* I2S & PDM Input / I2S Output
-* VFX Output (GIF / Audio FFT / Rainbow / Star Sky / ...)
-* BLE Control Interface (OTA Firmware Update / VFX Remote Control)
-* Audio Prompt (Connected / Disconnected / WakeUp / Sleep)
-* Sleep & WakeUp Key
+* A2DP audio streaming
+* I2S & PDM input / I2S output
+* VFX output (GIFs / Audio FFT / Rainbow / Starsky / ...)
+* BLE control interface (OTA firmware update / VFX remote control)
+* Audio prompt (Connected / Disconnected / Wake-Up / Sleep)
+* Sleep & Wake-Up keys
 
 ## Preparing
 
