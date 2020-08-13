@@ -211,18 +211,18 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
             rsp.attr_value.len = 8;
             /*
                 BTT0: VFX Enabled
-                BIT1: Backlight Enabled
-                BIT2: Cube Mode Enabled
+                BIT1: Cube Mode Enabled
+                BIT2: Backlight Enabled
                 BIT3: Audio Input Enabled
             */
             rsp.attr_value.value[0] = (
                 0
 #ifdef CONFIG_ENABLE_VFX
                 | BIT0
-    #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
+    #if defined(CONFIG_VFX_OUTPUT_WS2812) || defined(CONFIG_VFX_OUTPUT_CUBE0414)
                 | BIT1
     #endif
-    #if defined(CONFIG_VFX_OUTPUT_WS2812) || defined(CONFIG_VFX_OUTPUT_CUBE0414)
+    #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
                 | BIT2
     #endif
     #ifndef CONFIG_AUDIO_INPUT_NONE
