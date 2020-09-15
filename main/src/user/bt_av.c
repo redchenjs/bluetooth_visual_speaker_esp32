@@ -137,7 +137,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             memset(&a2d_remote_bda, 0x00, sizeof(esp_bd_addr_t));
 
             EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESTART_BIT)) {
+            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
                 esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
             }
 

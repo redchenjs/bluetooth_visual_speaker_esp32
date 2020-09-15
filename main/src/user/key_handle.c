@@ -35,7 +35,7 @@ void sleep_key_handle(void)
     ain_set_mode(0);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    audio_player_play_file(3);
+    audio_player_play_file(2);
 #endif
 
     esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
@@ -51,11 +51,14 @@ void sleep_key_handle(void)
     }
 #endif
 
-    os_power_sleep_wait(
-        BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT
+    os_pwr_sleep_wait(
+        BT_A2DP_IDLE_BIT
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+        | BLE_GATTS_IDLE_BIT
+#endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
         | AUDIO_PLAYER_IDLE_BIT
 #endif
     );
 }
-#endif // CONFIG_ENABLE_SLEEP_KEY
+#endif

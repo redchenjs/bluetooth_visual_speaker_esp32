@@ -32,13 +32,13 @@ static const char *mp3_file_ptr[][2] = {
 #else
     {NULL, NULL},
 #endif
-#ifdef CONFIG_AUDIO_PROMPT_RESUME
-    {snd2_mp3_ptr, snd2_mp3_end}, // "Resume"
+#ifdef CONFIG_AUDIO_PROMPT_SLEEP
+    {snd2_mp3_ptr, snd2_mp3_end}, // "Sleep"
 #else
     {NULL, NULL},
 #endif
-#ifdef CONFIG_AUDIO_PROMPT_SLEEP
-    {snd3_mp3_ptr, snd3_mp3_end}, // "Sleep"
+#ifdef CONFIG_AUDIO_PROMPT_WAKEUP
+    {snd3_mp3_ptr, snd3_mp3_end}, // "Wake-Up"
 #else
     {NULL, NULL},
 #endif

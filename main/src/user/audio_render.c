@@ -148,7 +148,7 @@ static void audio_render_task(void *pvParameter)
 
         uxBits = xEventGroupGetBits(user_event_group);
         if ((uxBits & AUDIO_PLAYER_RUN_BIT) || (uxBits & BT_A2DP_IDLE_BIT)
-             || (uxBits & OS_PWR_SLEEP_BIT) || (uxBits & OS_PWR_RESTART_BIT)) {
+             || (uxBits & OS_PWR_SLEEP_BIT) || (uxBits & OS_PWR_RESET_BIT)) {
             vRingbufferReturnItem(audio_buff, (void *)data);
             continue;
         }

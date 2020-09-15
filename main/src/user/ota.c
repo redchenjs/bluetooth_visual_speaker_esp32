@@ -296,7 +296,7 @@ void ota_exec(const char *data, uint32_t len)
                 esp_ble_gatts_close(gatts_profile_tbl[PROFILE_IDX_OTA].gatts_if,
                                     gatts_profile_tbl[PROFILE_IDX_OTA].conn_id);
 
-                os_power_restart_wait(BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT);
+                os_pwr_reset_wait(BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT);
 
                 update_handle = 0;
 
@@ -348,7 +348,7 @@ void ota_end(void)
         update_handle = 0;
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESTART_BIT)) {
+        if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
         }
 

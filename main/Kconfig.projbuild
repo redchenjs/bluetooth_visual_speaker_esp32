@@ -31,15 +31,15 @@ config AUDIO_PROMPT_DISCONNECTED
     default y
     depends on ENABLE_AUDIO_PROMPT
 
-config AUDIO_PROMPT_RESUME
-    bool "Resume"
-    default n
-    depends on ENABLE_AUDIO_PROMPT
-
 config AUDIO_PROMPT_SLEEP
     bool "Sleep"
     default n
-    depends on ENABLE_AUDIO_PROMPT
+    depends on ENABLE_AUDIO_PROMPT && ENABLE_SLEEP_KEY
+
+config AUDIO_PROMPT_WAKEUP
+    bool "Wake-Up"
+    default n
+    depends on ENABLE_AUDIO_PROMPT && ENABLE_SLEEP_KEY
 
 choice AUDIO_OUTPUT
     prompt "Audio Output"
@@ -330,35 +330,6 @@ config LED_PIN
 endmenu
 
 menu "Key Configuration"
-config ENABLE_WAKEUP_KEY
-    bool "Enable WakeUp Key"
-    default n
-    help
-        Select this to enable WakeUp Key.
-
-config WAKEUP_KEY_EXTRA_HOLD_TIME
-    int "WakeUp Key Extra Hold Time (ms)"
-    default 0
-    depends on ENABLE_WAKEUP_KEY
-
-choice WAKEUP_KEY_ACTIVE_LEVEL
-    prompt "WakeUp Key Active Level"
-    default WAKEUP_KEY_ACTIVE_LOW
-    depends on ENABLE_WAKEUP_KEY
-    help
-        Select WakeUp Key Active Level.
-
-config WAKEUP_KEY_ACTIVE_HIGH
-    bool "Active High"
-config WAKEUP_KEY_ACTIVE_LOW
-    bool "Active Low"
-endchoice
-
-config WAKEUP_KEY_PIN
-    int "WakeUp Key Pin"
-    default 0
-    depends on ENABLE_WAKEUP_KEY
-
 config ENABLE_SLEEP_KEY
     bool "Enable Sleep Key"
     default n
@@ -367,7 +338,7 @@ config ENABLE_SLEEP_KEY
 
 config SLEEP_KEY_HOLD_TIME
     int "Sleep Key Hold Time (ms)"
-    default 1000
+    default 50
     depends on ENABLE_SLEEP_KEY
 
 choice SLEEP_KEY_ACTIVE_LEVEL
