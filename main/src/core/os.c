@@ -11,6 +11,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
+
 #include "driver/rtc_io.h"
 
 #include "core/os.h"
@@ -37,13 +38,11 @@ static void os_power_task_handle(void *pvParameters)
             portMAX_DELAY
         );
 
+        ESP_LOGW(OS_PWR_TAG, "waiting for unfinished jobs....");
+        vTaskDelay(500 / portTICK_RATE_MS);
+
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (uxBits & OS_PWR_SLEEP_BIT) {
-            for (int i=3; i>0; i--) {
-                ESP_LOGW(OS_PWR_TAG, "sleeping in %ds", i);
-                vTaskDelay(1000 / portTICK_RATE_MS);
-            }
-
             xEventGroupWaitBits(
                 user_event_group,
                 sleep_wait_bits,
@@ -69,11 +68,6 @@ static void os_power_task_handle(void *pvParameters)
             ESP_LOGW(OS_PWR_TAG, "sleep now");
             esp_deep_sleep_start();
         } else if (uxBits & OS_PWR_RESTART_BIT) {
-            for (int i=3; i>0; i--) {
-                ESP_LOGW(OS_PWR_TAG, "restarting in %ds", i);
-                vTaskDelay(1000 / portTICK_RATE_MS);
-            }
-
             xEventGroupWaitBits(
                 user_event_group,
                 restart_wait_bits,
