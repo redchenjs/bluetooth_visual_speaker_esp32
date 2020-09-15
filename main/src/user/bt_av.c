@@ -138,6 +138,8 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             EventBits_t uxBits = xEventGroupGetBits(user_event_group);
             if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
+                xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT | KEY_SCAN_CLR_BIT);
+
                 esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
             }
 
@@ -151,6 +153,11 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
+
+            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
+                xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT | KEY_SCAN_CLR_BIT);
+            }
 
             memcpy(&a2d_remote_bda, a2d->conn_stat.remote_bda, sizeof(esp_bd_addr_t));
 
@@ -168,7 +175,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             led_set_mode(2);
 #endif
         } else {
-            xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
+            xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT | KEY_SCAN_RUN_BIT);
         }
         break;
     }

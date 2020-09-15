@@ -5,6 +5,8 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
+#include <string.h>
+
 #include "esp_log.h"
 
 #include "freertos/FreeRTOS.h"
@@ -73,13 +75,19 @@ static void key_task(void *pvParameter)
     vTaskDelay(2000 / portTICK_RATE_MS);
 
     while (1) {
-        xEventGroupWaitBits(
+        EventBits_t uxBits = xEventGroupWaitBits(
             user_event_group,
             KEY_SCAN_RUN_BIT,
             pdFALSE,
             pdFALSE,
             portMAX_DELAY
         );
+
+        if (uxBits & KEY_SCAN_CLR_BIT) {
+            memset(&count, 0x00, sizeof(count));
+
+            xEventGroupClearBits(user_event_group, KEY_SCAN_CLR_BIT);
+        }
 
         xLastWakeTime = xTaskGetTickCount();
 

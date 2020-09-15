@@ -363,6 +363,6 @@ void ota_end(void)
         led_set_mode(3);
 #endif
 
-        xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT);
+        xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT | KEY_SCAN_CLR_BIT);
     }
 }

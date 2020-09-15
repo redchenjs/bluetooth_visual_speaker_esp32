@@ -105,26 +105,15 @@ void bt_app_init(void)
     ESP_LOGI(BT_APP_TAG, "started.");
 
     if (memcmp(last_remote_bda, "\x00\x00\x00\x00\x00\x00", 6) != 0) {
-        // Reconnection delay
-        vTaskDelay(1000 / portTICK_RATE_MS);
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
-        xEventGroupWaitBits(
-            user_event_group,
-            AUDIO_PLAYER_IDLE_BIT,
-            pdFALSE,
-            pdFALSE,
-            portMAX_DELAY
-        );
-#endif
+        vTaskDelay(2000 / portTICK_RATE_MS);
+
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (uxBits & BT_A2DP_IDLE_BIT) {
-            ESP_LOGI(BT_APP_TAG, "reconnect to [%02x:%02x:%02x:%02x:%02x:%02x]",
+        if (uxBits & BT_A2DP_IDLE_BIT && !(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
+            ESP_LOGW(BT_APP_TAG, "connecting to [%02x:%02x:%02x:%02x:%02x:%02x]",
                      last_remote_bda[0], last_remote_bda[1], last_remote_bda[2],
                      last_remote_bda[3], last_remote_bda[4], last_remote_bda[5]);
 
             esp_a2d_sink_connect(last_remote_bda);
-        } else {
-            ESP_LOGW(BT_APP_TAG, "reconnecting aborted");
         }
     }
 }
