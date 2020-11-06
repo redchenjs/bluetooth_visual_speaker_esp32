@@ -17,6 +17,7 @@
 
 #include "core/os.h"
 #include "core/app.h"
+
 #include "user/led.h"
 #include "user/vfx.h"
 #include "user/ain.h"
@@ -44,7 +45,7 @@ enum cmd_idx {
     CMD_IDX_UPD = 0x0,
     CMD_IDX_RST = 0x1,
     CMD_IDX_RAM = 0x2,
-    CMD_IDX_VER = 0x3,
+    CMD_IDX_VER = 0x3
 };
 
 typedef struct {
@@ -53,10 +54,10 @@ typedef struct {
 } cmd_fmt_t;
 
 static const cmd_fmt_t cmd_fmt[] = {
-    { .prefix = 7, .format = CMD_FMT_UPD"\r\n" },   // Firmware Update
-    { .prefix = 7, .format = CMD_FMT_RST"\r\n" },   // Chip Reset
-    { .prefix = 7, .format = CMD_FMT_RAM"\r\n" },   // RAM Infomation
-    { .prefix = 7, .format = CMD_FMT_VER"\r\n" },   // Firmware Version
+    { .prefix = 7, .format = CMD_FMT_UPD"\r\n" },
+    { .prefix = 7, .format = CMD_FMT_RST"\r\n" },
+    { .prefix = 7, .format = CMD_FMT_RAM"\r\n" },
+    { .prefix = 7, .format = CMD_FMT_VER"\r\n" }
 };
 
 enum rsp_idx {
@@ -67,10 +68,10 @@ enum rsp_idx {
 };
 
 static const char rsp_str[][32] = {
-    "OK\r\n",           // OK
-    "FAIL\r\n",         // Fail
-    "DONE\r\n",         // Done
-    "ERROR\r\n",        // Error
+    "OK\r\n",
+    "FAIL\r\n",
+    "DONE\r\n",
+    "ERROR\r\n"
 };
 
 #ifdef CONFIG_ENABLE_VFX
@@ -92,7 +93,7 @@ static esp_ota_handle_t update_handle = 0;
 
 static int ota_parse_command(const char *data)
 {
-    for (int i=0; i<sizeof(cmd_fmt)/sizeof(cmd_fmt_t); i++) {
+    for (int i = 0; i < sizeof(cmd_fmt) / sizeof(cmd_fmt_t); i++) {
         if (strncmp(cmd_fmt[i].format, data, cmd_fmt[i].prefix) == 0) {
             return i;
         }
