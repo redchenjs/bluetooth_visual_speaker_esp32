@@ -22,7 +22,7 @@
 
 #define TAG "audio_render"
 
-static uint8_t buff_data[10*1024] = {0};
+static uint8_t buff_data[1024 * 10] = {0};
 static StaticRingbuffer_t buff_struct = {0};
 
 RingbufHandle_t audio_buff = NULL;
@@ -40,9 +40,9 @@ void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num
     }
 
     size_t bytes_written = 0;
-    for (int i=0; i<num_samples; i++) {
+    for (int i = 0; i < num_samples; i++) {
         /* low - high / low - high */
-        const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]}; // ESP32 CPU is little-endian
+        const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]};
 
         i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, (const char *)&samp32, sizeof(samp32), &bytes_written, portMAX_DELAY);
 
@@ -173,28 +173,28 @@ static void audio_render_task(void *pvParameter)
             continue;
         }
 
-        // Copy data to FFT input buffer
+        // copy data to FFT input buffer
         uint32_t idx = 0;
 
 #ifdef CONFIG_BT_AUDIO_FFT_ONLY_LEFT
         int16_t data_l = 0;
-        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-            data_l = data[idx+1] << 8 | data[idx];
+        for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
+            data_l = data[idx + 1] << 8 | data[idx];
 
             vfx_fft_input[k] = (float)data_l;
         }
 #elif defined(CONFIG_BT_AUDIO_FFT_ONLY_RIGHT)
         int16_t data_r = 0;
-        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-            data_r = data[idx+3] << 8 | data[idx+2];
+        for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
+            data_r = data[idx + 3] << 8 | data[idx + 2];
 
             vfx_fft_input[k] = (float)data_r;
         }
 #else
         int16_t data_l = 0, data_r = 0;
-        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-            data_l = data[idx+1] << 8 | data[idx];
-            data_r = data[idx+3] << 8 | data[idx+2];
+        for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
+            data_l = data[idx + 1] << 8 | data[idx];
+            data_r = data[idx + 3] << 8 | data[idx + 2];
 
             vfx_fft_input[k] = (float)((data_l + data_r) / 2);
         }
