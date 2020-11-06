@@ -12,6 +12,8 @@
 
 #include "driver/gpio.h"
 
+#include "user/led.h"
+
 #define TAG "led"
 
 static const TickType_t led_mode_table[][2] = {
