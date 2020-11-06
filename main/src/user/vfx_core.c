@@ -109,10 +109,10 @@ void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint
 {
     uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
-    for (uint8_t i=0; i<cx; i++) {
-        for (uint8_t j=0; j<cy; j++) {
-            for (uint8_t k=0; k<cz; k++) {
-                vfx_draw_pixel_raw(x+i, y+j, z+k, pixel_color);
+    for (uint8_t i = 0; i < cx; i++) {
+        for (uint8_t j = 0; j < cy; j++) {
+            for (uint8_t k = 0; k < cz; k++) {
+                vfx_draw_pixel_raw(x + i, y + j, z + k, pixel_color);
             }
         }
     }
@@ -127,10 +127,10 @@ void vfx_draw_cube_bitmap(const uint8_t *bitmap, float color_l)
     static uint16_t color_h = 0;
 
     color_p = color_h;
-    for (uint8_t i=0; i<64; i++) {
+    for (uint8_t i = 0; i < 64; i++) {
         uint8_t temp = *(bitmap + i);
 
-        for (uint8_t j=0; j<8; j++) {
+        for (uint8_t j = 0; j < 8; j++) {
             if (temp & 0x80) {
                 vfx_draw_pixel(x, y, z, color_h, color_l);
             } else {
@@ -170,10 +170,10 @@ void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, float color_l)
     static uint16_t color_h = 0;
 
     color_p = color_h;
-    for (uint8_t i=0; i<8; i++) {
+    for (uint8_t i = 0; i < 8; i++) {
         uint8_t temp = *(bitmap + i);
 
-        for (uint8_t j=0; j<8; j++) {
+        for (uint8_t j = 0; j < 8; j++) {
             if (temp & 0x80) {
                 vfx_draw_pixel(x, y, z, color_h, color_l);
             } else {
@@ -206,10 +206,10 @@ void vfx_draw_layer_number(uint8_t num, uint8_t layer, float color_h, float colo
     uint8_t y = layer;
     uint8_t z = 0;
 
-    for (uint8_t i=0; i<8; i++) {
+    for (uint8_t i = 0; i < 8; i++) {
         unsigned char temp = vfx_bitmap_number[num][i];
 
-        for (uint8_t j=0; j<8; j++) {
+        for (uint8_t j = 0; j < 8; j++) {
             if (temp & 0x80) {
                 vfx_draw_pixel(x, y, z, color_h, color_l);
             } else {

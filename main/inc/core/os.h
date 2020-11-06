@@ -21,7 +21,7 @@ typedef enum user_event_group_bits {
     BLE_GATTS_IDLE_BIT    = BIT4,
     BLE_GATTS_LOCK_BIT    = BIT5,
 
-    VFX_RELOAD_BIT        = BIT6,
+    VFX_RLD_MODE_BIT      = BIT6,
     VFX_FFT_NULL_BIT      = BIT7,
 
     KEY_SCAN_RUN_BIT      = BIT8,

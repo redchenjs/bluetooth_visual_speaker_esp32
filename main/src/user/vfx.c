@@ -25,7 +25,7 @@ static vfx_config_t vfx = {
     .mode = DEFAULT_VFX_MODE,
     .scale_factor = DEFAULT_VFX_SCALE_FACTOR,
     .lightness = DEFAULT_VFX_LIGHTNESS,
-    .backlight = DEFAULT_VFX_BACKLIGHT,
+    .backlight = DEFAULT_VFX_BACKLIGHT
 };
 
 GDisplay *vfx_gdisp = NULL;
@@ -41,11 +41,11 @@ static GTimer vfx_flush_timer;
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
 static const char *img_file_ptr[][2] = {
     #ifdef CONFIG_VFX_OUTPUT_ST7735
-        {ani0_160x80_gif_ptr, ani0_160x80_gif_end},     // "Nyan Cat"
-        {ani1_160x80_gif_ptr, ani1_160x80_gif_end},     // "bilibili"
+        [VFX_MODE_IDX_GIF_NYAN_CAT] = {ani0_160x80_gif_ptr, ani0_160x80_gif_end},
+        [VFX_MODE_IDX_GIF_BILIBILI] = {ani1_160x80_gif_ptr, ani1_160x80_gif_end}
     #else
-        {ani0_240x135_gif_ptr, ani0_240x135_gif_end},   // "Nyan Cat"
-        {ani1_240x135_gif_ptr, ani1_240x135_gif_end},   // "bilibili"
+        [VFX_MODE_IDX_GIF_NYAN_CAT] = {ani0_240x135_gif_ptr, ani0_240x135_gif_end},
+        [VFX_MODE_IDX_GIF_BILIBILI] = {ani1_240x135_gif_ptr, ani1_240x135_gif_end}
     #endif
 };
 #endif
@@ -77,8 +77,8 @@ static void vfx_task(void *pvParameter)
         switch (vfx.mode) {
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
         // LCD Output
-        case 0x00:
-        case 0x01: {   // 動態貼圖
+        case VFX_MODE_IDX_GIF_NYAN_CAT:
+        case VFX_MODE_IDX_GIF_BILIBILI: {   // 動態貼圖
             gdispImage gfx_image;
 
             if (!(gdispImageOpenMemory(&gfx_image, img_file_ptr[vfx.mode][0]) & GDISP_IMAGE_ERR_UNRECOVERABLE)) {
@@ -89,8 +89,8 @@ static void vfx_task(void *pvParameter)
                 while (1) {
                     xLastWakeTime = xTaskGetTickCount();
 
-                    if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                        xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                    if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                        xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                         break;
                     }
 
@@ -121,7 +121,7 @@ static void vfx_task(void *pvParameter)
             }
             break;
         }
-        case 0x0D: {   // 音樂頻譜-彩虹-線性
+        case VFX_MODE_IDX_SPECTRUM_R_N: {   // 音樂頻譜-彩虹-線性
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
@@ -144,8 +144,8 @@ static void vfx_task(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -163,8 +163,8 @@ static void vfx_task(void *pvParameter)
                         fft_out[0] = 1;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                         if (fft_out[k] > vfx_disp_height) {
                             fft_out[k] = vfx_disp_height;
@@ -175,7 +175,7 @@ static void vfx_task(void *pvParameter)
                 }
 
                 color_h = 0;
-                for (uint16_t i=0; i<vfx_disp_width; i++) {
+                for (uint16_t i = 0; i < vfx_disp_width; i++) {
                     uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
@@ -219,7 +219,7 @@ static void vfx_task(void *pvParameter)
 
             break;
         }
-        case 0x0E: {   // 音樂頻譜-漸變-線性
+        case VFX_MODE_IDX_SPECTRUM_G_N: {   // 音樂頻譜-漸變-線性
             uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
@@ -243,8 +243,8 @@ static void vfx_task(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -262,8 +262,8 @@ static void vfx_task(void *pvParameter)
                         fft_out[0] = 1;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                         if (fft_out[k] > vfx_disp_height) {
                             fft_out[k] = vfx_disp_height;
@@ -274,7 +274,7 @@ static void vfx_task(void *pvParameter)
                 }
 
                 color_p = color_h;
-                for (uint16_t i=0; i<vfx_disp_width; i++) {
+                for (uint16_t i = 0; i < vfx_disp_width; i++) {
                     uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
@@ -324,7 +324,7 @@ static void vfx_task(void *pvParameter)
 
             break;
         }
-        case 0x0F: {   // 音樂頻譜-格柵-線性
+        case VFX_MODE_IDX_SPECTRUM_M_N: {   // 音樂頻譜-格柵-線性
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
@@ -372,8 +372,8 @@ static void vfx_task(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -391,8 +391,8 @@ static void vfx_task(void *pvParameter)
                         fft_out[0] = 0;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor;
                         if (fft_out[k] > vfx_disp_height) {
                             fft_out[k] = vfx_disp_height;
@@ -402,7 +402,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                for (uint8_t i=vu_idx_min; i<=vu_idx_max; i++) {
+                for (uint8_t i = vu_idx_min; i <= vu_idx_max; i++) {
                     int16_t vu_val_out = fft_out[i];
 
                     if (vu_val_out > vu_val_max) {
@@ -430,7 +430,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
 
                     color_h = 0;
-                    for (int8_t j=vu_val_max; j>=vu_val_min; j--) {
+                    for (int8_t j = vu_val_max; j >= vu_val_min; j--) {
                         uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
                         if (j == vu_peak_value[i]) {
@@ -458,7 +458,7 @@ static void vfx_task(void *pvParameter)
 
             break;
         }
-        case 0x10: {   // 音樂頻譜-彩虹-對數
+        case VFX_MODE_IDX_SPECTRUM_R_L: {   // 音樂頻譜-彩虹-對數
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
@@ -482,8 +482,8 @@ static void vfx_task(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -501,8 +501,8 @@ static void vfx_task(void *pvParameter)
                         fft_out[0] = 0;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
@@ -513,7 +513,7 @@ static void vfx_task(void *pvParameter)
                 }
 
                 color_h = 0;
-                for (uint16_t i=0; i<vfx_disp_width; i++) {
+                for (uint16_t i = 0; i < vfx_disp_width; i++) {
                     uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
@@ -560,7 +560,7 @@ static void vfx_task(void *pvParameter)
 
             break;
         }
-        case 0x11: {   // 音樂頻譜-漸變-對數
+        case VFX_MODE_IDX_SPECTRUM_G_L: {   // 音樂頻譜-漸變-對數
             uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
@@ -585,8 +585,8 @@ static void vfx_task(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -604,8 +604,8 @@ static void vfx_task(void *pvParameter)
                         fft_out[0] = 0;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
                         if (fft_out[k] > center_y) {
                             fft_out[k] = center_y;
@@ -616,7 +616,7 @@ static void vfx_task(void *pvParameter)
                 }
 
                 color_p = color_h;
-                for (uint16_t i=0; i<vfx_disp_width; i++) {
+                for (uint16_t i = 0; i < vfx_disp_width; i++) {
                     uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
@@ -669,7 +669,7 @@ static void vfx_task(void *pvParameter)
 
             break;
         }
-        case 0x12: {   // 音樂頻譜-格柵-對數
+        case VFX_MODE_IDX_SPECTRUM_M_L: {   // 音樂頻譜-格柵-對數
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
@@ -717,8 +717,8 @@ static void vfx_task(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -736,8 +736,8 @@ static void vfx_task(void *pvParameter)
                         fft_out[0] = 0;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor;
                         if (fft_out[k] > vfx_disp_height) {
                             fft_out[k] = vfx_disp_height;
@@ -747,7 +747,7 @@ static void vfx_task(void *pvParameter)
                     }
                 }
 
-                for (uint8_t i=vu_idx_min; i<=vu_idx_max; i++) {
+                for (uint8_t i = vu_idx_min; i <= vu_idx_max; i++) {
                     int16_t vu_val_out = fft_out[i];
 
                     if (vu_val_out > vu_val_max) {
@@ -775,7 +775,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
 
                     color_h = 0;
-                    for (int8_t j=vu_val_max; j>=vu_val_min; j--) {
+                    for (int8_t j = vu_val_max; j >= vu_val_min; j--) {
                         uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
                         if (j == vu_peak_value[i]) {
@@ -821,8 +821,8 @@ static void vfx_task(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -862,14 +862,14 @@ static void vfx_task(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
                 color_p = color_h;
                 while (1) {
-                    for (uint8_t i=0; i<8; i++) {
+                    for (uint8_t i = 0; i < 8; i++) {
                         vfx_draw_pixel(x, y, i, color_h, color_l);
                     }
 
@@ -906,8 +906,8 @@ static void vfx_task(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -933,8 +933,8 @@ static void vfx_task(void *pvParameter)
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -970,19 +970,19 @@ static void vfx_task(void *pvParameter)
             gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i = 0; i < 512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 80 + 432;
             }
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i = 0; i < 512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
                 led_idx[rnd] = led_idx[i];
                 led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i = 0; i < 512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
                 color_h[rnd] = color_h[i];
@@ -991,11 +991,11 @@ static void vfx_task(void *pvParameter)
 
             int16_t idx_base = -led_num;
             while (1) {
-                for (uint16_t i=0; i<=256; i++) {
+                for (uint16_t i = 0; i <= 256; i++) {
                     xLastWakeTime = xTaskGetTickCount();
 
-                    if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                        xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                    if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                        xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                         goto exit;
                     }
 
@@ -1037,19 +1037,19 @@ static void vfx_task(void *pvParameter)
             gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i = 0; i < 512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 85 + 80;
             }
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i = 0; i < 512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
                 led_idx[rnd] = led_idx[i];
                 led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i = 0; i < 512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
                 color_h[rnd] = color_h[i];
@@ -1058,11 +1058,11 @@ static void vfx_task(void *pvParameter)
 
             int16_t idx_base = -led_num;
             while (1) {
-                for (uint16_t i=0; i<=256; i++) {
+                for (uint16_t i = 0; i <= 256; i++) {
                     xLastWakeTime = xTaskGetTickCount();
 
-                    if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                        xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                    if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                        xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                         goto exit;
                     }
 
@@ -1104,19 +1104,19 @@ static void vfx_task(void *pvParameter)
             gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i = 0; i < 512; i++) {
                 led_idx[i] = i;
                 color_h[i] = i % 80 + 260;
             }
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i = 0; i < 512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = led_idx[rnd];
                 led_idx[rnd] = led_idx[i];
                 led_idx[i] = tmp;
             }
 
-            for (uint16_t i=0; i<512; i++) {
+            for (uint16_t i = 0; i < 512; i++) {
                 uint16_t rnd = esp_random() % 512;
                 uint16_t tmp = color_h[rnd];
                 color_h[rnd] = color_h[i];
@@ -1125,11 +1125,11 @@ static void vfx_task(void *pvParameter)
 
             int16_t idx_base = -led_num;
             while (1) {
-                for (uint16_t i=0; i<=256; i++) {
+                for (uint16_t i = 0; i <= 256; i++) {
                     xLastWakeTime = xTaskGetTickCount();
 
-                    if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                        xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                    if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                        xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                         goto exit;
                     }
 
@@ -1171,8 +1171,8 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -1207,12 +1207,12 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
-                for (uint8_t i=layer0; i<=layer1; i++) {
+                for (uint8_t i = layer0; i <= layer1; i++) {
                     vfx_draw_layer_number(number, i, color_h, color_l);
                 }
 
@@ -1258,8 +1258,8 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -1284,13 +1284,13 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
                 frame_p = frame_i;
-                for (uint8_t i=0; i<8; i++) {
+                for (uint8_t i = 0; i < 8; i++) {
                     vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_i], color_l);
 
                     if (++frame_i == 28) {
@@ -1319,13 +1319,13 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
                 frame_p = frame_i;
-                for (uint8_t i=0; i<8; i++) {
+                for (uint8_t i = 0; i < 8; i++) {
                     vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_i], color_l);
 
                     if (frame_i-- == 0) {
@@ -1367,8 +1367,8 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -1386,8 +1386,8 @@ exit:
                         fft_out[0] = 1;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1398,7 +1398,7 @@ exit:
                 }
 
                 color_h = 504;
-                for (uint16_t i=0; i<canvas_width; i++) {
+                for (uint16_t i = 0; i < canvas_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
                     uint8_t clear_y  = 7 - y;
@@ -1469,8 +1469,8 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -1488,8 +1488,8 @@ exit:
                         fft_out[0] = 1;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1500,7 +1500,7 @@ exit:
                 }
 
                 color_h = color_p;
-                for (uint16_t i=0; i<canvas_width; i++) {
+                for (uint16_t i = 0; i < canvas_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
                     uint8_t clear_y  = 7 - y;
@@ -1569,13 +1569,12 @@ exit:
                     3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
                     1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 5,
                     4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5,
-                    6, 7, 7, 7, 7, 7, 7, 7, 7, 6, 5, 4, 3, 2, 1, 0,
-                },
-                {
+                    6, 7, 7, 7, 7, 7, 7, 7, 7, 6, 5, 4, 3, 2, 1, 0
+                }, {
                     3, 3, 4, 4, 4, 3, 2, 2, 2, 2, 3, 4, 5, 5, 5, 5,
                     5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6,
                     6, 6, 6, 6, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0,
-                    0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7,
+                    0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7
                 }
             };
             const coord_t canvas_width = 64;
@@ -1584,7 +1583,7 @@ exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            for (uint16_t i=0; i<64; i++) {
+            for (uint16_t i = 0; i < 64; i++) {
                 color_h[i] = 504 - i * 8;
             }
 
@@ -1596,8 +1595,8 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -1615,8 +1614,8 @@ exit:
                         fft_out[0] = 1;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1626,7 +1625,7 @@ exit:
                     }
                 }
 
-                for (uint16_t i=0; i<canvas_width; i++) {
+                for (uint16_t i = 0; i < canvas_width; i++) {
                     x = led_idx_table[0][i];
                     y = led_idx_table[1][i];
 
@@ -1698,8 +1697,8 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -1717,8 +1716,8 @@ exit:
                         fft_out[0] = 1;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1729,7 +1728,7 @@ exit:
                 }
 
                 color_h = 504;
-                for (uint16_t i=0; i<canvas_width; i++) {
+                for (uint16_t i = 0; i < canvas_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
                     uint8_t clear_y  = 7 - y;
@@ -1800,8 +1799,8 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -1819,8 +1818,8 @@ exit:
                         fft_out[0] = 1;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1831,7 +1830,7 @@ exit:
                 }
 
                 color_h = color_p;
-                for (uint16_t i=0; i<canvas_width; i++) {
+                for (uint16_t i = 0; i < canvas_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
                     uint8_t clear_y  = 7 - y;
@@ -1900,13 +1899,12 @@ exit:
                     3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
                     1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 5,
                     4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5,
-                    6, 7, 7, 7, 7, 7, 7, 7, 7, 6, 5, 4, 3, 2, 1, 0,
-                },
-                {
+                    6, 7, 7, 7, 7, 7, 7, 7, 7, 6, 5, 4, 3, 2, 1, 0
+                }, {
                     3, 3, 4, 4, 4, 3, 2, 2, 2, 2, 3, 4, 5, 5, 5, 5,
                     5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6,
                     6, 6, 6, 6, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0,
-                    0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7,
+                    0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7
                 }
             };
             const coord_t canvas_width = 64;
@@ -1915,7 +1913,7 @@ exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
 
-            for (uint16_t i=0; i<64; i++) {
+            for (uint16_t i = 0; i < 64; i++) {
                 color_h[i] = 504 - i * 8;
             }
 
@@ -1927,8 +1925,8 @@ exit:
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
-                if (xEventGroupGetBits(user_event_group) & VFX_RELOAD_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RELOAD_BIT);
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -1946,8 +1944,8 @@ exit:
                         fft_out[0] = 1;
                     }
 
-                    for (uint16_t k=1; k<FFT_N/2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2*k], 2) + pow(vfx_fft_output[2*k+1], 2)) / FFT_N * 2;
+                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
                         fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 8;
                         if (fft_out[k] > canvas_height) {
                             fft_out[k] = canvas_height;
@@ -1957,7 +1955,7 @@ exit:
                     }
                 }
 
-                for (uint16_t i=0; i<canvas_width; i++) {
+                for (uint16_t i = 0; i < canvas_width; i++) {
                     x = led_idx_table[0][i];
                     y = led_idx_table[1][i];
 
@@ -2011,7 +2009,7 @@ exit:
         case VFX_MODE_IDX_PAUSE:
             xEventGroupWaitBits(
                 user_event_group,
-                VFX_RELOAD_BIT,
+                VFX_RLD_MODE_BIT,
                 pdTRUE,
                 pdFALSE,
                 portMAX_DELAY
@@ -2029,7 +2027,7 @@ exit:
 
             xEventGroupWaitBits(
                 user_event_group,
-                VFX_RELOAD_BIT,
+                VFX_RLD_MODE_BIT,
                 pdTRUE,
                 pdFALSE,
                 portMAX_DELAY
@@ -2047,7 +2045,7 @@ void vfx_set_conf(vfx_config_t *cfg)
     vfx.lightness = cfg->lightness;
     vfx.backlight = cfg->backlight;
 
-    xEventGroupSetBits(user_event_group, VFX_RELOAD_BIT);
+    xEventGroupSetBits(user_event_group, VFX_RLD_MODE_BIT);
 
     ESP_LOGI(TAG, "mode: 0x%02X, scale-factor: %u, lightness: 0x%04X, backlight: %u",
              vfx.mode, vfx.scale_factor, vfx.lightness, vfx.backlight);

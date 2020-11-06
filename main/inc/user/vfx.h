@@ -14,8 +14,20 @@
 #include "gfx.h"
 
 typedef enum {
-    VFX_MODE_IDX_RANDOM = 0x00,
+#if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
+    VFX_MODE_IDX_GIF_NYAN_CAT = 0x00,
+    VFX_MODE_IDX_GIF_BILIBILI = 0x01,
 
+    VFX_MODE_IDX_GIF_MAX,
+
+    VFX_MODE_IDX_SPECTRUM_R_N = 0x0D,
+    VFX_MODE_IDX_SPECTRUM_G_N = 0x0E,
+    VFX_MODE_IDX_SPECTRUM_M_N = 0x0F,
+    VFX_MODE_IDX_SPECTRUM_R_L = 0x10,
+    VFX_MODE_IDX_SPECTRUM_G_L = 0x11,
+    VFX_MODE_IDX_SPECTRUM_M_L = 0x12,
+#else
+    VFX_MODE_IDX_RANDOM       = 0x00,
     VFX_MODE_IDX_RAINBOW      = 0x01,
     VFX_MODE_IDX_RIBBON       = 0x02,
     VFX_MODE_IDX_GRADUAL      = 0x03,
@@ -34,11 +46,12 @@ typedef enum {
     VFX_MODE_IDX_FOUNTAIN_S_L = 0x10,
     VFX_MODE_IDX_FOUNTAIN_G_L = 0x11,
     VFX_MODE_IDX_FOUNTAIN_H_L = 0x12,
+#endif
 
     VFX_MODE_IDX_MAX,
 
     VFX_MODE_IDX_PAUSE = 0xFE,
-    VFX_MODE_IDX_OFF   = 0xFF,
+    VFX_MODE_IDX_OFF   = 0xFF
 } vfx_mode_t;
 
 typedef struct {
@@ -50,16 +63,16 @@ typedef struct {
 
 #define FFT_N 128
 
-#if defined(CONFIG_VFX_OUTPUT_WS2812) || defined(CONFIG_VFX_OUTPUT_CUBE0414)
+#if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
+    #define DEFAULT_VFX_MODE            VFX_MODE_IDX_SPECTRUM_M_N
+    #define DEFAULT_VFX_SCALE_FACTOR    0xFF
+    #define DEFAULT_VFX_LIGHTNESS       0x00FF
+    #define DEFAULT_VFX_BACKLIGHT       0xFF
+#else
     #define DEFAULT_VFX_MODE            VFX_MODE_IDX_FOUNTAIN_H_N
     #define DEFAULT_VFX_SCALE_FACTOR    0xFF
     #define DEFAULT_VFX_LIGHTNESS       0x006F
     #define DEFAULT_VFX_BACKLIGHT       0x00
-#else
-    #define DEFAULT_VFX_MODE            15
-    #define DEFAULT_VFX_SCALE_FACTOR    0xFF
-    #define DEFAULT_VFX_LIGHTNESS       0x00FF
-    #define DEFAULT_VFX_BACKLIGHT       0xFF
 #endif
 
 extern GDisplay *vfx_gdisp;
