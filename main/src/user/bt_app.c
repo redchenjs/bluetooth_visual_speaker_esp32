@@ -91,8 +91,8 @@ void bt_app_init(void)
     bt_app_work_dispatch(bt_app_hdl_stack_evt, BT_APP_EVT_STACK_UP, NULL, 0, NULL);
 
     /*
-     * Set default parameters for Legacy Pairing
-     * Use fixed pin code
+     * set default parameters for Legacy Pairing
+     * use fixed pin code
      */
     esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_FIXED;
     esp_bt_pin_code_t pin_code;

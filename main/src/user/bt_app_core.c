@@ -79,13 +79,13 @@ static void bt_app_task(void *pvParameter)
         if (pdTRUE == xQueueReceive(s_bt_app_task_queue, &msg, portMAX_DELAY)) {
             ESP_LOGD(BT_APP_CORE_TAG, "%s, sig 0x%x, 0x%x", __func__, msg.sig, msg.event);
             switch (msg.sig) {
-            case BT_APP_SIG_WORK_DISPATCH:
-                bt_app_work_dispatched(&msg);
-                break;
-            default:
-                ESP_LOGW(BT_APP_CORE_TAG, "%s, unhandled sig: %d", __func__, msg.sig);
-                break;
-            } // switch (msg.sig)
+                case BT_APP_SIG_WORK_DISPATCH:
+                    bt_app_work_dispatched(&msg);
+                    break;
+                default:
+                    ESP_LOGW(BT_APP_CORE_TAG, "%s, unhandled sig: %d", __func__, msg.sig);
+                    break;
+            }
 
             if (msg.param) {
                 free(msg.param);

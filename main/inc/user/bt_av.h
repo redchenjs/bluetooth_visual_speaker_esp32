@@ -9,6 +9,7 @@
 #define INC_USER_BT_AV_H_
 
 #include <stdint.h>
+
 #include "esp_a2dp_api.h"
 #include "esp_avrc_api.h"
 

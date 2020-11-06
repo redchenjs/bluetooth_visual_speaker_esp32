@@ -57,7 +57,7 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
 static void gap_config_adv_data(const char *name)
 {
     size_t len = strlen(name);
-    uint8_t raw_adv_data[len+5];
+    uint8_t raw_adv_data[len + 5];
 
     // flag
     raw_adv_data[0] = 2;
@@ -67,7 +67,7 @@ static void gap_config_adv_data(const char *name)
     // adv name
     raw_adv_data[3] = len + 1;
     raw_adv_data[4] = ESP_BLE_AD_TYPE_NAME_CMPL;
-    memcpy(raw_adv_data+5, name, len);
+    memcpy(raw_adv_data + 5, name, len);
 
     esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
     if (raw_adv_ret) {
