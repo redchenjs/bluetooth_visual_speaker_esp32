@@ -30,7 +30,7 @@
 /*===========================================================================*/
 
 #ifndef GDISP_SCREEN_WIDTH
-    #define GDISP_SCREEN_WIDTH      CUBE0414_X*CUBE0414_Y
+    #define GDISP_SCREEN_WIDTH      CUBE0414_X * CUBE0414_Y
 #endif
 #ifndef GDISP_SCREEN_HEIGHT
     #define GDISP_SCREEN_HEIGHT     CUBE0414_Z
@@ -69,33 +69,33 @@ static const uint8_t ram_addr_table[64] = {
 };
 
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
-    g->priv = gfxAlloc(GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*3);
+    g->priv = gfxAlloc(GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 3);
     if (g->priv == NULL) {
         gfxHalt("GDISP CUBE0414: Failed to allocate private memory");
     }
 
-    memset(g->priv, 0x00, GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*3);
+    memset(g->priv, 0x00, GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 3);
 
-    // Initialise the board interface
+    // initialise the board interface
     init_board(g);
 
-    // Hardware reset
+    // hardware reset
     setpin_reset(g, 0);
     gfxSleepMilliseconds(120);
     setpin_reset(g, 1);
     gfxSleepMilliseconds(120);
 
-    write_cmd(g, CUBE0414_CONF_WR);     //  1: Set write reg conf, 4 args, no delay:
+    write_cmd(g, CUBE0414_CONF_WR);     //  1: set write reg conf, 4 args, no delay:
         write_data(g, CONFIG_CUBE0414_LED_T0H);    // T0H Time: val * 10 ns
         write_data(g, CONFIG_CUBE0414_LED_T0L);    // T0L Time: val * 10 ns
         write_data(g, CONFIG_CUBE0414_LED_T1H);    // T1H Time: val * 10 ns
         write_data(g, CONFIG_CUBE0414_LED_T1L);    // T1L Time: val * 10 ns
-    write_cmd(g, CUBE0414_ADDR_WR);     //  2: Set write ram addr, 64 args, no delay:
+    write_cmd(g, CUBE0414_ADDR_WR);     //  2: set write ram addr, 64 args, no delay:
         write_buff(g, (uint8_t *)ram_addr_table, sizeof(ram_addr_table));
-    write_cmd(g, CUBE0414_DATA_WR);     //  3: Set write ram data, N args, no delay:
-        write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*3);
+    write_cmd(g, CUBE0414_DATA_WR);     //  3: set write ram data, N args, no delay:
+        write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 3);
 
-    /* Initialise the GDISP structure */
+    /* initialise the GDISP structure */
     g->g.Width  = GDISP_SCREEN_WIDTH;
     g->g.Height = GDISP_SCREEN_HEIGHT;
     g->g.Orientation = GDISP_ROTATE_0;

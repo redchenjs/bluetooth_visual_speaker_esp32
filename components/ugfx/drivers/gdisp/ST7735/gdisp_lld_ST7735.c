@@ -47,66 +47,66 @@
 #include "ST7735.h"
 
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
-    g->priv = gfxAlloc(GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*2);
+    g->priv = gfxAlloc(GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 2);
     if (g->priv == NULL) {
         gfxHalt("GDISP ST7735: Failed to allocate private memory");
     }
 
-    memset(g->priv, 0x00, GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*2);
+    memset(g->priv, 0x00, GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 2);
 
-    // Initialise the board interface
+    // initialise the board interface
     init_board(g);
 
-    // Hardware reset
+    // hardware reset
     setpin_reset(g, 0);
     gfxSleepMilliseconds(120);
     setpin_reset(g, 1);
     gfxSleepMilliseconds(120);
 
-    write_cmd(g, ST7735_SWRESET);   //  1: Software reset, no args, w/delay
+    write_cmd(g, ST7735_SWRESET);   //  1: software reset, no args, w/delay
     gfxSleepMilliseconds(120);
-    write_cmd(g, ST7735_SLPOUT);    //  2: Out of sleep mode, no args, w/delay
+    write_cmd(g, ST7735_SLPOUT);    //  2: out of sleep mode, no args, w/delay
     gfxSleepMilliseconds(120);
-    write_cmd(g, ST7735_FRMCTR1);   //  3: Frame rate control - normal mode, 3 args:
+    write_cmd(g, ST7735_FRMCTR1);   //  3: frame rate control - normal mode, 3 args:
         write_data(g, 0x05);
         write_data(g, 0x37);
         write_data(g, 0x37);
-    write_cmd(g, ST7735_FRMCTR2);   //  4: Frame rate control - idle mode, 3 args:
+    write_cmd(g, ST7735_FRMCTR2);   //  4: frame rate control - idle mode, 3 args:
         write_data(g, 0x05);
         write_data(g, 0x37);
         write_data(g, 0x37);
-    write_cmd(g, ST7735_FRMCTR3);   //  5: Frame rate control - partial mode, 6 args:
+    write_cmd(g, ST7735_FRMCTR3);   //  5: frame rate control - partial mode, 6 args:
         write_data(g, 0x05);
         write_data(g, 0x37);
         write_data(g, 0x37);
         write_data(g, 0x05);
         write_data(g, 0x37);
         write_data(g, 0x37);
-    write_cmd(g, ST7735_INVCTR);    //  6: Display inversion control, 1 arg, no delay:
+    write_cmd(g, ST7735_INVCTR);    //  6: display inversion control, 1 arg, no delay:
         write_data(g, 0x03);
-    write_cmd(g, ST7735_PWCTR1);    //  7: Power control, 3 args, no delay:
+    write_cmd(g, ST7735_PWCTR1);    //  7: power control, 3 args, no delay:
         write_data(g, 0x0E);
         write_data(g, 0x0E);
         write_data(g, 0x04);
-    write_cmd(g, ST7735_PWCTR2);    //  8: Power control, 1 arg, no delay:
+    write_cmd(g, ST7735_PWCTR2);    //  8: power control, 1 arg, no delay:
         write_data(g, 0xC5);
-    write_cmd(g, ST7735_PWCTR3);    //  9: Power control, 2 args, no delay:
+    write_cmd(g, ST7735_PWCTR3);    //  9: power control, 2 args, no delay:
         write_data(g, 0x0D);
         write_data(g, 0x00);
-    write_cmd(g, ST7735_PWCTR4);    // 10: Power control, 2 args, no delay:
+    write_cmd(g, ST7735_PWCTR4);    // 10: power control, 2 args, no delay:
         write_data(g, 0x8D);
         write_data(g, 0x2A);
-    write_cmd(g, ST7735_PWCTR5);    // 11: Power control, 2 args, no delay:
+    write_cmd(g, ST7735_PWCTR5);    // 11: power control, 2 args, no delay:
         write_data(g, 0x8D);
         write_data(g, 0xEE);
-    write_cmd(g, ST7735_VMCTR1);    // 12: Power control, 1 arg, no delay:
+    write_cmd(g, ST7735_VMCTR1);    // 12: power control, 1 arg, no delay:
         write_data(g, 0x06);
-    write_cmd(g, ST7735_INVON);     // 13: Invert display, no args, no delay
-    write_cmd(g, ST7735_MADCTL);    // 14: Memory access control (directions), 1 arg:
+    write_cmd(g, ST7735_INVON);     // 13: invert display, no args, no delay
+    write_cmd(g, ST7735_MADCTL);    // 14: memory access control (directions), 1 arg:
         write_data(g, 0xC8);
-    write_cmd(g, ST7735_COLMOD);    // 15: Set color mode, 1 arg, no delay:
+    write_cmd(g, ST7735_COLMOD);    // 15: set color mode, 1 arg, no delay:
         write_data(g, 0x05);
-    write_cmd(g, ST7735_GAMCTRP1);  // 16: Magical unicorn dust, 16 args, no delay:
+    write_cmd(g, ST7735_GAMCTRP1);  // 16: magical unicorn dust, 16 args, no delay:
         write_data(g, 0x0B);
         write_data(g, 0x17);
         write_data(g, 0x0A);
@@ -123,7 +123,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         write_data(g, 0x09);
         write_data(g, 0x05);
         write_data(g, 0x10);
-    write_cmd(g, ST7735_GAMCTRN1);  // 17: Sparkles and rainbows, 16 args, no delay:
+    write_cmd(g, ST7735_GAMCTRN1);  // 17: sparkles and rainbows, 16 args, no delay:
         write_data(g, 0x0C);
         write_data(g, 0x19);
         write_data(g, 0x09);
@@ -140,22 +140,22 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         write_data(g, 0x09);
         write_data(g, 0x05);
         write_data(g, 0x10);
-    write_cmd(g, ST7735_NORON);     // 18: Normal display on, no args, no delay
-    write_cmd(g, ST7735_CASET);     // 19: Set column address, 4 args, no delay:
+    write_cmd(g, ST7735_NORON);     // 18: normal display on, no args, no delay
+    write_cmd(g, ST7735_CASET);     // 19: set column address, 4 args, no delay:
         write_data(g, 0x00);
         write_data(g, 0x1A);
         write_data(g, 0x00);
         write_data(g, 0x69);
-    write_cmd(g, ST7735_RASET);     // 20: Set row address, 4 args, no delay:
+    write_cmd(g, ST7735_RASET);     // 20: set row address, 4 args, no delay:
         write_data(g, 0x00);
         write_data(g, 0x01);
         write_data(g, 0x00);
         write_data(g, 0xA0);
-    write_cmd(g, ST7735_RAMWR);     // 21: Set write ram, N args, no delay:
-        write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*2);
-    write_cmd(g, ST7735_DISPON);    // 22: Main screen turn on, no args, no delay
+    write_cmd(g, ST7735_RAMWR);     // 21: set write ram, N args, no delay:
+        write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 2);
+    write_cmd(g, ST7735_DISPON);    // 22: main screen turn on, no args, no delay
 
-    /* Initialise the GDISP structure */
+    /* initialise the GDISP structure */
     g->g.Width  = GDISP_SCREEN_WIDTH;
     g->g.Height = GDISP_SCREEN_HEIGHT;
     g->g.Orientation = GDISP_ROTATE_0;

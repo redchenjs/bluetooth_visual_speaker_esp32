@@ -47,33 +47,33 @@
 #include "ST7789.h"
 
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
-    g->priv = gfxAlloc(GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*2);
+    g->priv = gfxAlloc(GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 2);
     if (g->priv == NULL) {
         gfxHalt("GDISP ST7789: Failed to allocate private memory");
     }
 
-    memset(g->priv, 0x00, GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*2);
+    memset(g->priv, 0x00, GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 2);
 
-    // Initialise the board interface
+    // initialise the board interface
     init_board(g);
 
-    // Hardware reset
+    // hardware reset
     setpin_reset(g, 0);
     gfxSleepMilliseconds(120);
     setpin_reset(g, 1);
     gfxSleepMilliseconds(120);
 
-    write_cmd(g, ST7789_SWRESET);   //  1: Software reset, no args, w/delay
+    write_cmd(g, ST7789_SWRESET);   //  1: software reset, no args, w/delay
     gfxSleepMilliseconds(120);
-    write_cmd(g, ST7789_SLPOUT);    //  2: Out of sleep mode, no args, w/delay
+    write_cmd(g, ST7789_SLPOUT);    //  2: out of sleep mode, no args, w/delay
     gfxSleepMilliseconds(120);
-    write_cmd(g, ST7789_PORCTRL);   //  3: Porch setting, 5 args, no delay:
+    write_cmd(g, ST7789_PORCTRL);   //  3: porch setting, 5 args, no delay:
         write_data(g, 0x15);
         write_data(g, 0x15);
         write_data(g, 0x00);
         write_data(g, 0x33);
         write_data(g, 0x33);
-    write_cmd(g, ST7789_GCTRL);     //  4: Gate control, 1 arg, no delay:
+    write_cmd(g, ST7789_GCTRL);     //  4: gate control, 1 arg, no delay:
         write_data(g, 0x35);
     write_cmd(g, ST7789_VCOMS);     //  5: VCOM setting, 1 arg, no delay:
         write_data(g, 0x19);
@@ -85,17 +85,17 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         write_data(g, 0x12);
     write_cmd(g, ST7789_VDVSET);    //  9: VDV setting, 1 arg, no delay:
         write_data(g, 0x20);
-    write_cmd(g, ST7789_FRCTRL2);   // 10: Frame rate control - normal mode, 1 arg:
+    write_cmd(g, ST7789_FRCTRL2);   // 10: frame rate control - normal mode, 1 arg:
         write_data(g, 0x0C);
-    write_cmd(g, ST7789_PWCTRL1);   // 11: Power control 1, 2 args, no delay:
+    write_cmd(g, ST7789_PWCTRL1);   // 11: power control 1, 2 args, no delay:
         write_data(g, 0xA4);
         write_data(g, 0xA1);
-    write_cmd(g, ST7789_INVON);     // 12: Invert display, no args, no delay
-    write_cmd(g, ST7789_MADCTL);    // 13: Memory access control (directions), 1 arg:
+    write_cmd(g, ST7789_INVON);     // 12: invert display, no args, no delay
+    write_cmd(g, ST7789_MADCTL);    // 13: memory access control (directions), 1 arg:
         write_data(g, 0x00);
-    write_cmd(g, ST7789_COLMOD);    // 14: Set color mode, 1 arg, no delay:
+    write_cmd(g, ST7789_COLMOD);    // 14: set color mode, 1 arg, no delay:
         write_data(g, 0x05);
-    write_cmd(g, ST7789_PVGAMCTRL); // 15: Positive voltage gamma control, 14 args, no delay:
+    write_cmd(g, ST7789_PVGAMCTRL); // 15: positive voltage gamma control, 14 args, no delay:
         write_data(g, 0xD0);
         write_data(g, 0x04);
         write_data(g, 0x0D);
@@ -110,7 +110,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         write_data(g, 0x0B);
         write_data(g, 0x1F);
         write_data(g, 0x23);
-    write_cmd(g, ST7789_NVGAMCTRL); // 16: Negative voltage gamma control, 14 args, no delay:
+    write_cmd(g, ST7789_NVGAMCTRL); // 16: negative voltage gamma control, 14 args, no delay:
         write_data(g, 0xD0);
         write_data(g, 0x04);
         write_data(g, 0x0C);
@@ -125,22 +125,22 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         write_data(g, 0x1F);
         write_data(g, 0x20);
         write_data(g, 0x23);
-    write_cmd(g, ST7789_NORON);     // 17: Normal display on, no args, no delay
-    write_cmd(g, ST7789_CASET);     // 18: Set column address, 4 args, no delay:
+    write_cmd(g, ST7789_NORON);     // 17: normal display on, no args, no delay
+    write_cmd(g, ST7789_CASET);     // 18: set column address, 4 args, no delay:
         write_data(g, 0x00);
         write_data(g, 0x34);
         write_data(g, 0x00);
         write_data(g, 0xBA);
-    write_cmd(g, ST7789_RASET);     // 19: Set row address, 4 args, no delay:
+    write_cmd(g, ST7789_RASET);     // 19: set row address, 4 args, no delay:
         write_data(g, 0x00);
         write_data(g, 0x28);
         write_data(g, 0x01);
         write_data(g, 0x17);
-    write_cmd(g, ST7789_RAMWR);     // 20: Set write ram, N args, no delay:
-        write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH*GDISP_SCREEN_HEIGHT*2);
-    write_cmd(g, ST7789_DISPON);    // 21: Main screen turn on, no args, no delay
+    write_cmd(g, ST7789_RAMWR);     // 20: set write ram, N args, no delay:
+        write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 2);
+    write_cmd(g, ST7789_DISPON);    // 21: main screen turn on, no args, no delay
 
-    /* Initialise the GDISP structure */
+    /* initialise the GDISP structure */
     g->g.Width  = GDISP_SCREEN_WIDTH;
     g->g.Height = GDISP_SCREEN_HEIGHT;
     g->g.Orientation = GDISP_ROTATE_0;

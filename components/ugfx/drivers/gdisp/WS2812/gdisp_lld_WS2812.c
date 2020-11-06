@@ -30,7 +30,7 @@
 /*===========================================================================*/
 
 #ifndef GDISP_SCREEN_WIDTH
-    #define GDISP_SCREEN_WIDTH      WS2812_X*WS2812_Y
+    #define GDISP_SCREEN_WIDTH      WS2812_X * WS2812_Y
 #endif
 #ifndef GDISP_SCREEN_HEIGHT
     #define GDISP_SCREEN_HEIGHT     1
@@ -45,13 +45,13 @@
 #define GDISP_FLG_NEEDFLUSH         (GDISP_FLG_DRIVER << 0)
 
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
-    // Initialise the board interface
+    // initialise the board interface
     init_board(g);
 
-    // Clear
+    // clear
     clear(g);
 
-    /* Initialise the GDISP structure */
+    /* initialise the GDISP structure */
     g->g.Width  = GDISP_SCREEN_WIDTH;
     g->g.Height = GDISP_SCREEN_HEIGHT;
     g->g.Orientation = GDISP_ROTATE_0;
