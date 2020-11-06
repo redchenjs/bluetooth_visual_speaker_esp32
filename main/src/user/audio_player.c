@@ -47,7 +47,7 @@ static const char *mp3_file_ptr[][2] = {
 };
 
 static bool playback_pending = false;
-static mp3_file_t mp3_file = MP3_FILE_IDX_NONE;
+static mp3_file_t mp3_file = MP3_FILE_IDX_MAX;
 
 static void audio_player_task(void *pvParameters)
 {
