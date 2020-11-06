@@ -15,10 +15,12 @@
 #include "driver/gpio.h"
 
 #include "core/os.h"
+#include "user/key.h"
 #include "user/key_handle.h"
 
 #define TAG "key"
 
+#ifdef CONFIG_ENABLE_SLEEP_KEY
 static const uint8_t gpio_pin[] = {
 #ifdef CONFIG_ENABLE_SLEEP_KEY
     CONFIG_SLEEP_KEY_PIN,
@@ -46,6 +48,7 @@ static void (*key_handle[])(void) = {
     sleep_key_handle,
 #endif
 };
+#endif
 
 static key_scan_mode_t key_scan_mode = KEY_SCAN_MODE_IDX_OFF;
 
