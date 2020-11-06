@@ -9,29 +9,29 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
 #include "driver/gpio.h"
 
 #define TAG "led"
 
-#ifdef CONFIG_ENABLE_LED
 static const TickType_t led_mode_table[][2] = {
-/*  { active, inactive }  */
-    {   2000,     2000 },   // 0
-    {   1000,     1000 },   // 1
-    {    500,      500 },   // 2
-    {    250,      250 },   // 3
-    {    100,      100 },   // 4
-    {     50,       50 },   // 5
-    {    625,       25 },   // 6
-    {   1250,       25 },   // 7
-    {   1875,       25 },   // 8
-    {   2500,       25 },   // 9
+    [LED_MODE_IDX_BLINK_S1] = {2000, 2000},
+    [LED_MODE_IDX_BLINK_S0] = {1000, 1000},
+    [LED_MODE_IDX_BLINK_M1] = { 500,  500},
+    [LED_MODE_IDX_BLINK_M0] = { 250,  250},
+    [LED_MODE_IDX_BLINK_F1] = { 100,  100},
+    [LED_MODE_IDX_BLINK_F0] = {  50,   50},
+    [LED_MODE_IDX_PULSE_D0] = { 625,   25},
+    [LED_MODE_IDX_PULSE_D1] = {1250,   25},
+    [LED_MODE_IDX_PULSE_D2] = {1875,   25},
+    [LED_MODE_IDX_PULSE_D3] = {2500,   25}
 };
 
-static uint8_t led_mode_index = 3;
+static led_mode_t led_mode = LED_MODE_IDX_BLINK_M0;
 
 static void led_task(void *pvParameter)
 {
+#ifdef CONFIG_ENABLE_LED
     bool active = false;
     portTickType xLastWakeTime;
 
@@ -67,25 +67,27 @@ static void led_task(void *pvParameter)
 
         active = !active;
 
-        vTaskDelayUntil(&xLastWakeTime, led_mode_table[led_mode_index][active] / portTICK_RATE_MS);
+        vTaskDelayUntil(&xLastWakeTime, led_mode_table[led_mode][active] / portTICK_RATE_MS);
     }
-}
 #endif
+}
 
-void led_set_mode(uint8_t idx)
+void led_set_mode(led_mode_t idx)
 {
-#ifdef CONFIG_ENABLE_LED
-    if (idx >= sizeof(led_mode_table)/2) {
+    if (idx >= sizeof(led_mode_table) / sizeof(led_mode_table[0])) {
         ESP_LOGE(TAG, "invalid mode index");
         return;
     }
-    led_mode_index = idx;
-#endif
+
+    led_mode = idx;
 }
 
-#ifdef CONFIG_ENABLE_LED
+led_mode_t led_get_mode(void)
+{
+    return led_mode;
+}
+
 void led_init(void)
 {
     xTaskCreatePinnedToCore(led_task, "ledT", 1536, NULL, 9, NULL, 1);
 }
-#endif
