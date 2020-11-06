@@ -28,13 +28,13 @@ void ws2812_init_board(void)
         .gpio_num = CONFIG_WS2812_DIN_PIN,
         .clk_div = 2,
         .mem_block_num = 1,
-        .flags = 0,
+        .flags = 0
     };
     rmt_config(&config);
 
     rmt_driver_install(RMT_CHANNEL_0, 0, 0);
 
-    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(WS2812_X*WS2812_Y, RMT_CHANNEL_0);
+    led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(WS2812_X * WS2812_Y, RMT_CHANNEL_0);
     strip = led_strip_new_rmt_ws2812(&strip_config);
     if (!strip) {
         ESP_LOGE(TAG, "initialization failed");
