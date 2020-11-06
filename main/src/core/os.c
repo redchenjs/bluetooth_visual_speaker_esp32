@@ -22,8 +22,8 @@
 EventGroupHandle_t user_event_group;
 
 #if defined(CONFIG_ENABLE_SLEEP_KEY) || defined(CONFIG_ENABLE_BLE_CONTROL_IF)
-static EventBits_t sleep_wait_bits = 0;
-static EventBits_t reset_wait_bits = 0;
+static EventBits_t reset_wait_bits = OS_PWR_DUMMY_BIT;
+static EventBits_t sleep_wait_bits = OS_PWR_DUMMY_BIT;
 
 static void os_pwr_task_handle(void *pvParameters)
 {
@@ -32,14 +32,31 @@ static void os_pwr_task_handle(void *pvParameters)
     while (1) {
         xEventGroupWaitBits(
             user_event_group,
-            OS_PWR_SLEEP_BIT | OS_PWR_RESET_BIT,
+            OS_PWR_RESET_BIT | OS_PWR_SLEEP_BIT,
             pdFALSE,
             pdFALSE,
             portMAX_DELAY
         );
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (uxBits & OS_PWR_SLEEP_BIT) {
+        if (uxBits & OS_PWR_RESET_BIT) {
+            if (reset_wait_bits) {
+                ESP_LOGW(OS_PWR_TAG, "waiting for unfinished jobs....");
+
+                vTaskDelay(500 / portTICK_RATE_MS);
+
+                xEventGroupWaitBits(
+                    user_event_group,
+                    reset_wait_bits,
+                    pdFALSE,
+                    pdTRUE,
+                    portMAX_DELAY
+                );
+            }
+
+            ESP_LOGW(OS_PWR_TAG, "reset now");
+            esp_restart();
+        } else if (uxBits & OS_PWR_SLEEP_BIT) {
             if (sleep_wait_bits) {
                 ESP_LOGW(OS_PWR_TAG, "waiting for unfinished jobs....");
 
@@ -70,37 +87,20 @@ static void os_pwr_task_handle(void *pvParameters)
 
             ESP_LOGW(OS_PWR_TAG, "sleep now");
             esp_deep_sleep_start();
-        } else if (uxBits & OS_PWR_RESET_BIT) {
-            if (reset_wait_bits) {
-                ESP_LOGW(OS_PWR_TAG, "waiting for unfinished jobs....");
-
-                vTaskDelay(500 / portTICK_RATE_MS);
-
-                xEventGroupWaitBits(
-                    user_event_group,
-                    reset_wait_bits,
-                    pdFALSE,
-                    pdTRUE,
-                    portMAX_DELAY
-                );
-            }
-
-            ESP_LOGW(OS_PWR_TAG, "reset now");
-            esp_restart();
         }
     }
-}
-
-void os_pwr_sleep_wait(EventBits_t bits)
-{
-    sleep_wait_bits = bits;
-    xEventGroupSetBits(user_event_group, OS_PWR_SLEEP_BIT);
 }
 
 void os_pwr_reset_wait(EventBits_t bits)
 {
     reset_wait_bits = bits;
     xEventGroupSetBits(user_event_group, OS_PWR_RESET_BIT);
+}
+
+void os_pwr_sleep_wait(EventBits_t bits)
+{
+    sleep_wait_bits = bits;
+    xEventGroupSetBits(user_event_group, OS_PWR_SLEEP_BIT);
 }
 #endif
 
@@ -126,17 +126,17 @@ void os_init(void)
         } else {
             ESP_LOGW(OS_PWR_TAG, "resuming aborted.");
 
-            os_pwr_sleep_wait(0);
+            os_pwr_sleep_wait(OS_PWR_DUMMY_BIT);
         }
 #else
         ESP_LOGW(OS_PWR_TAG, "resuming from sleep mode....");
 #endif
     } else {
-        os_pwr_sleep_wait(0);
+        os_pwr_sleep_wait(OS_PWR_DUMMY_BIT);
     }
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    audio_player_play_file(3);
+    audio_player_play_file(MP3_FILE_IDX_WAKEUP);
 #endif
 #endif
 }

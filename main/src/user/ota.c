@@ -20,6 +20,7 @@
 
 #include "user/led.h"
 #include "user/vfx.h"
+#include "user/key.h"
 #include "user/ain.h"
 #include "user/bt_av.h"
 #include "user/bt_app.h"
@@ -76,10 +77,10 @@ static const char rsp_str[][32] = {
 
 #ifdef CONFIG_ENABLE_VFX
     static vfx_config_t *vfx = NULL;
-    static uint8_t vfx_prev_mode = 0;
+    static vfx_mode_t vfx_prev_mode = VFX_MODE_IDX_OFF;
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-    static uint8_t ain_prev_mode = 0;
+    static ain_mode_t ain_prev_mode = AIN_MODE_IDX_OFF;
 #endif
 
 static bool data_err = false;
@@ -209,12 +210,13 @@ void ota_exec(const char *data, uint32_t len)
                     ota_send_response(RSP_IDX_FAIL);
                 } else {
                     if (!update_handle) {
-                        xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
-
                         esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+                        key_set_scan_mode(KEY_SCAN_MODE_IDX_OFF);
+#endif
 #ifdef CONFIG_ENABLE_LED
-                        led_set_mode(7);
+                        led_set_mode(LED_MODE_IDX_PULSE_D1);
 #endif
 #ifdef CONFIG_ENABLE_VFX
                         vfx_prev_mode = vfx->mode;
@@ -223,7 +225,7 @@ void ota_exec(const char *data, uint32_t len)
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
                         ain_prev_mode = ain_get_mode();
-                        ain_set_mode(0);
+                        ain_set_mode(AIN_MODE_IDX_OFF);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
                         xEventGroupWaitBits(
@@ -285,7 +287,7 @@ void ota_exec(const char *data, uint32_t len)
                     vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-                    ain_set_mode(0);
+                    ain_set_mode(AIN_MODE_IDX_OFF);
 #endif
                 }
 
@@ -361,9 +363,10 @@ void ota_end(void)
         vfx_set_conf(vfx);
 #endif
 #ifdef CONFIG_ENABLE_LED
-        led_set_mode(3);
+        led_set_mode(LED_MODE_IDX_BLINK_M0);
 #endif
-
-        xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT | KEY_SCAN_CLR_BIT);
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+        key_set_scan_mode(KEY_SCAN_MODE_IDX_ON);
+#endif
     }
 }

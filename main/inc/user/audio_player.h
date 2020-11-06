@@ -8,7 +8,6 @@
 #ifndef INC_USER_AUDIO_PLAYER_H_
 #define INC_USER_AUDIO_PLAYER_H_
 
-
 typedef enum {
     MP3_FILE_IDX_CONNECTED    = 0x00,
     MP3_FILE_IDX_DISCONNECTED = 0x01,

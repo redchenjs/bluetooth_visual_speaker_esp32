@@ -139,6 +139,36 @@ config ENABLE_VFX
     help
         Select this to enable Visual Effects Output.
 
+choice AUDIO_INPUT_FFT_CHANNEL
+    prompt "Audio Input FFT Channel"
+    default AUDIO_INPUT_FFT_ONLY_LEFT
+    depends on ENABLE_VFX && !AUDIO_INPUT_NONE
+    help
+        Select Audio Input FFT Channel.
+
+config AUDIO_INPUT_FFT_ONLY_LEFT
+    bool "Left Channel"
+config AUDIO_INPUT_FFT_ONLY_RIGHT
+    bool "Right Channel"
+config AUDIO_INPUT_FFT_BOTH
+    bool "Both Channel"
+endchoice
+
+choice BT_AUDIO_FFT_CHANNEL
+    prompt "Bluetooth Audio FFT Channel"
+    default BT_AUDIO_FFT_BOTH
+    depends on ENABLE_VFX
+    help
+        Select Bluetooth Audio FFT Channel.
+
+config BT_AUDIO_FFT_ONLY_LEFT
+    bool "Left Channel"
+config BT_AUDIO_FFT_ONLY_RIGHT
+    bool "Right Channel"
+config BT_AUDIO_FFT_BOTH
+    bool "Both Channel"
+endchoice
+
 choice VFX_OUTPUT
     prompt "VFX Output Device"
     default VFX_OUTPUT_CUBE0414
@@ -156,35 +186,23 @@ config VFX_OUTPUT_CUBE0414
     bool "CUBE0414 8x8x8 Music Light Cube"
 endchoice
 
-choice BT_AUDIO_FFT_CHANNEL
-    prompt "Bluetooth Audio FFT Channel"
-    default BT_AUDIO_FFT_BOTH
-    depends on ENABLE_VFX
+choice LCD_ORIENTATION
+    prompt "LCD Orientation"
+    default LCD_ORIENTATION_NORMAL
+    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812 && !VFX_OUTPUT_CUBE0414
     help
-        Select Bluetooth Audio FFT Channel.
+        Select LCD orientation.
 
-    config BT_AUDIO_FFT_ONLY_LEFT
-        bool "Left Channel"
-    config BT_AUDIO_FFT_ONLY_RIGHT
-        bool "Right Channel"
-    config BT_AUDIO_FFT_BOTH
-        bool "Both Channel"
+config LCD_ORIENTATION_NORMAL
+    bool "Normal"
+config LCD_ORIENTATION_UPSIDE_DOWN
+    bool "Upside Down"
 endchoice
 
-choice AUDIO_INPUT_FFT_CHANNEL
-    prompt "Audio Input FFT Channel"
-    default AUDIO_INPUT_FFT_ONLY_LEFT
-    depends on ENABLE_VFX && !AUDIO_INPUT_NONE
-    help
-        Select Audio Input FFT Channel.
-
-    config AUDIO_INPUT_FFT_ONLY_LEFT
-        bool "Left Channel"
-    config AUDIO_INPUT_FFT_ONLY_RIGHT
-        bool "Right Channel"
-    config AUDIO_INPUT_FFT_BOTH
-        bool "Both Channel"
-endchoice
+config LCD_ROTATION_DEGREE
+    int
+    default  90 if LCD_ORIENTATION_NORMAL
+    default 270 if LCD_ORIENTATION_UPSIDE_DOWN
 
 choice LED_LAYER_DIR
     prompt "LED Layer Direction"
@@ -223,11 +241,6 @@ config LED_COLOR_RGB
 config LED_COLOR_GRB
     bool "GRB"
 endchoice
-
-config WS2812_DIN_PIN
-    int "WS2812 DIN Pin"
-    default 18
-    depends on ENABLE_VFX && VFX_OUTPUT_WS2812
 
 choice CUBE0414_LINE_TYPE
     prompt "CUBE0414 Line Type"
@@ -272,18 +285,33 @@ config CUBE0414_LED_T1L
     range 1 255
     depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
 
-config DEVICE_RST_PIN
-    int "Device RST Pin"
+config WS2812_DIN_PIN
+    int "WS2812 DIN Pin"
+    default 18
+    depends on ENABLE_VFX && VFX_OUTPUT_WS2812
+
+config DEV_RST_PIN
+    int "DEV RST Pin"
     default 14
-    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
 
-config DEVICE_DC_PIN
-    int "Device DC Pin"
+config DEV_DC_PIN
+    int "DEV DC Pin"
     default 23
-    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
 
-config DEVICE_BL_PIN
-    int "Device BL Pin"
+config LCD_RST_PIN
+    int "LCD RST Pin"
+    default 14
+    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812 && !VFX_OUTPUT_CUBE0414
+
+config LCD_DC_PIN
+    int "LCD DC Pin"
+    default 23
+    depends on ENABLE_VFX && !VFX_OUTPUT_WS2812 && !VFX_OUTPUT_CUBE0414
+
+config LCD_BL_PIN
+    int "LCD BL Pin"
     default 4
     depends on ENABLE_VFX && !VFX_OUTPUT_WS2812 && !VFX_OUTPUT_CUBE0414
 

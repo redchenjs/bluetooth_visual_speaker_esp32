@@ -5,9 +5,6 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "esp_log.h"
@@ -19,7 +16,9 @@
 
 #include "core/os.h"
 #include "core/app.h"
+
 #include "user/led.h"
+#include "user/key.h"
 #include "user/bt_app.h"
 #include "user/bt_app_core.h"
 #include "user/audio_player.h"
@@ -138,26 +137,22 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             EventBits_t uxBits = xEventGroupGetBits(user_event_group);
             if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
-                xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT | KEY_SCAN_CLR_BIT);
-
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+                key_set_scan_mode(KEY_SCAN_MODE_IDX_ON);
+#endif
                 esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
             }
 
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-            audio_player_play_file(1);
+            audio_player_play_file(MP3_FILE_IDX_DISCONNECTED);
 #endif
 #ifdef CONFIG_ENABLE_LED
-            led_set_mode(3);
+            led_set_mode(LED_MODE_IDX_BLINK_M0);
 #endif
 
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
-
-            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
-                xEventGroupSetBits(user_event_group, KEY_SCAN_RUN_BIT | KEY_SCAN_CLR_BIT);
-            }
 
             memcpy(&a2d_remote_bda, a2d->conn_stat.remote_bda, sizeof(esp_bd_addr_t));
 
@@ -168,14 +163,23 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
+                key_set_scan_mode(KEY_SCAN_MODE_IDX_ON);
+            }
+#endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-            audio_player_play_file(0);
+            audio_player_play_file(MP3_FILE_IDX_CONNECTED);
 #endif
 #ifdef CONFIG_ENABLE_LED
-            led_set_mode(2);
+            led_set_mode(LED_MODE_IDX_BLINK_M1);
 #endif
         } else {
-            xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT | KEY_SCAN_RUN_BIT);
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+            key_set_scan_mode(KEY_SCAN_MODE_IDX_OFF);
+#endif
+            xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
         }
         break;
     }
@@ -184,9 +188,9 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
 #ifdef CONFIG_ENABLE_LED
         if (a2d->audio_stat.state == ESP_A2D_AUDIO_STATE_STARTED) {
-            led_set_mode(1);
+            led_set_mode(LED_MODE_IDX_BLINK_S0);
         } else {
-            led_set_mode(2);
+            led_set_mode(LED_MODE_IDX_BLINK_M1);
         }
 #endif
         break;

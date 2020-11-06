@@ -17,6 +17,7 @@
 
 #include "core/os.h"
 #include "user/vfx.h"
+#include "user/key.h"
 #include "user/ain.h"
 #include "user/bt_av.h"
 #include "user/ble_gatts.h"
@@ -25,7 +26,7 @@
 #ifdef CONFIG_ENABLE_SLEEP_KEY
 void sleep_key_handle(void)
 {
-    xEventGroupClearBits(user_event_group, KEY_SCAN_RUN_BIT);
+    key_set_scan_mode(KEY_SCAN_MODE_IDX_OFF);
 
 #ifdef CONFIG_ENABLE_VFX
     vfx_config_t *vfx = vfx_get_conf();
@@ -33,10 +34,10 @@ void sleep_key_handle(void)
     vfx_set_conf(vfx);
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
-    ain_set_mode(0);
+    ain_set_mode(AIN_MODE_IDX_OFF);
 #endif
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    audio_player_play_file(2);
+    audio_player_play_file(MP3_FILE_IDX_SLEEP);
 #endif
 
     esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);

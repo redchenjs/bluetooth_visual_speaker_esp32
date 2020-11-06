@@ -80,22 +80,20 @@ extern GDisplay *vfx_gdisp;
 extern float vfx_fft_input[FFT_N];
 extern float vfx_fft_output[FFT_N];
 
-#ifndef CONFIG_VFX_OUTPUT_CUBE0414
-    #ifdef CONFIG_VFX_OUTPUT_ST7735
-        // ani0.gif
-        extern const char ani0_160x80_gif_ptr[] asm("_binary_ani0_160x80_gif_start");
-        extern const char ani0_160x80_gif_end[] asm("_binary_ani0_160x80_gif_end");
-        // ani1.gif
-        extern const char ani1_160x80_gif_ptr[] asm("_binary_ani1_160x80_gif_start");
-        extern const char ani1_160x80_gif_end[] asm("_binary_ani1_160x80_gif_end");
-    #else
-        // ani0.gif
-        extern const char ani0_240x135_gif_ptr[] asm("_binary_ani0_240x135_gif_start");
-        extern const char ani0_240x135_gif_end[] asm("_binary_ani0_240x135_gif_end");
-        // ani1.gif
-        extern const char ani1_240x135_gif_ptr[] asm("_binary_ani1_240x135_gif_start");
-        extern const char ani1_240x135_gif_end[] asm("_binary_ani1_240x135_gif_end");
-    #endif
+#ifdef CONFIG_VFX_OUTPUT_ST7735
+    // ani0.gif
+    extern const char ani0_160x80_gif_ptr[] asm("_binary_ani0_160x80_gif_start");
+    extern const char ani0_160x80_gif_end[] asm("_binary_ani0_160x80_gif_end");
+    // ani1.gif
+    extern const char ani1_160x80_gif_ptr[] asm("_binary_ani1_160x80_gif_start");
+    extern const char ani1_160x80_gif_end[] asm("_binary_ani1_160x80_gif_end");
+#else
+    // ani0.gif
+    extern const char ani0_240x135_gif_ptr[] asm("_binary_ani0_240x135_gif_start");
+    extern const char ani0_240x135_gif_end[] asm("_binary_ani0_240x135_gif_end");
+    // ani1.gif
+    extern const char ani1_240x135_gif_ptr[] asm("_binary_ani1_240x135_gif_start");
+    extern const char ani1_240x135_gif_end[] asm("_binary_ani1_240x135_gif_end");
 #endif
 
 extern void vfx_set_conf(vfx_config_t *cfg);

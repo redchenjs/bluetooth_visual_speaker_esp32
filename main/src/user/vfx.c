@@ -40,13 +40,13 @@ static GTimer vfx_flush_timer;
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
 static const char *img_file_ptr[][2] = {
-    #ifdef CONFIG_VFX_OUTPUT_ST7735
-        [VFX_MODE_IDX_GIF_NYAN_CAT] = {ani0_160x80_gif_ptr, ani0_160x80_gif_end},
-        [VFX_MODE_IDX_GIF_BILIBILI] = {ani1_160x80_gif_ptr, ani1_160x80_gif_end}
-    #else
-        [VFX_MODE_IDX_GIF_NYAN_CAT] = {ani0_240x135_gif_ptr, ani0_240x135_gif_end},
-        [VFX_MODE_IDX_GIF_BILIBILI] = {ani1_240x135_gif_ptr, ani1_240x135_gif_end}
-    #endif
+#ifdef CONFIG_VFX_OUTPUT_ST7735
+    [VFX_MODE_IDX_GIF_NYAN_CAT] = {ani0_160x80_gif_ptr, ani0_160x80_gif_end},
+    [VFX_MODE_IDX_GIF_BILIBILI] = {ani1_160x80_gif_ptr, ani1_160x80_gif_end}
+#else
+    [VFX_MODE_IDX_GIF_NYAN_CAT] = {ani0_240x135_gif_ptr, ani0_240x135_gif_end},
+    [VFX_MODE_IDX_GIF_BILIBILI] = {ani1_240x135_gif_ptr, ani1_240x135_gif_end}
+#endif
 };
 #endif
 
@@ -69,8 +69,8 @@ static void vfx_task(void *pvParameter)
 
     ESP_LOGI(TAG, "started.");
 
-#ifdef CONFIG_VFX_OUTPUT_ST7789
-    gdispGSetOrientation(vfx_gdisp, GDISP_ROTATE_270);
+#if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
+    gdispGSetOrientation(vfx_gdisp, CONFIG_LCD_ROTATION_DEGREE);
 #endif
 
     while (1) {

@@ -27,11 +27,11 @@ void hspi_init(void)
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
 #ifdef CONFIG_VFX_OUTPUT_ST7735
-        .max_transfer_sz = ST7735_SCREEN_WIDTH*ST7735_SCREEN_HEIGHT*2
+        .max_transfer_sz = ST7735_SCREEN_WIDTH * ST7735_SCREEN_HEIGHT * 2
 #elif defined(CONFIG_VFX_OUTPUT_ST7789)
-        .max_transfer_sz = ST7789_SCREEN_WIDTH*ST7789_SCREEN_HEIGHT*2
+        .max_transfer_sz = ST7789_SCREEN_WIDTH * ST7789_SCREEN_HEIGHT * 2
 #else
-        .max_transfer_sz = CUBE0414_X*CUBE0414_Y*CUBE0414_Z*3
+        .max_transfer_sz = CUBE0414_X * CUBE0414_Y * CUBE0414_Z * 3
 #endif
     };
     ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &buscfg, 1));

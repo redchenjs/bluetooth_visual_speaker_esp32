@@ -28,7 +28,7 @@ void cube0414_init_board(void)
     memset(hspi_trans, 0x00, sizeof(hspi_trans));
 
     gpio_config_t io_conf = {
-        .pin_bit_mask = BIT64(CONFIG_DEVICE_DC_PIN) | BIT64(CONFIG_DEVICE_RST_PIN),
+        .pin_bit_mask = BIT64(CONFIG_DEV_DC_PIN) | BIT64(CONFIG_DEV_RST_PIN),
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = false,
         .pull_down_en = false,
@@ -36,17 +36,17 @@ void cube0414_init_board(void)
     };
     gpio_config(&io_conf);
 
-    ESP_LOGI(TAG, "initialized, dc: %d, rst: %d", CONFIG_DEVICE_DC_PIN, CONFIG_DEVICE_RST_PIN);
+    ESP_LOGI(TAG, "initialized, dc: %d, rst: %d", CONFIG_DEV_DC_PIN, CONFIG_DEV_RST_PIN);
 }
 
 void cube0414_setpin_dc(spi_transaction_t *t)
 {
-    gpio_set_level(CONFIG_DEVICE_DC_PIN, (int)t->user);
+    gpio_set_level(CONFIG_DEV_DC_PIN, (int)t->user);
 }
 
 void cube0414_setpin_reset(uint8_t val)
 {
-    gpio_set_level(CONFIG_DEVICE_RST_PIN, val);
+    gpio_set_level(CONFIG_DEV_RST_PIN, val);
 }
 
 void cube0414_write_cmd(uint8_t cmd)

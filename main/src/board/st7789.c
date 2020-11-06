@@ -29,7 +29,7 @@ void st7789_init_board(void)
     memset(hspi_trans, 0x00, sizeof(hspi_trans));
 
     gpio_config_t io_conf = {
-        .pin_bit_mask = BIT64(CONFIG_DEVICE_DC_PIN) | BIT64(CONFIG_DEVICE_RST_PIN),
+        .pin_bit_mask = BIT64(CONFIG_LCD_DC_PIN) | BIT64(CONFIG_LCD_RST_PIN),
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = false,
         .pull_down_en = false,
@@ -49,7 +49,7 @@ void st7789_init_board(void)
     ledc_channel_config_t ledc_channel = {
         .channel = LEDC_CHANNEL_0,
         .duty = 0,
-        .gpio_num = CONFIG_DEVICE_BL_PIN,
+        .gpio_num = CONFIG_LCD_BL_PIN,
         .speed_mode = LEDC_HIGH_SPEED_MODE,
         .hpoint = 0,
         .timer_sel = LEDC_TIMER_0
@@ -58,7 +58,7 @@ void st7789_init_board(void)
 
     ledc_fade_func_install(0);
 
-    ESP_LOGI(TAG, "initialized, bl: %d, dc: %d, rst: %d", CONFIG_DEVICE_BL_PIN, CONFIG_DEVICE_DC_PIN, CONFIG_DEVICE_RST_PIN);
+    ESP_LOGI(TAG, "initialized, bl: %d, dc: %d, rst: %d", CONFIG_LCD_BL_PIN, CONFIG_LCD_DC_PIN, CONFIG_LCD_RST_PIN);
 }
 
 void st7789_set_backlight(uint8_t val)
@@ -69,12 +69,12 @@ void st7789_set_backlight(uint8_t val)
 
 void st7789_setpin_dc(spi_transaction_t *t)
 {
-    gpio_set_level(CONFIG_DEVICE_DC_PIN, (int)t->user);
+    gpio_set_level(CONFIG_LCD_DC_PIN, (int)t->user);
 }
 
 void st7789_setpin_reset(uint8_t val)
 {
-    gpio_set_level(CONFIG_DEVICE_RST_PIN, val);
+    gpio_set_level(CONFIG_LCD_RST_PIN, val);
 }
 
 void st7789_write_cmd(uint8_t cmd)

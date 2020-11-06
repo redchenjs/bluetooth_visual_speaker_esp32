@@ -12,8 +12,9 @@
 #include "freertos/event_groups.h"
 
 typedef enum user_event_group_bits {
-    OS_PWR_SLEEP_BIT      = BIT0,
-    OS_PWR_RESET_BIT      = BIT1,
+    OS_PWR_DUMMY_BIT      = 0x00,
+    OS_PWR_RESET_BIT      = BIT0,
+    OS_PWR_SLEEP_BIT      = BIT1,
 
     BT_A2DP_IDLE_BIT      = BIT2,
     BT_A2DP_DATA_BIT      = BIT3,
@@ -38,8 +39,8 @@ typedef enum user_event_group_bits {
 
 extern EventGroupHandle_t user_event_group;
 
-extern void os_pwr_sleep_wait(EventBits_t bits);
 extern void os_pwr_reset_wait(EventBits_t bits);
+extern void os_pwr_sleep_wait(EventBits_t bits);
 
 extern void os_init(void);
 

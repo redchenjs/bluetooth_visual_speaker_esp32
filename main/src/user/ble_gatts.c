@@ -42,10 +42,10 @@ static const char *s_gatts_conn_state_str[] = {"disconnected", "connected"};
 static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
-/* One gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT */
+/* one gatt-based profile one app_id and one gatts_if, this array will store the gatts_if returned by ESP_GATTS_REG_EVT */
 gatts_profile_inst_t gatts_profile_tbl[PROFILE_IDX_MAX] = {
     [PROFILE_IDX_OTA] = { .gatts_cb = profile_ota_event_handler, .gatts_if = ESP_GATT_IF_NONE },
-    [PROFILE_IDX_VFX] = { .gatts_cb = profile_vfx_event_handler, .gatts_if = ESP_GATT_IF_NONE },
+    [PROFILE_IDX_VFX] = { .gatts_cb = profile_vfx_event_handler, .gatts_if = ESP_GATT_IF_NONE }
 };
 
 void gatts_ota_send_notification(const char *data, uint32_t len)
@@ -216,7 +216,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
                 BIT3: Audio Input Enabled
             */
             rsp.attr_value.value[0] = (
-                0
+                0x00
 #ifdef CONFIG_ENABLE_VFX
                 | BIT0
     #if defined(CONFIG_VFX_OUTPUT_WS2812) || defined(CONFIG_VFX_OUTPUT_CUBE0414)
@@ -263,7 +263,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 #endif
                 switch (param->write.value[0]) {
                 case 0xEF: {
-                    if (param->write.len == 1) {            // Restore Default Configuration
+                    if (param->write.len == 1) {            // restore default configuration
 #ifdef CONFIG_ENABLE_VFX
                         vfx->mode = DEFAULT_VFX_MODE;
                         vfx->scale_factor = DEFAULT_VFX_SCALE_FACTOR;
@@ -277,7 +277,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
                         app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(ain_mode_t));
     #endif
 #endif
-                    } else if (param->write.len == 8) {     // Update with New Configuration
+                    } else if (param->write.len == 8) {     // apply new configuration
 #ifdef CONFIG_ENABLE_VFX
                         vfx->mode = param->write.value[1];
                         vfx->scale_factor = param->write.value[2] << 8 | param->write.value[3];
@@ -385,7 +385,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 
 void ble_gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param)
 {
-    /* If event is register event, store the gatts_if for each profile */
+    /* if event is register event, store the gatts_if for each profile */
     if (event == ESP_GATTS_REG_EVT) {
         if (param->reg.status == ESP_GATT_OK) {
             gatts_profile_tbl[param->reg.app_id].gatts_if = gatts_if;
@@ -397,7 +397,7 @@ void ble_gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if,
         }
     }
 
-    /* If the gatts_if equal to profile A, call profile A cb handler,
+    /* if the gatts_if equal to profile A, call profile A cb handler,
      * so here call each profile's callback */
     for (int idx = 0; idx < PROFILE_IDX_MAX; idx++) {
         if (gatts_if == ESP_GATT_IF_NONE || /* ESP_GATT_IF_NONE, not specify a certain gatt_if, need to call every profile cb function */

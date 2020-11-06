@@ -59,7 +59,7 @@ static void gap_config_adv_data(const char *name)
     size_t len = strlen(name);
     uint8_t raw_adv_data[len + 5];
 
-    // flag
+    // flags
     raw_adv_data[0] = 2;
     raw_adv_data[1] = ESP_BT_EIR_TYPE_FLAGS;
     raw_adv_data[2] = ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT;
