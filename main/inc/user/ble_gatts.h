@@ -11,10 +11,10 @@
 #include "esp_gatts_api.h"
 
 enum gatts_profile_idx {
-    PROFILE_IDX_OTA,
-    PROFILE_IDX_VFX,
+    PROFILE_IDX_OTA = 0x00,
+    PROFILE_IDX_VFX = 0x01,
 
-    PROFILE_IDX_MAX,
+    PROFILE_IDX_MAX
 };
 
 typedef struct gatts_profile_inst {

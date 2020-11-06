@@ -20,7 +20,7 @@
 
 #define TAG "ain"
 
-static uint8_t ain_mode = DEFAULT_AIN_MODE;
+static ain_mode_t ain_mode = DEFAULT_AIN_MODE;
 
 static void ain_task(void *pvParameters)
 {
@@ -46,23 +46,23 @@ static void ain_task(void *pvParameters)
 
 #ifdef CONFIG_AUDIO_INPUT_FFT_ONLY_LEFT
         int16_t data_l = 0;
-        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-            data_l = data[idx+1] << 8 | data[idx];
+        for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
+            data_l = data[idx + 1] << 8 | data[idx];
 
             vfx_fft_input[k] = (float)data_l;
         }
 #elif defined(CONFIG_AUDIO_INPUT_FFT_ONLY_RIGHT)
         int16_t data_r = 0;
-        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-            data_r = data[idx+3] << 8 | data[idx+2];
+        for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
+            data_r = data[idx + 3] << 8 | data[idx + 2];
 
             vfx_fft_input[k] = (float)data_r;
         }
 #else
         int16_t data_l = 0, data_r = 0;
-        for (uint16_t k=0; k<FFT_N; k++,idx+=4) {
-            data_l = data[idx+1] << 8 | data[idx];
-            data_r = data[idx+3] << 8 | data[idx+2];
+        for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
+            data_l = data[idx + 1] << 8 | data[idx];
+            data_r = data[idx + 3] << 8 | data[idx + 2];
 
             vfx_fft_input[k] = (float)((data_l + data_r) / 2);
         }
@@ -78,28 +78,26 @@ static void ain_task(void *pvParameters)
     }
 }
 
-void ain_set_mode(uint8_t idx)
+void ain_set_mode(ain_mode_t idx)
 {
-#ifndef CONFIG_AUDIO_INPUT_NONE
     ain_mode = idx;
     ESP_LOGI(TAG, "mode: %u", ain_mode);
 
-    if (ain_mode) {
+    if (ain_mode == AIN_MODE_IDX_ON) {
         xEventGroupSetBits(user_event_group, AUDIO_INPUT_RUN_BIT);
     } else {
         xEventGroupClearBits(user_event_group, AUDIO_INPUT_RUN_BIT);
     }
-#endif
 }
 
-uint8_t ain_get_mode(void)
+ain_mode_t ain_get_mode(void)
 {
     return ain_mode;
 }
 
 void ain_init(void)
 {
-    size_t length = sizeof(uint8_t);
+    size_t length = sizeof(ain_mode_t);
     app_getenv("AIN_INIT_CFG", &ain_mode, &length);
 
     ain_set_mode(ain_mode);

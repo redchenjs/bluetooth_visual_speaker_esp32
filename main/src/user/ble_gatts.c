@@ -233,7 +233,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 #ifdef CONFIG_ENABLE_VFX
             vfx_config_t *vfx = vfx_get_conf();
     #ifndef CONFIG_AUDIO_INPUT_NONE
-            uint8_t ain_mode = ain_get_mode();
+            ain_mode_t ain_mode = ain_get_mode();
     #endif
             rsp.attr_value.value[1] = vfx->mode;
             rsp.attr_value.value[2] = vfx->scale_factor >> 8;
@@ -258,7 +258,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 #ifdef CONFIG_ENABLE_VFX
                 vfx_config_t *vfx = vfx_get_conf();
     #ifndef CONFIG_AUDIO_INPUT_NONE
-                uint8_t ain_mode = ain_get_mode();
+                ain_mode_t ain_mode = ain_get_mode();
     #endif
 #endif
                 switch (param->write.value[0]) {
@@ -274,7 +274,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
     #ifndef CONFIG_AUDIO_INPUT_NONE
                         ain_mode = DEFAULT_AIN_MODE;
                         ain_set_mode(ain_mode);
-                        app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
+                        app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(ain_mode_t));
     #endif
 #endif
                     } else if (param->write.len == 8) {     // Update with New Configuration
@@ -288,7 +288,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
     #ifndef CONFIG_AUDIO_INPUT_NONE
                         ain_mode = param->write.value[7];
                         ain_set_mode(ain_mode);
-                        app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(uint8_t));
+                        app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(ain_mode_t));
     #endif
 #endif
                     } else {
@@ -399,7 +399,7 @@ void ble_gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if,
 
     /* If the gatts_if equal to profile A, call profile A cb handler,
      * so here call each profile's callback */
-    for (int idx=0; idx<PROFILE_IDX_MAX; idx++) {
+    for (int idx = 0; idx < PROFILE_IDX_MAX; idx++) {
         if (gatts_if == ESP_GATT_IF_NONE || /* ESP_GATT_IF_NONE, not specify a certain gatt_if, need to call every profile cb function */
             gatts_if == gatts_profile_tbl[idx].gatts_if) {
             if (gatts_profile_tbl[idx].gatts_cb) {
