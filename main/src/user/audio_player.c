@@ -8,6 +8,8 @@
 #include "esp_log.h"
 
 #include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 #include "driver/i2s.h"
 
 #include "mad.h"
@@ -22,29 +24,30 @@
 
 static const char *mp3_file_ptr[][2] = {
 #ifdef CONFIG_AUDIO_PROMPT_CONNECTED
-    {snd0_mp3_ptr, snd0_mp3_end}, // "Connected"
+    [MP3_FILE_IDX_CONNECTED] = {snd0_mp3_ptr, snd0_mp3_end},
 #else
-    {NULL, NULL},
+    [MP3_FILE_IDX_CONNECTED] = {NULL, NULL},
 #endif
 #ifdef CONFIG_AUDIO_PROMPT_DISCONNECTED
-    {snd1_mp3_ptr, snd1_mp3_end}, // "Disconnected"
+    [MP3_FILE_IDX_DISCONNECTED] = {snd1_mp3_ptr, snd1_mp3_end},
 #else
-    {NULL, NULL},
+    [MP3_FILE_IDX_DISCONNECTED] = {NULL, NULL},
 #endif
 #ifdef CONFIG_AUDIO_PROMPT_SLEEP
-    {snd2_mp3_ptr, snd2_mp3_end}, // "Sleep"
+    [MP3_FILE_IDX_SLEEP] = {snd2_mp3_ptr, snd2_mp3_end},
 #else
-    {NULL, NULL},
+    [MP3_FILE_IDX_SLEEP] = {NULL, NULL},
 #endif
 #ifdef CONFIG_AUDIO_PROMPT_WAKEUP
-    {snd3_mp3_ptr, snd3_mp3_end}, // "Wake-Up"
+    [MP3_FILE_IDX_WAKEUP] = {snd3_mp3_ptr, snd3_mp3_end},
 #else
-    {NULL, NULL},
+    [MP3_FILE_IDX_WAKEUP] = {NULL, NULL},
 #endif
+    [MP3_FILE_IDX_MAX] = {NULL, NULL}
 };
 
-static uint8_t mp3_file_index = 0;
-static uint8_t playback_pending = 0;
+static bool playback_pending = false;
+static mp3_file_t mp3_file = MP3_FILE_IDX_NONE;
 
 static void audio_player_task(void *pvParameters)
 {
@@ -70,7 +73,7 @@ static void audio_player_task(void *pvParameters)
 
             ESP_LOGE(TAG, "allocate memory failed.");
 
-            playback_pending = 0;
+            playback_pending = false;
 
             free(synth);
             free(frame);
@@ -85,8 +88,8 @@ static void audio_player_task(void *pvParameters)
         mad_synth_init(synth);
 
         mad_stream_buffer(
-            stream, (const unsigned char *)mp3_file_ptr[mp3_file_index][0],
-            mp3_file_ptr[mp3_file_index][1] - mp3_file_ptr[mp3_file_index][0]
+            stream, (const unsigned char *)mp3_file_ptr[mp3_file][0],
+            mp3_file_ptr[mp3_file][1] - mp3_file_ptr[mp3_file][0]
         );
 
         while (1) {
@@ -109,7 +112,7 @@ static void audio_player_task(void *pvParameters)
         free(stream);
 
         if (playback_pending) {
-            playback_pending = 0;
+            playback_pending = false;
         } else {
             xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
             xEventGroupClearBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
@@ -117,27 +120,26 @@ static void audio_player_task(void *pvParameters)
     }
 }
 
-void audio_player_play_file(uint8_t idx)
+void audio_player_play_file(mp3_file_t idx)
 {
-#ifdef CONFIG_ENABLE_AUDIO_PROMPT
-    if (idx >= sizeof(mp3_file_ptr)/2) {
+    if (idx >= sizeof(mp3_file_ptr) / sizeof(mp3_file_ptr[0])) {
         ESP_LOGE(TAG, "invalid file index");
         return;
     }
+
     if (mp3_file_ptr[idx][0] == NULL || mp3_file_ptr[idx][1] == NULL) {
         return;
     }
 
-    mp3_file_index = idx;
+    mp3_file = idx;
 
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
     if (uxBits & AUDIO_PLAYER_RUN_BIT) {
-        playback_pending = 1;
+        playback_pending = true;
     } else {
         xEventGroupClearBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
         xEventGroupSetBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
     }
-#endif
 }
 
 void audio_player_init(void)
