@@ -40,16 +40,16 @@ void hspi_init(void)
         .mode = 0,                                // SPI mode 0
         .spics_io_num = CONFIG_SPI_CS_PIN,        // CS pin
 #ifdef CONFIG_VFX_OUTPUT_ST7735
-        .clock_speed_hz = 26000000,               // Clock out at 26 MHz
-        .pre_cb = st7735_setpin_dc,               // Specify pre-transfer callback to handle D/C line
+        .clock_speed_hz = 26000000,               // clock out at 26 MHz
+        .pre_cb = st7735_setpin_dc,               // specify pre-transfer callback to handle D/C line
 #elif defined(CONFIG_VFX_OUTPUT_ST7789)
-        .clock_speed_hz = 40000000,               // Clock out at 40 MHz
-        .pre_cb = st7789_setpin_dc,               // Specify pre-transfer callback to handle D/C line
+        .clock_speed_hz = 40000000,               // clock out at 40 MHz
+        .pre_cb = st7789_setpin_dc,               // specify pre-transfer callback to handle D/C line
 #else
-        .clock_speed_hz = 40000000,               // Clock out at 40 MHz
-        .pre_cb = cube0414_setpin_dc,             // Specify pre-transfer callback to handle D/C line
+        .clock_speed_hz = 40000000,               // clock out at 40 MHz
+        .pre_cb = cube0414_setpin_dc,             // specify pre-transfer callback to handle D/C line
 #endif
-        .queue_size = 2,                          // We want to be able to queue 2 transactions at a time
+        .queue_size = 2,                          // we want to be able to queue 2 transactions at a time
         .flags = SPI_DEVICE_3WIRE | SPI_DEVICE_HALFDUPLEX
     };
     ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &devcfg, &hspi));

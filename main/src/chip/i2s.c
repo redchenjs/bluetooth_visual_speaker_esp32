@@ -7,7 +7,6 @@
 
 #include "esp_log.h"
 
-#include "freertos/FreeRTOS.h"
 #include "driver/i2s.h"
 
 #define I2S0_TAG "i2s-0"
@@ -20,13 +19,13 @@ static i2s_config_t i2s_output_config = {
 #endif
     ,
     .communication_format = I2S_COMM_FORMAT_STAND_I2S,
-    .use_apll = 1,                                                          // Use APLL
+    .use_apll = 1,                                                          // use APLL
     .sample_rate = 44100,
     .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
-    .tx_desc_auto_clear = true,                                             // Auto clear tx descriptor on underflow
+    .tx_desc_auto_clear = true,                                             // auto clear tx descriptor on underflow
     .dma_buf_count = 2,
     .dma_buf_len = 128,
-    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
+    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT                            // 2-channels
 };
 
 #if !defined(CONFIG_AUDIO_INPUT_NONE) && (CONFIG_AUDIO_OUTPUT_I2S_NUM != CONFIG_AUDIO_INPUT_I2S_NUM)
@@ -37,12 +36,12 @@ static i2s_config_t i2s_input_config = {
 #endif
     ,
     .communication_format = I2S_COMM_FORMAT_STAND_I2S,
-    .use_apll = 0,                                                          // Use PLL_D2
+    .use_apll = 0,                                                          // use PLL_D2
     .sample_rate = 44100,
     .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
     .dma_buf_count = 2,
     .dma_buf_len = 128,
-    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,                           // 2-channels
+    .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT                            // 2-channels
 };
 #endif
 
@@ -65,15 +64,15 @@ static void i2s0_init(void)
         .data_out_num = -1,
 #endif
 #ifdef CONFIG_AUDIO_INPUT_I2S0
-        .data_in_num  = CONFIG_I2S0_DIN_PIN,
+        .data_in_num  = CONFIG_I2S0_DIN_PIN
 #else
-        .data_in_num  = -1,
+        .data_in_num  = -1
 #endif
 #else // #ifndef CONFIG_AUDIO_INPUT_PDM
         .bck_io_num   = -1,
         .ws_io_num    = CONFIG_PDM_CLK_PIN,
         .data_out_num = -1,
-        .data_in_num  = CONFIG_PDM_DIN_PIN,
+        .data_in_num  = CONFIG_PDM_DIN_PIN
 #endif
     };
     ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_0, &pin_config));
@@ -112,9 +111,9 @@ static void i2s1_init(void)
         .data_out_num = -1,
 #endif
 #ifdef CONFIG_AUDIO_INPUT_I2S1
-        .data_in_num  = CONFIG_I2S1_DIN_PIN,
+        .data_in_num  = CONFIG_I2S1_DIN_PIN
 #else
-        .data_in_num  = -1,
+        .data_in_num  = -1
 #endif
     };
     ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_1, &pin_config));

@@ -10,8 +10,6 @@
 #include "esp_bt_main.h"
 #include "esp_bt_device.h"
 
-#include "freertos/FreeRTOS.h"
-
 #define TAG "bt"
 
 const char *bt_dev_address = NULL;
