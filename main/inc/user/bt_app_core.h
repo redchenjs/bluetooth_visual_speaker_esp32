@@ -19,10 +19,10 @@ typedef void (*bt_app_cb_t)(uint16_t event, void *param);
 
 /* message to be sent */
 typedef struct {
-    uint16_t    sig;        /*!< signal to bt_app_task */
-    uint16_t    event;      /*!< message event id */
-    bt_app_cb_t cb;         /*!< context switch callback */
-    void        *param;     /*!< parameter area needs to be last */
+    uint16_t sig;       /*!< signal to bt_app_task */
+    uint16_t event;     /*!< message event id */
+    bt_app_cb_t cb;     /*!< context switch callback */
+    void *param;        /*!< parameter area needs to be last */
 } bt_app_msg_t;
 
 /**

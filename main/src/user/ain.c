@@ -24,7 +24,7 @@ static ain_mode_t ain_mode = DEFAULT_AIN_MODE;
 
 static void ain_task(void *pvParameters)
 {
-    char data[FFT_N * 4] = {0};
+    char data[FFT_BLOCK_SIZE] = {0};
 
     ESP_LOGI(TAG, "started.");
 
@@ -38,7 +38,7 @@ static void ain_task(void *pvParameters)
         );
 
         size_t bytes_read = 0;
-        i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, data, FFT_N * 4, &bytes_read, portMAX_DELAY);
+        i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, data, FFT_BLOCK_SIZE, &bytes_read, portMAX_DELAY);
 
 #ifdef CONFIG_ENABLE_VFX
         // Copy data to FFT input buffer

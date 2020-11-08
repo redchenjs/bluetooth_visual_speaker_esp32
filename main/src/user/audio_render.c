@@ -22,10 +22,10 @@
 
 #define TAG "audio_render"
 
-static uint8_t buff_data[1024 * 10] = {0};
-static StaticRingbuffer_t buff_struct = {0};
-
 RingbufHandle_t audio_buff = NULL;
+
+static StaticRingbuffer_t buff_struct = {0};
+static uint8_t buff_data[FFT_BLOCK_SIZE * 20] = {0};
 
 /* render callback for the libmad synth */
 void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels)
@@ -108,10 +108,10 @@ static void audio_render_task(void *pvParameter)
         if (start) {
             remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
 
-            if (remain >= 512) {
+            if (remain >= FFT_BLOCK_SIZE) {
                 count = 0;
 
-                data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, 512);
+                data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, 16 / portTICK_RATE_MS, FFT_BLOCK_SIZE);
             } else if (remain > 0 && !(remain % 4)) {
                 count = 0;
 
@@ -135,7 +135,7 @@ static void audio_render_task(void *pvParameter)
                 continue;
             }
         } else {
-            if (xRingbufferGetCurFreeSize(audio_buff) < 512) {
+            if (xRingbufferGetCurFreeSize(audio_buff) < FFT_BLOCK_SIZE) {
                 start = true;
 
                 xEventGroupClearBits(user_event_group, AUDIO_RENDER_CLR_BIT);
@@ -168,7 +168,7 @@ static void audio_render_task(void *pvParameter)
 
 #ifdef CONFIG_ENABLE_VFX
         uxBits = xEventGroupGetBits(user_event_group);
-        if ((size != 512) || !(uxBits & VFX_FFT_NULL_BIT)) {
+        if ((size != FFT_BLOCK_SIZE) || !(uxBits & VFX_FFT_NULL_BIT)) {
             vRingbufferReturnItem(audio_buff, (void *)data);
             continue;
         }

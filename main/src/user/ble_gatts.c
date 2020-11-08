@@ -26,13 +26,13 @@
 #define GATTS_OTA_TAG "gatts_ota"
 #define GATTS_VFX_TAG "gatts_vfx"
 
-#define GATTS_SRV_UUID_OTA      0xFF52
-#define GATTS_CHAR_UUID_OTA     0x5201
-#define GATTS_NUM_HANDLE_OTA    4
+#define GATTS_SRV_UUID_OTA   0xFF52
+#define GATTS_CHAR_UUID_OTA  0x5201
+#define GATTS_NUM_HANDLE_OTA 4
 
-#define GATTS_SRV_UUID_VFX      0xFF53
-#define GATTS_CHAR_UUID_VFX     0x5301
-#define GATTS_NUM_HANDLE_VFX    4
+#define GATTS_SRV_UUID_VFX   0xFF53
+#define GATTS_CHAR_UUID_VFX  0x5301
+#define GATTS_NUM_HANDLE_VFX 4
 
 static uint16_t desc_val_ota = 0x0000;
 static uint16_t desc_val_vfx = 0x0000;
@@ -85,7 +85,7 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
         break;
     }
-    case ESP_GATTS_WRITE_EVT: {
+    case ESP_GATTS_WRITE_EVT:
         if (!param->write.is_prep) {
             if (param->write.handle == gatts_profile_tbl[PROFILE_IDX_OTA].descr_handle) {
                 desc_val_ota = param->write.value[1] << 8 | param->write.value[0];
@@ -98,7 +98,6 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
             esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
         }
         break;
-    }
     case ESP_GATTS_EXEC_WRITE_EVT:
         break;
     case ESP_GATTS_MTU_EVT:
@@ -250,21 +249,19 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
         break;
     }
-    case ESP_GATTS_WRITE_EVT: {
+    case ESP_GATTS_WRITE_EVT:
         if (!param->write.is_prep) {
             if (param->write.handle == gatts_profile_tbl[PROFILE_IDX_VFX].descr_handle) {
                 desc_val_vfx = param->write.value[1] << 8 | param->write.value[0];
-            } else {
 #ifdef CONFIG_ENABLE_VFX
+            } else {
                 vfx_config_t *vfx = vfx_get_conf();
     #ifndef CONFIG_AUDIO_INPUT_NONE
                 ain_mode_t ain_mode = ain_get_mode();
     #endif
-#endif
                 switch (param->write.value[0]) {
-                case 0xEF: {
+                case 0xEF:
                     if (param->write.len == 1) {            // restore default configuration
-#ifdef CONFIG_ENABLE_VFX
                         vfx->mode = DEFAULT_VFX_MODE;
                         vfx->scale_factor = DEFAULT_VFX_SCALE_FACTOR;
                         vfx->lightness = DEFAULT_VFX_LIGHTNESS;
@@ -276,9 +273,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
                         ain_set_mode(ain_mode);
                         app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(ain_mode_t));
     #endif
-#endif
                     } else if (param->write.len == 8) {     // apply new configuration
-#ifdef CONFIG_ENABLE_VFX
                         vfx->mode = param->write.value[1];
                         vfx->scale_factor = param->write.value[2] << 8 | param->write.value[3];
                         vfx->lightness = (param->write.value[4] << 8 | param->write.value[5]) % 0x0200;
@@ -290,16 +285,15 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
                         ain_set_mode(ain_mode);
                         app_setenv("AIN_INIT_CFG", &ain_mode, sizeof(ain_mode_t));
     #endif
-#endif
                     } else {
                         ESP_LOGE(GATTS_VFX_TAG, "command 0x%02X error", param->write.value[0]);
                     }
                     break;
-                }
                 default:
                     ESP_LOGW(GATTS_VFX_TAG, "unknown command: 0x%02X", param->write.value[0]);
                     break;
                 }
+#endif
             }
         }
 
@@ -307,7 +301,6 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
             esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
         }
         break;
-    }
     case ESP_GATTS_EXEC_WRITE_EVT:
         break;
     case ESP_GATTS_MTU_EVT:

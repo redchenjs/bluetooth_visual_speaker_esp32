@@ -65,7 +65,7 @@ enum rsp_idx {
     RSP_IDX_OK    = 0x0,
     RSP_IDX_FAIL  = 0x1,
     RSP_IDX_DONE  = 0x2,
-    RSP_IDX_ERROR = 0x3,
+    RSP_IDX_ERROR = 0x3
 };
 
 static const char rsp_str[][32] = {
@@ -89,8 +89,8 @@ static uint32_t data_length = 0;
 
 static RingbufHandle_t ota_buff = NULL;
 
-static const esp_partition_t *update_partition = NULL;
 static esp_ota_handle_t update_handle = 0;
+static const esp_partition_t *update_partition = NULL;
 
 static int ota_parse_command(const char *data)
 {
@@ -282,6 +282,9 @@ void ota_exec(const char *data, uint32_t len)
                 app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
 
                 if (!update_handle) {
+#ifdef CONFIG_ENABLE_SLEEP_KEY
+                    key_set_scan_mode(KEY_SCAN_MODE_IDX_OFF);
+#endif
 #ifdef CONFIG_ENABLE_VFX
                     vfx->mode = VFX_MODE_IDX_OFF;
                     vfx_set_conf(vfx);

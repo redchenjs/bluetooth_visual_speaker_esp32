@@ -61,7 +61,8 @@ typedef struct {
     uint8_t backlight;
 } vfx_config_t;
 
-#define FFT_N 128
+#define FFT_N          (128)
+#define FFT_BLOCK_SIZE (FFT_N * 4)
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
     #define DEFAULT_VFX_MODE            VFX_MODE_IDX_SPECTRUM_M_N

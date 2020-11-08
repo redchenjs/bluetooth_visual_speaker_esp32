@@ -19,6 +19,7 @@
 
 #include "user/led.h"
 #include "user/key.h"
+#include "user/vfx.h"
 #include "user/bt_app.h"
 #include "user/bt_app_core.h"
 #include "user/audio_player.h"
@@ -35,6 +36,9 @@
 #define APP_RC_CT_TL_RN_PLAYBACK_CHANGE  (3)
 #define APP_RC_CT_TL_RN_PLAY_POS_CHANGE  (4)
 
+int a2d_sample_rate = 16000;
+esp_bd_addr_t a2d_remote_bda = {0};
+
 /* a2dp event handler */
 static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param);
 /* avrc CT event handler */
@@ -44,9 +48,6 @@ static const char *s_a2d_conn_state_str[] = {"disconnected", "connecting", "conn
 static const char *s_a2d_audio_state_str[] = {"suspended", "stopped", "started"};
 
 static esp_avrc_rn_evt_cap_mask_t s_avrc_peer_rn_cap;
-
-int a2d_sample_rate = 16000;
-esp_bd_addr_t a2d_remote_bda = {0};
 
 /* callback for A2DP sink */
 void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
@@ -76,14 +77,14 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
     if (audio_buff) {
         uint32_t pkt = 0, remain = 0;
 
-        for (pkt = 0; pkt < len / 512; pkt++) {
-            xRingbufferSend(audio_buff, (void *)(data + pkt * 512), 512, portMAX_DELAY);
+        for (pkt = 0; pkt < len / FFT_BLOCK_SIZE; pkt++) {
+            xRingbufferSend(audio_buff, (void *)(data + pkt * FFT_BLOCK_SIZE), FFT_BLOCK_SIZE, portMAX_DELAY);
             taskYIELD();
         }
 
-        remain = len - pkt * 512;
+        remain = len - pkt * FFT_BLOCK_SIZE;
         if (remain != 0) {
-            xRingbufferSend(audio_buff, (void *)(data + pkt * 512), remain, portMAX_DELAY);
+            xRingbufferSend(audio_buff, (void *)(data + pkt * FFT_BLOCK_SIZE), remain, portMAX_DELAY);
             taskYIELD();
         }
     }
