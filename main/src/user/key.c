@@ -22,31 +22,23 @@
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
 static const uint8_t gpio_pin[] = {
-#ifdef CONFIG_ENABLE_SLEEP_KEY
-    CONFIG_SLEEP_KEY_PIN,
-#endif
+    CONFIG_SLEEP_KEY_PIN
 };
 
 static const uint8_t gpio_val[] = {
-#ifdef CONFIG_ENABLE_SLEEP_KEY
-    #ifdef CONFIG_SLEEP_KEY_ACTIVE_LOW
-        0,
-    #else
-        1,
-    #endif
+#ifdef CONFIG_SLEEP_KEY_ACTIVE_LOW
+    0
+#else
+    1
 #endif
 };
 
 static const uint16_t gpio_hold[] = {
-#ifdef CONFIG_ENABLE_SLEEP_KEY
-    CONFIG_SLEEP_KEY_HOLD_TIME,
-#endif
+    CONFIG_SLEEP_KEY_HOLD_TIME
 };
 
 static void (*key_handle[])(void) = {
-#ifdef CONFIG_ENABLE_SLEEP_KEY
-    sleep_key_handle,
-#endif
+    sleep_key_handle
 };
 #endif
 
