@@ -56,23 +56,23 @@ static void i2s0_init(void)
 
     i2s_pin_config_t pin_config = {
 #ifndef CONFIG_AUDIO_INPUT_PDM
-        .bck_io_num   = CONFIG_I2S0_BCLK_PIN,
-        .ws_io_num    = CONFIG_I2S0_LRCK_PIN,
+        .bck_io_num = CONFIG_I2S0_BCLK_PIN,
+        .ws_io_num = CONFIG_I2S0_LRCK_PIN,
 #ifdef CONFIG_AUDIO_OUTPUT_I2S0
         .data_out_num = CONFIG_I2S0_DOUT_PIN,
 #else
         .data_out_num = -1,
 #endif
 #ifdef CONFIG_AUDIO_INPUT_I2S0
-        .data_in_num  = CONFIG_I2S0_DIN_PIN
+        .data_in_num = CONFIG_I2S0_DIN_PIN
 #else
-        .data_in_num  = -1
+        .data_in_num = -1
 #endif
 #else // #ifndef CONFIG_AUDIO_INPUT_PDM
-        .bck_io_num   = -1,
-        .ws_io_num    = CONFIG_PDM_CLK_PIN,
+        .bck_io_num = -1,
+        .ws_io_num = CONFIG_PDM_CLK_PIN,
         .data_out_num = -1,
-        .data_in_num  = CONFIG_PDM_DIN_PIN
+        .data_in_num = CONFIG_PDM_DIN_PIN
 #endif
     };
     ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_0, &pin_config));
@@ -103,17 +103,17 @@ static void i2s1_init(void)
 #endif
 
     i2s_pin_config_t pin_config = {
-        .bck_io_num   = CONFIG_I2S1_BCLK_PIN,
-        .ws_io_num    = CONFIG_I2S1_LRCK_PIN,
+        .bck_io_num = CONFIG_I2S1_BCLK_PIN,
+        .ws_io_num = CONFIG_I2S1_LRCK_PIN,
 #ifdef CONFIG_AUDIO_OUTPUT_I2S1
         .data_out_num = CONFIG_I2S1_DOUT_PIN,
 #else
         .data_out_num = -1,
 #endif
 #ifdef CONFIG_AUDIO_INPUT_I2S1
-        .data_in_num  = CONFIG_I2S1_DIN_PIN
+        .data_in_num = CONFIG_I2S1_DIN_PIN
 #else
-        .data_in_num  = -1
+        .data_in_num = -1
 #endif
     };
     ESP_ERROR_CHECK(i2s_set_pin(I2S_NUM_1, &pin_config));
