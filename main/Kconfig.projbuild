@@ -242,6 +242,19 @@ config LED_COLOR_GRB
     bool "GRB"
 endchoice
 
+choice CUBE0414_REVISION
+    prompt "CUBE0414 Revision"
+    default CUBE0414_REV_3
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    help
+        Select CUBE0414 revision.
+
+config CUBE0414_REV_2
+    bool "Rev 2"
+config CUBE0414_REV_3
+    bool "Rev 3"
+endchoice
+
 choice CUBE0414_LINE_TYPE
     prompt "CUBE0414 Line Type"
     default CUBE0414_LINE_S_CURVE
@@ -256,34 +269,34 @@ config CUBE0414_LINE_S_CURVE
 endchoice
 
 comment "Limit: T0H + T0L <= 257"
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3
 
 config CUBE0414_LED_T0H
     int "CUBE0414 LED T0H Time (10 ns)"
     default 35
     range 1 255
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3
 
 config CUBE0414_LED_T0L
     int "CUBE0414 LED T0L Time (10 ns)"
     default 136
     range 1 255
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3
 
 comment "Limit: T1H + T1L <= 257"
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3
 
 config CUBE0414_LED_T1H
     int "CUBE0414 LED T1H Time (10 ns)"
     default 136
     range 1 255
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3
 
 config CUBE0414_LED_T1L
     int "CUBE0414 LED T1L Time (10 ns)"
     default 35
     range 1 255
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3
 
 config WS2812_DIN_PIN
     int "WS2812 DIN Pin"
@@ -293,7 +306,7 @@ config WS2812_DIN_PIN
 config DEV_RST_PIN
     int "DEV RST Pin"
     default 14
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3
 
 config DEV_DC_PIN
     int "DEV DC Pin"
