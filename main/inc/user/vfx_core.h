@@ -19,4 +19,7 @@ extern void vfx_draw_cube_bitmap(const uint8_t *bitmap, float color_l);
 extern void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, float color_l);
 extern void vfx_draw_layer_number(uint8_t num, uint8_t layer, float color_h, float color_l);
 
+extern void vfx_compute_freq_lin(const float *data_in, uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val);
+extern void vfx_compute_freq_log(const float *data_in, uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val);
+
 #endif /* INC_USER_VFX_CORE_H_ */

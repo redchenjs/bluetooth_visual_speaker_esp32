@@ -5,6 +5,7 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
+#include <math.h>
 #include <string.h>
 
 #include "freertos/FreeRTOS.h"
@@ -62,7 +63,7 @@ uint32_t hsl2rgb(float H, float S, float L)
 }
 
 #if defined(CONFIG_VFX_OUTPUT_WS2812) || defined(CONFIG_VFX_OUTPUT_CUBE0414)
-void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color)
+inline void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color)
 {
 #ifdef CONFIG_LED_LAYER_H
     uint8_t pixel_x = x + y * 8;
@@ -100,7 +101,7 @@ void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color)
     gdispGDrawPixel(vfx_gdisp, pixel_x, pixel_y, color);
 }
 
-void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
+inline void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
 {
     vfx_draw_pixel_raw(x, y, z, hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0));
 }
@@ -228,3 +229,45 @@ void vfx_draw_layer_number(uint8_t num, uint8_t layer, float color_h, float colo
     }
 }
 #endif
+
+void vfx_compute_freq_lin(const float *data_in, uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val)
+{
+    data_out[0] += sqrt(pow(data_in[0], 2) + pow(data_in[1], 2)) / FFT_N * (max_val * scale_factor / 65535.0);
+    data_out[0] /= 2;
+    if (data_out[0] > max_val) {
+        data_out[0] = max_val;
+    } else if (data_out[0] < min_val) {
+        data_out[0] = min_val;
+    }
+
+    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+        data_out[k] += sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * (max_val * scale_factor / 65535.0);
+        data_out[k] /= 2;
+        if (data_out[k] > max_val) {
+            data_out[k] = max_val;
+        } else if (data_out[k] < min_val) {
+            data_out[k] = min_val;
+        }
+    }
+}
+
+void vfx_compute_freq_log(const float *data_in, uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val)
+{
+    data_out[0] += 20 * log10(1 + sqrt(pow(data_in[0], 2) + pow(data_in[1], 2)) / FFT_N) * (max_val * scale_factor / 65535.0);
+    data_out[0] /= 2;
+    if (data_out[0] > max_val) {
+        data_out[0] = max_val;
+    } else if (data_out[0] < min_val) {
+        data_out[0] = min_val;
+    }
+
+    for (uint16_t k = 1; k < FFT_N / 2; k++) {
+        data_out[k] += 20 * log10(1 + sqrt(pow(data_in[2 * k], 2) + pow(data_in[2 * k + 1], 2)) / FFT_N * 2) * (max_val * scale_factor / 65535.0);
+        data_out[k] /= 2;
+        if (data_out[k] > max_val) {
+            data_out[k] = max_val;
+        } else if (data_out[k] < min_val) {
+            data_out[k] = min_val;
+        }
+    }
+}

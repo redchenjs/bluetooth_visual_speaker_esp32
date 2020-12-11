@@ -5,7 +5,6 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include <math.h>
 #include <string.h>
 
 #include "esp_log.h"
@@ -125,8 +124,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
             const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
@@ -150,29 +148,11 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
-                    if (fft_out[0] > vfx_disp_height) {
-                        fft_out[0] = vfx_disp_height;
-                    } else if (fft_out[0] < 1) {
-                        fft_out[0] = 1;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
-                        if (fft_out[k] > vfx_disp_height) {
-                            fft_out[k] = vfx_disp_height;
-                        } else if (fft_out[k] < 1) {
-                            fft_out[k] = 1;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, vfx_disp_height, 1);
 
                 color_h = 0;
                 for (uint16_t i = 0; i < vfx_disp_width; i++) {
@@ -224,8 +204,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
             const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
@@ -249,29 +228,11 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
-                    if (fft_out[0] > vfx_disp_height) {
-                        fft_out[0] = vfx_disp_height;
-                    } else if (fft_out[0] < 1) {
-                        fft_out[0] = 1;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
-                        if (fft_out[k] > vfx_disp_height) {
-                            fft_out[k] = vfx_disp_height;
-                        } else if (fft_out[k] < 1) {
-                            fft_out[k] = 1;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, vfx_disp_height, 1);
 
                 color_p = color_h;
                 for (uint16_t i = 0; i < vfx_disp_width; i++) {
@@ -328,8 +289,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
             const uint8_t vu_idx_min = 0;
             const uint8_t vu_idx_max = 19;
@@ -350,8 +310,8 @@ static void vfx_task(void *pvParameter)
             static uint8_t vu_peak_value[24] = {0};
             static uint8_t vu_peak_delay[24] = {0};
             static uint8_t vu_drop_delay[24] = {0};
-            const uint8_t vu_peak_delay_init = 9;
-            const uint8_t vu_drop_delay_init = 3;
+            const uint8_t vu_peak_delay_init = 18;
+            const uint8_t vu_drop_delay_init = 2;
             const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
@@ -378,29 +338,11 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / vfx_disp_height) * vfx.scale_factor;
-                    if (fft_out[0] > vfx_disp_height) {
-                        fft_out[0] = vfx_disp_height;
-                    } else if (fft_out[0] < 0) {
-                        fft_out[0] = 0;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / vfx_disp_height) * vfx.scale_factor;
-                        if (fft_out[k] > vfx_disp_height) {
-                            fft_out[k] = vfx_disp_height;
-                        } else if (fft_out[k] < 0) {
-                            fft_out[k] = 0;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor, vfx_disp_height, 0);
 
                 for (uint8_t i = vu_idx_min; i <= vu_idx_max; i++) {
                     int16_t vu_val_out = fft_out[i];
@@ -437,9 +379,11 @@ static void vfx_task(void *pvParameter)
                             continue;
                         }
 
-                        if (j > vu_val_out || ((j == 0) && (vu_val_out == 0))) { // Upside
+                        if (j > vu_val_out || ((j == 0) && (vu_val_out == 0))) {
+                            // upside
                             gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, Black);
-                        } else { // Underside
+                        } else {
+                            // underside
                             gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, pixel_color);
                         }
 
@@ -462,8 +406,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
 
@@ -488,29 +431,11 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
-                    if (fft_out[0] > center_y) {
-                        fft_out[0] = center_y;
-                    } else if (fft_out[0] < 0) {
-                        fft_out[0] = 0;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
-                        if (fft_out[k] > center_y) {
-                            fft_out[k] = center_y;
-                        } else if (fft_out[k] < 0) {
-                            fft_out[k] = 0;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 2, vfx_disp_height, 0);
 
                 color_h = 0;
                 for (uint16_t i = 0; i < vfx_disp_width; i++) {
@@ -565,8 +490,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
 
@@ -591,29 +515,11 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
-                    if (fft_out[0] > center_y) {
-                        fft_out[0] = center_y;
-                    } else if (fft_out[0] < 0) {
-                        fft_out[0] = 0;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor * 2;
-                        if (fft_out[k] > center_y) {
-                            fft_out[k] = center_y;
-                        } else if (fft_out[k] < 0) {
-                            fft_out[k] = 0;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 2, vfx_disp_height, 0);
 
                 color_p = color_h;
                 for (uint16_t i = 0; i < vfx_disp_width; i++) {
@@ -673,8 +579,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
             const uint8_t vu_idx_min = 0;
             const uint8_t vu_idx_max = 19;
@@ -695,8 +600,8 @@ static void vfx_task(void *pvParameter)
             static uint8_t vu_peak_value[24] = {0};
             static uint8_t vu_peak_delay[24] = {0};
             static uint8_t vu_drop_delay[24] = {0};
-            const uint8_t vu_peak_delay_init = 9;
-            const uint8_t vu_drop_delay_init = 3;
+            const uint8_t vu_peak_delay_init = 18;
+            const uint8_t vu_drop_delay_init = 2;
             const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
@@ -723,29 +628,11 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / vfx_disp_height) * vfx.scale_factor;
-                    if (fft_out[0] > vfx_disp_height) {
-                        fft_out[0] = vfx_disp_height;
-                    } else if (fft_out[0] < 0) {
-                        fft_out[0] = 0;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / vfx_disp_height) * vfx.scale_factor;
-                        if (fft_out[k] > vfx_disp_height) {
-                            fft_out[k] = vfx_disp_height;
-                        } else if (fft_out[k] < 0) {
-                            fft_out[k] = 0;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor, vfx_disp_height, 0);
 
                 for (uint8_t i = vu_idx_min; i <= vu_idx_max; i++) {
                     int16_t vu_val_out = fft_out[i];
@@ -782,9 +669,11 @@ static void vfx_task(void *pvParameter)
                             continue;
                         }
 
-                        if (j > vu_val_out || ((j == 0) && (vu_val_out == 0))) { // Upside
+                        if (j > vu_val_out || ((j == 0) && (vu_val_out == 0))) {
+                            // upside
                             gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, Black);
-                        } else { // Underside
+                        } else {
+                            // underside
                             gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, pixel_color);
                         }
 
@@ -1351,8 +1240,7 @@ exit:
             uint16_t color_h = 504;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
             const uint16_t flush_period = 16;
@@ -1373,29 +1261,11 @@ exit:
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor * 8;
-                    if (fft_out[0] > canvas_height) {
-                        fft_out[0] = canvas_height;
-                    } else if (fft_out[0] < 1) {
-                        fft_out[0] = 1;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor * 8;
-                        if (fft_out[k] > canvas_height) {
-                            fft_out[k] = canvas_height;
-                        } else if (fft_out[k] < 1) {
-                            fft_out[k] = 1;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
 
                 color_h = 504;
                 for (uint16_t i = 0; i < canvas_width; i++) {
@@ -1453,8 +1323,7 @@ exit:
             uint16_t color_h = 504;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
             const uint16_t flush_period = 16;
@@ -1475,29 +1344,11 @@ exit:
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor * 8;
-                    if (fft_out[0] > canvas_height) {
-                        fft_out[0] = canvas_height;
-                    } else if (fft_out[0] < 1) {
-                        fft_out[0] = 1;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor * 8;
-                        if (fft_out[k] > canvas_height) {
-                            fft_out[k] = canvas_height;
-                        } else if (fft_out[k] < 1) {
-                            fft_out[k] = 1;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
 
                 color_h = color_p;
                 for (uint16_t i = 0; i < canvas_width; i++) {
@@ -1562,8 +1413,7 @@ exit:
             uint16_t color_h[64] = {0};
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
             const uint8_t led_idx_table[][64] = {
                 {
                     3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
@@ -1601,29 +1451,11 @@ exit:
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = fft_amp[0] / (65536 / canvas_height) * vfx.scale_factor * 8;
-                    if (fft_out[0] > canvas_height) {
-                        fft_out[0] = canvas_height;
-                    } else if (fft_out[0] < 1) {
-                        fft_out[0] = 1;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = fft_amp[k] / (65536 / canvas_height) * vfx.scale_factor * 8;
-                        if (fft_out[k] > canvas_height) {
-                            fft_out[k] = canvas_height;
-                        } else if (fft_out[k] < 1) {
-                            fft_out[k] = 1;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
 
                 for (uint16_t i = 0; i < canvas_width; i++) {
                     x = led_idx_table[0][i];
@@ -1681,8 +1513,7 @@ exit:
             uint16_t color_h = 504;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
             const uint16_t flush_period = 16;
@@ -1703,29 +1534,11 @@ exit:
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 8;
-                    if (fft_out[0] > canvas_height) {
-                        fft_out[0] = canvas_height;
-                    } else if (fft_out[0] < 1) {
-                        fft_out[0] = 1;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 8;
-                        if (fft_out[k] > canvas_height) {
-                            fft_out[k] = canvas_height;
-                        } else if (fft_out[k] < 1) {
-                            fft_out[k] = 1;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 8, canvas_height, 1);
 
                 color_h = 504;
                 for (uint16_t i = 0; i < canvas_width; i++) {
@@ -1783,8 +1596,7 @@ exit:
             uint16_t color_h = 504;
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
             const uint16_t flush_period = 16;
@@ -1805,29 +1617,11 @@ exit:
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 8;
-                    if (fft_out[0] > canvas_height) {
-                        fft_out[0] = canvas_height;
-                    } else if (fft_out[0] < 1) {
-                        fft_out[0] = 1;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 8;
-                        if (fft_out[k] > canvas_height) {
-                            fft_out[k] = canvas_height;
-                        } else if (fft_out[k] < 1) {
-                            fft_out[k] = 1;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 8, canvas_height, 1);
 
                 color_h = color_p;
                 for (uint16_t i = 0; i < canvas_width; i++) {
@@ -1892,8 +1686,7 @@ exit:
             uint16_t color_h[64] = {0};
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
-            float   fft_amp[64] = {0};
-            int16_t fft_out[64] = {0};
+            uint16_t fft_out[64] = {0};
             const uint8_t led_idx_table[][64] = {
                 {
                     3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
@@ -1931,29 +1724,11 @@ exit:
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-
                     fft_execute(fft);
-
                     xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-
-                    fft_amp[0] = sqrt(pow(vfx_fft_output[0], 2) + pow(vfx_fft_output[1], 2)) / FFT_N;
-                    fft_out[0] = 20 * log10(fft_amp[0]) / (65536 / canvas_height) * vfx.scale_factor * 8;
-                    if (fft_out[0] > canvas_height) {
-                        fft_out[0] = canvas_height;
-                    } else if (fft_out[0] < 1) {
-                        fft_out[0] = 1;
-                    }
-
-                    for (uint16_t k = 1; k < FFT_N / 2; k++) {
-                        fft_amp[k] = sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2;
-                        fft_out[k] = 20 * log10(fft_amp[k]) / (65536 / canvas_height) * vfx.scale_factor * 8;
-                        if (fft_out[k] > canvas_height) {
-                            fft_out[k] = canvas_height;
-                        } else if (fft_out[k] < 1) {
-                            fft_out[k] = 1;
-                        }
-                    }
                 }
+
+                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 8, canvas_height, 1);
 
                 for (uint16_t i = 0; i < canvas_width; i++) {
                     x = led_idx_table[0][i];
