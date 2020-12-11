@@ -120,85 +120,7 @@ static void vfx_task(void *pvParameter)
             }
             break;
         }
-        case VFX_MODE_IDX_SPECTRUM_R_N: {   // 音樂頻譜-彩虹-線性
-            uint16_t color_h = 0;
-            uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
-            uint16_t fft_out[64] = {0};
-            const uint16_t flush_period = 20;
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
-
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            while (1) {
-                xLastWakeTime = xTaskGetTickCount();
-
-                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
-                    break;
-                }
-
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-                }
-
-                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, vfx_disp_height, 1);
-
-                color_h = 0;
-                for (uint16_t i = 0; i < vfx_disp_width; i++) {
-                    uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
-
-#if defined(CONFIG_VFX_OUTPUT_ST7735)
-                    uint16_t clear_x  = i * 3;
-                    uint16_t clear_cx = 3;
-                    uint16_t clear_y  = 0;
-                    uint16_t clear_cy = vfx_disp_height - fft_out[i];
-
-                    uint16_t fill_x  = i * 3;
-                    uint16_t fill_cx = 3;
-                    uint16_t fill_y  = vfx_disp_height - fft_out[i];
-                    uint16_t fill_cy = fft_out[i];
-#else
-                    uint16_t clear_x  = i * 4;
-                    uint16_t clear_cx = 4;
-                    uint16_t clear_y  = 0;
-                    uint16_t clear_cy = vfx_disp_height - fft_out[i];
-
-                    uint16_t fill_x  = i * 4;
-                    uint16_t fill_cx = 4;
-                    uint16_t fill_y  = vfx_disp_height - fft_out[i];
-                    uint16_t fill_cy = fft_out[i];
-#endif
-
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
-                    gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
-
-                    if ((color_h += 8) == 512) {
-                        color_h = 0;
-                    }
-                }
-
-                gtimerJab(&vfx_flush_timer);
-
-                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
-            }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            fft_destroy(fft);
-
-            break;
-        }
+        case VFX_MODE_IDX_SPECTRUM_R_N:     // 音樂頻譜-彩虹-線性
         case VFX_MODE_IDX_SPECTRUM_G_N: {   // 音樂頻譜-漸變-線性
             uint16_t color_p = 0;
             uint16_t color_h = 0;
@@ -207,7 +129,7 @@ static void vfx_task(void *pvParameter)
             uint16_t fft_out[64] = {0};
             const uint16_t flush_period = 20;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
@@ -227,14 +149,19 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
                     fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
                 }
 
                 vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, vfx_disp_height, 1);
 
-                color_p = color_h;
+                if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_N) {
+                    color_h = 0;
+                } else {
+                    color_p = color_h;
+                }
+
                 for (uint16_t i = 0; i < vfx_disp_width; i++) {
                     uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
@@ -263,8 +190,14 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (++color_h == 512) {
-                        color_h = 0;
+                    if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_N) {
+                        if ((color_h += 8) == 512) {
+                            color_h = 0;
+                        }
+                    } else {
+                        if (++color_h == 512) {
+                            color_h = 0;
+                        }
                     }
                 }
 
@@ -285,206 +218,7 @@ static void vfx_task(void *pvParameter)
 
             break;
         }
-        case VFX_MODE_IDX_SPECTRUM_M_N: {   // 音樂頻譜-格柵-線性
-            uint16_t color_h = 0;
-            uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
-            uint16_t fft_out[64] = {0};
-#if defined(CONFIG_VFX_OUTPUT_ST7735)
-            const uint8_t vu_idx_min = 0;
-            const uint8_t vu_idx_max = 19;
-            const uint8_t vu_val_min = 0;
-            const uint8_t vu_val_max = 19;
-            const uint8_t vu_height = 4;
-            const uint8_t vu_width = 8;
-            const uint8_t vu_step = 9;
-#else
-            const uint8_t vu_idx_min = 0;
-            const uint8_t vu_idx_max = 23;
-            const uint8_t vu_val_min = 0;
-            const uint8_t vu_val_max = 26;
-            const uint8_t vu_height = 5;
-            const uint8_t vu_width = 10;
-            const uint8_t vu_step = 6;
-#endif
-            static uint8_t vu_peak_value[24] = {0};
-            static uint8_t vu_peak_delay[24] = {0};
-            static uint8_t vu_drop_delay[24] = {0};
-            const uint8_t vu_peak_delay_init = 18;
-            const uint8_t vu_drop_delay_init = 2;
-            const uint16_t flush_period = 20;
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
-            memset(vu_peak_delay, vu_peak_delay_init - 1, sizeof(vu_peak_delay));
-            memset(vu_drop_delay, vu_drop_delay_init - 1, sizeof(vu_drop_delay));
-
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
-
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            while (1) {
-                xLastWakeTime = xTaskGetTickCount();
-
-                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
-                    break;
-                }
-
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-                }
-
-                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor, vfx_disp_height, 0);
-
-                for (uint8_t i = vu_idx_min; i <= vu_idx_max; i++) {
-                    int16_t vu_val_out = fft_out[i];
-
-                    if (vu_val_out > vu_val_max) {
-                        vu_val_out = vu_val_max;
-                    } else if (vu_val_out < vu_val_min) {
-                        vu_val_out = vu_val_min;
-                    }
-
-                    if (vu_peak_delay[i]-- == 0) {
-                        vu_peak_delay[i] = 0;
-                        if (vu_drop_delay[i]-- == 0) {
-                            vu_drop_delay[i] = vu_drop_delay_init - 1;
-                            vu_peak_value[i]--;
-                        }
-                    }
-                    if (vu_peak_value[i] <= vu_val_out) {
-                        vu_peak_value[i] = vu_val_out;
-                        vu_peak_delay[i] = vu_peak_delay_init - 1 + vu_peak_delay[i] % vu_drop_delay_init;
-                    }
-                    if (vu_peak_value[i] != vu_val_out) {
-                        gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, Black);
-                    }
-
-                    uint32_t peak_color = hsl2rgb(432 / 511.0, 1.0, color_l / 511.0);
-                    gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
-
-                    color_h = 0;
-                    for (int8_t j = vu_val_max; j >= vu_val_min; j--) {
-                        uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
-
-                        if (j == vu_peak_value[i]) {
-                            continue;
-                        }
-
-                        if (j > vu_val_out || ((j == 0) && (vu_val_out == 0))) {
-                            // upside
-                            gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, Black);
-                        } else {
-                            // underside
-                            gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, pixel_color);
-                        }
-
-                        color_h += vu_step;
-                    }
-                }
-
-                gtimerJab(&vfx_flush_timer);
-
-                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
-            }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            fft_destroy(fft);
-
-            break;
-        }
-        case VFX_MODE_IDX_SPECTRUM_R_L: {   // 音樂頻譜-彩虹-對數
-            uint16_t color_h = 0;
-            uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
-            uint16_t fft_out[64] = {0};
-            uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
-            const uint16_t flush_period = 20;
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
-
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            while (1) {
-                xLastWakeTime = xTaskGetTickCount();
-
-                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
-                    break;
-                }
-
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-                }
-
-                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 2, vfx_disp_height, 0);
-
-                color_h = 0;
-                for (uint16_t i = 0; i < vfx_disp_width; i++) {
-                    uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
-
-#if defined(CONFIG_VFX_OUTPUT_ST7735)
-                    uint16_t clear_x  = i * 3;
-                    uint16_t clear_cx = 3;
-                    uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + fft_out[i] + 2;
-                    uint16_t clear_cy  = center_y - fft_out[i];
-
-                    uint16_t fill_x  = i * 3;
-                    uint16_t fill_cx = 3;
-                    uint16_t fill_y  = center_y - fft_out[i];
-                    uint16_t fill_cy = fft_out[i] * 2 + 2;
-#else
-                    uint16_t clear_x  = i * 4;
-                    uint16_t clear_cx = 4;
-                    uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + fft_out[i] + 1;
-                    uint16_t clear_cy  = center_y - fft_out[i];
-
-                    uint16_t fill_x  = i * 4;
-                    uint16_t fill_cx = 4;
-                    uint16_t fill_y  = center_y - fft_out[i];
-                    uint16_t fill_cy = fft_out[i] * 2 + 1;
-#endif
-
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_u_y, clear_cx, clear_cy, Black);
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, Black);
-                    gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
-
-                    if ((color_h += 8) == 512) {
-                        color_h = 0;
-                    }
-                }
-
-                gtimerJab(&vfx_flush_timer);
-
-                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
-            }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            fft_destroy(fft);
-
-            break;
-        }
+        case VFX_MODE_IDX_SPECTRUM_R_L:     // 音樂頻譜-彩虹-對數
         case VFX_MODE_IDX_SPECTRUM_G_L: {   // 音樂頻譜-漸變-對數
             uint16_t color_p = 0;
             uint16_t color_h = 0;
@@ -494,7 +228,7 @@ static void vfx_task(void *pvParameter)
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
@@ -514,14 +248,19 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
                     fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
                 }
 
                 vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 2, vfx_disp_height, 0);
 
-                color_p = color_h;
+                if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_L) {
+                    color_h = 0;
+                } else {
+                    color_p = color_h;
+                }
+
                 for (uint16_t i = 0; i < vfx_disp_width; i++) {
                     uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
@@ -553,8 +292,14 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (++color_h == 512) {
-                        color_h = 0;
+                    if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_L) {
+                        if ((color_h += 8) == 512) {
+                            color_h = 0;
+                        }
+                    } else {
+                        if (++color_h == 512) {
+                            color_h = 0;
+                        }
                     }
                 }
 
@@ -575,6 +320,7 @@ static void vfx_task(void *pvParameter)
 
             break;
         }
+        case VFX_MODE_IDX_SPECTRUM_M_N:     // 音樂頻譜-格柵-線性
         case VFX_MODE_IDX_SPECTRUM_M_L: {   // 音樂頻譜-格柵-對數
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
@@ -604,7 +350,7 @@ static void vfx_task(void *pvParameter)
             const uint8_t vu_drop_delay_init = 2;
             const uint16_t flush_period = 20;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
@@ -627,12 +373,16 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
                     fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
                 }
 
-                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor, vfx_disp_height, 0);
+                if (vfx.mode == VFX_MODE_IDX_SPECTRUM_M_N) {
+                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, vu_val_max, 0);
+                } else {
+                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 4, vu_val_max, 0);
+                }
 
                 for (uint8_t i = vu_idx_min; i <= vu_idx_max; i++) {
                     int16_t vu_val_out = fft_out[i];
@@ -829,11 +579,13 @@ static void vfx_task(void *pvParameter)
 
                 vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, fade_cnt * color_l / 256.0);
 
-                if (scale_dir == 0) {   // 暗->明
+                if (scale_dir == 0) {
+                    // 暗->明
                     if (++fade_cnt == 256) {
                         scale_dir = 1;
                     }
-                } else {                // 明->暗
+                } else {
+                    // 明->暗
                     if (--fade_cnt == 0) {
                         scale_dir = 0;
                         color_h = esp_random() % 512;
@@ -846,140 +598,8 @@ static void vfx_task(void *pvParameter)
             }
             break;
         }
-        case VFX_MODE_IDX_STARSKY_R: {   // 星空-紫紅
-            uint8_t x = 0;
-            uint8_t y = 0;
-            uint8_t z = 0;
-            uint16_t led_num = 32;
-            uint16_t led_idx[512] = {0};
-            uint16_t color_h[512] = {0};
-            uint16_t color_l = vfx.lightness;
-            const uint16_t flush_period = 8;
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
-            for (uint16_t i = 0; i < 512; i++) {
-                led_idx[i] = i;
-                color_h[i] = i % 80 + 432;
-            }
-
-            for (uint16_t i = 0; i < 512; i++) {
-                uint16_t rnd = esp_random() % 512;
-                uint16_t tmp = led_idx[rnd];
-                led_idx[rnd] = led_idx[i];
-                led_idx[i] = tmp;
-            }
-
-            for (uint16_t i = 0; i < 512; i++) {
-                uint16_t rnd = esp_random() % 512;
-                uint16_t tmp = color_h[rnd];
-                color_h[rnd] = color_h[i];
-                color_h[i] = tmp;
-            }
-
-            int16_t idx_base = -led_num;
-            while (1) {
-                for (uint16_t i = 0; i <= 256; i++) {
-                    xLastWakeTime = xTaskGetTickCount();
-
-                    if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                        xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
-                        goto exit;
-                    }
-
-                    if (idx_base >= 0) {
-                        x = (led_idx[idx_base] % 64) % 8;
-                        y = (led_idx[idx_base] % 64) / 8;
-                        z = led_idx[idx_base] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l / 256.0);
-                    }
-
-                    if ((idx_base + led_num) < 512) {
-                        x = (led_idx[idx_base + led_num] % 64) % 8;
-                        y = (led_idx[idx_base + led_num] % 64) / 8;
-                        z = led_idx[idx_base + led_num] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l / 256.0);
-                    }
-
-                    gtimerJab(&vfx_flush_timer);
-
-                    vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
-                }
-
-                if (++idx_base == 512) {
-                    idx_base = -led_num;
-                }
-            }
-            break;
-        }
-        case VFX_MODE_IDX_STARSKY_G: {   // 星空-黃綠
-            uint8_t x = 0;
-            uint8_t y = 0;
-            uint8_t z = 0;
-            uint16_t led_num = 32;
-            uint16_t led_idx[512] = {0};
-            uint16_t color_h[512] = {0};
-            uint16_t color_l = vfx.lightness;
-            const uint16_t flush_period = 8;
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
-            for (uint16_t i = 0; i < 512; i++) {
-                led_idx[i] = i;
-                color_h[i] = i % 85 + 80;
-            }
-
-            for (uint16_t i = 0; i < 512; i++) {
-                uint16_t rnd = esp_random() % 512;
-                uint16_t tmp = led_idx[rnd];
-                led_idx[rnd] = led_idx[i];
-                led_idx[i] = tmp;
-            }
-
-            for (uint16_t i = 0; i < 512; i++) {
-                uint16_t rnd = esp_random() % 512;
-                uint16_t tmp = color_h[rnd];
-                color_h[rnd] = color_h[i];
-                color_h[i] = tmp;
-            }
-
-            int16_t idx_base = -led_num;
-            while (1) {
-                for (uint16_t i = 0; i <= 256; i++) {
-                    xLastWakeTime = xTaskGetTickCount();
-
-                    if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                        xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
-                        goto exit;
-                    }
-
-                    if (idx_base >= 0) {
-                        x = (led_idx[idx_base] % 64) % 8;
-                        y = (led_idx[idx_base] % 64) / 8;
-                        z = led_idx[idx_base] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l / 256.0);
-                    }
-
-                    if ((idx_base + led_num) < 512) {
-                        x = (led_idx[idx_base + led_num] % 64) % 8;
-                        y = (led_idx[idx_base + led_num] % 64) / 8;
-                        z = led_idx[idx_base + led_num] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l / 256.0);
-                    }
-
-                    gtimerJab(&vfx_flush_timer);
-
-                    vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
-                }
-
-                if (++idx_base == 512) {
-                    idx_base = -led_num;
-                }
-            }
-            break;
-        }
+        case VFX_MODE_IDX_STARSKY_R:     // 星空-紫紅
+        case VFX_MODE_IDX_STARSKY_G:     // 星空-黃綠
         case VFX_MODE_IDX_STARSKY_B: {   // 星空-靑藍
             uint8_t x = 0;
             uint8_t y = 0;
@@ -995,7 +615,12 @@ static void vfx_task(void *pvParameter)
 
             for (uint16_t i = 0; i < 512; i++) {
                 led_idx[i] = i;
-                color_h[i] = i % 80 + 260;
+                switch (vfx.mode) {
+                    case VFX_MODE_IDX_STARSKY_R: color_h[i] = i % 80 + 432; break;
+                    case VFX_MODE_IDX_STARSKY_G: color_h[i] = i % 85 + 80;  break;
+                    case VFX_MODE_IDX_STARSKY_B: color_h[i] = i % 80 + 260; break;
+                    default: break;
+                }
             }
 
             for (uint16_t i = 0; i < 512; i++) {
@@ -1234,360 +859,9 @@ exit:
             }
             break;
         }
-        case VFX_MODE_IDX_FOUNTAIN_S_N: {   // 音樂噴泉-靜態-線性
-            uint8_t x = 0;
-            uint8_t y = 0;
-            uint16_t color_h = 504;
-            uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
-            uint16_t fft_out[64] = {0};
-            const coord_t canvas_width = 64;
-            const coord_t canvas_height = 8;
-            const uint16_t flush_period = 16;
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
-
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            while (1) {
-                xLastWakeTime = xTaskGetTickCount();
-
-                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
-                    break;
-                }
-
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-                }
-
-                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
-
-                color_h = 504;
-                for (uint16_t i = 0; i < canvas_width; i++) {
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = canvas_height - fft_out[i];
-
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = canvas_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
-
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 0);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_h, color_l);
-
-                    if (++y == 8) {
-                        y = 0;
-                        if (++x == 8) {
-                            x = 0;
-                        }
-                    }
-
-                    if (color_h >= 8) {
-                        color_h -= 8;
-                    } else {
-                        color_h += 504;
-                    }
-                }
-
-                gtimerJab(&vfx_flush_timer);
-
-                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
-            }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            fft_destroy(fft);
-
-            break;
-        }
-        case VFX_MODE_IDX_FOUNTAIN_G_N: {   // 音樂噴泉-漸變-線性
-            uint8_t x = 0;
-            uint8_t y = 0;
-            uint8_t  color_d = 0;
-            uint16_t color_p = 504;
-            uint16_t color_h = 504;
-            uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
-            uint16_t fft_out[64] = {0};
-            const coord_t canvas_width = 64;
-            const coord_t canvas_height = 8;
-            const uint16_t flush_period = 16;
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
-
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            while (1) {
-                xLastWakeTime = xTaskGetTickCount();
-
-                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
-                    break;
-                }
-
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-                }
-
-                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
-
-                color_h = color_p;
-                for (uint16_t i = 0; i < canvas_width; i++) {
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = canvas_height - fft_out[i];
-
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = canvas_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
-
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 0);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_h, color_l);
-
-                    if (++y == 8) {
-                        y = 0;
-                        if (++x == 8) {
-                            x = 0;
-                        }
-                    }
-
-                    if (color_h >= 8) {
-                        color_h -= 8;
-                    } else {
-                        color_h += 504;
-                    }
-                }
-
-                if (++color_d == 2) {
-                    color_d = 0;
-                    if (++color_p == 512) {
-                        color_p = 0;
-                    }
-                }
-
-                gtimerJab(&vfx_flush_timer);
-
-                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
-            }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            fft_destroy(fft);
-
-            break;
-        }
-        case VFX_MODE_IDX_FOUNTAIN_H_N: {   // 音樂噴泉-螺旋-線性
-            uint8_t x = 0;
-            uint8_t y = 0;
-            uint8_t color_n = 0;
-            uint8_t color_d = 0;
-            uint16_t color_h[64] = {0};
-            uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
-            uint16_t fft_out[64] = {0};
-            const uint8_t led_idx_table[][64] = {
-                {
-                    3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
-                    1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 5,
-                    4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5,
-                    6, 7, 7, 7, 7, 7, 7, 7, 7, 6, 5, 4, 3, 2, 1, 0
-                }, {
-                    3, 3, 4, 4, 4, 3, 2, 2, 2, 2, 3, 4, 5, 5, 5, 5,
-                    5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6,
-                    6, 6, 6, 6, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0, 0,
-                    0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7
-                }
-            };
-            const coord_t canvas_width = 64;
-            const coord_t canvas_height = 8;
-            const uint16_t flush_period = 16;
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            for (uint16_t i = 0; i < 64; i++) {
-                color_h[i] = 504 - i * 8;
-            }
-
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
-
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            while (1) {
-                xLastWakeTime = xTaskGetTickCount();
-
-                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
-                    break;
-                }
-
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-                }
-
-                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
-
-                for (uint16_t i = 0; i < canvas_width; i++) {
-                    x = led_idx_table[0][i];
-                    y = led_idx_table[1][i];
-
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = canvas_height - fft_out[i];
-
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = canvas_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
-
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 0);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_h[i], color_l);
-
-                    if (color_n) {
-                        if (++color_h[i] == 512) {
-                            color_h[i] = 0;
-                        }
-                    }
-                }
-
-                if (++color_d == 2) {
-                    color_d = 0;
-                    color_n = 1;
-                } else {
-                    color_n = 0;
-                }
-
-                gtimerJab(&vfx_flush_timer);
-
-                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
-            }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            fft_destroy(fft);
-
-            break;
-        }
-        case VFX_MODE_IDX_FOUNTAIN_S_L: {   // 音樂噴泉-靜態-對數
-            uint8_t x = 0;
-            uint8_t y = 0;
-            uint16_t color_h = 504;
-            uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
-            uint16_t fft_out[64] = {0};
-            const coord_t canvas_width = 64;
-            const coord_t canvas_height = 8;
-            const uint16_t flush_period = 16;
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
-
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
-
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            while (1) {
-                xLastWakeTime = xTaskGetTickCount();
-
-                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
-                    break;
-                }
-
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
-                }
-
-                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 8, canvas_height, 1);
-
-                color_h = 504;
-                for (uint16_t i = 0; i < canvas_width; i++) {
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = canvas_height - fft_out[i];
-
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = canvas_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
-
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 0);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_h, color_l);
-
-                    if (++y == 8) {
-                        y = 0;
-                        if (++x == 8) {
-                            x = 0;
-                        }
-                    }
-
-                    if (color_h >= 8) {
-                        color_h -= 8;
-                    } else {
-                        color_h += 504;
-                    }
-                }
-
-                gtimerJab(&vfx_flush_timer);
-
-                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
-            }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
-            fft_destroy(fft);
-
-            break;
-        }
+        case VFX_MODE_IDX_FOUNTAIN_S_N:     // 音樂噴泉-靜態-線性
+        case VFX_MODE_IDX_FOUNTAIN_S_L:     // 音樂噴泉-靜態-對數
+        case VFX_MODE_IDX_FOUNTAIN_G_N:     // 音樂噴泉-漸變-線性
         case VFX_MODE_IDX_FOUNTAIN_G_L: {   // 音樂噴泉-漸變-對數
             uint8_t x = 0;
             uint8_t y = 0;
@@ -1601,7 +875,7 @@ exit:
             const coord_t canvas_height = 8;
             const uint16_t flush_period = 16;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -1616,14 +890,23 @@ exit:
                     break;
                 }
 
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
                     fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
                 }
 
-                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 8, canvas_height, 1);
+                if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_N || vfx.mode == VFX_MODE_IDX_FOUNTAIN_G_N) {
+                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
+                } else {
+                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
+                }
 
-                color_h = color_p;
+                if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_N || vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_L) {
+                    color_h = 504;
+                } else {
+                    color_h = color_p;
+                }
+
                 for (uint16_t i = 0; i < canvas_width; i++) {
                     uint8_t clear_x  = x;
                     uint8_t clear_cx = 1;
@@ -1678,6 +961,7 @@ exit:
 
             break;
         }
+        case VFX_MODE_IDX_FOUNTAIN_H_N:     // 音樂噴泉-螺旋-線性
         case VFX_MODE_IDX_FOUNTAIN_H_L: {   // 音樂噴泉-螺旋-對數
             uint8_t x = 0;
             uint8_t y = 0;
@@ -1704,7 +988,7 @@ exit:
             const coord_t canvas_height = 8;
             const uint16_t flush_period = 16;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             for (uint16_t i = 0; i < 64; i++) {
                 color_h[i] = 504 - i * 8;
@@ -1723,12 +1007,16 @@ exit:
                     break;
                 }
 
-                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_NULL_BIT)) {
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
                     fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_NULL_BIT);
+                    xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
                 }
 
-                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 8, canvas_height, 1);
+                if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_H_N) {
+                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
+                } else {
+                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
+                }
 
                 for (uint16_t i = 0; i < canvas_width; i++) {
                     x = led_idx_table[0][i];

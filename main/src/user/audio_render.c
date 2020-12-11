@@ -70,7 +70,7 @@ static void audio_buffer_reset(void)
 #ifdef CONFIG_ENABLE_VFX
     if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
         memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-        xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+        xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
     }
 #endif
 
@@ -168,7 +168,7 @@ static void audio_render_task(void *pvParameter)
 
 #ifdef CONFIG_ENABLE_VFX
         uxBits = xEventGroupGetBits(user_event_group);
-        if ((size != FFT_BLOCK_SIZE) || !(uxBits & VFX_FFT_NULL_BIT)) {
+        if ((size != FFT_BLOCK_SIZE) || !(uxBits & VFX_FFT_IDLE_BIT)) {
             vRingbufferReturnItem(audio_buff, (void *)data);
             continue;
         }
@@ -200,7 +200,7 @@ static void audio_render_task(void *pvParameter)
         }
 #endif
 
-        xEventGroupClearBits(user_event_group, VFX_FFT_NULL_BIT);
+        xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 #endif
 
         vRingbufferReturnItem(audio_buff, (void *)data);
