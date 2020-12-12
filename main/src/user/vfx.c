@@ -154,7 +154,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
                 }
 
-                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, vfx_disp_height, 1);
+                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor, vfx_disp_height, 1);
 
                 if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_N) {
                     color_h = 0;
@@ -253,7 +253,7 @@ static void vfx_task(void *pvParameter)
                     xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
                 }
 
-                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 2, vfx_disp_height, 0);
+                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor, vfx_disp_height / 2, 0);
 
                 if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_L) {
                     color_h = 0;
@@ -379,9 +379,9 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (vfx.mode == VFX_MODE_IDX_SPECTRUM_M_N) {
-                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, vu_val_max, 0);
+                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor, vu_val_max, 0);
                 } else {
-                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 4, vu_val_max, 0);
+                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor, vu_val_max, 0);
                 }
 
                 for (uint8_t i = vu_idx_min; i <= vu_idx_max; i++) {
@@ -896,9 +896,9 @@ exit:
                 }
 
                 if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_N || vfx.mode == VFX_MODE_IDX_FOUNTAIN_G_N) {
-                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
+                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor, canvas_height, 1);
                 } else {
-                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
+                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor, canvas_height, 1);
                 }
 
                 if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_N || vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_L) {
@@ -1013,9 +1013,9 @@ exit:
                 }
 
                 if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_H_N) {
-                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
+                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor, canvas_height, 1);
                 } else {
-                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor * 4, canvas_height, 1);
+                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor, canvas_height, 1);
                 }
 
                 for (uint16_t i = 0; i < canvas_width; i++) {

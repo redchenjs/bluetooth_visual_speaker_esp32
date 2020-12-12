@@ -232,7 +232,7 @@ void vfx_draw_layer_number(uint8_t num, uint8_t layer, float color_h, float colo
 
 void vfx_compute_freq_lin(const float *data_in, uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val)
 {
-    data_out[0] += sqrt(pow(data_in[0], 2) + pow(data_in[1], 2)) / FFT_N * (max_val * scale_factor / 65535.0);
+    data_out[0] += sqrt(pow(data_in[0], 2) + pow(data_in[1], 2)) / FFT_N * (max_val * scale_factor / 32768.0);
     data_out[0] /= 2;
     if (data_out[0] > max_val) {
         data_out[0] = max_val;
@@ -241,7 +241,7 @@ void vfx_compute_freq_lin(const float *data_in, uint16_t *data_out, uint16_t sca
     }
 
     for (uint16_t k = 1; k < FFT_N / 2; k++) {
-        data_out[k] += sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * (max_val * scale_factor / 65535.0);
+        data_out[k] += sqrt(pow(vfx_fft_output[2 * k], 2) + pow(vfx_fft_output[2 * k + 1], 2)) / FFT_N * 2 * (max_val * scale_factor / 32768.0);
         data_out[k] /= 2;
         if (data_out[k] > max_val) {
             data_out[k] = max_val;
@@ -253,7 +253,7 @@ void vfx_compute_freq_lin(const float *data_in, uint16_t *data_out, uint16_t sca
 
 void vfx_compute_freq_log(const float *data_in, uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val)
 {
-    data_out[0] += 20 * log10(1 + sqrt(pow(data_in[0], 2) + pow(data_in[1], 2)) / FFT_N) * (max_val * scale_factor / 65535.0);
+    data_out[0] += 20 * log10(1 + sqrt(pow(data_in[0], 2) + pow(data_in[1], 2)) / FFT_N) * (max_val * scale_factor / 32768.0);
     data_out[0] /= 2;
     if (data_out[0] > max_val) {
         data_out[0] = max_val;
@@ -262,7 +262,7 @@ void vfx_compute_freq_log(const float *data_in, uint16_t *data_out, uint16_t sca
     }
 
     for (uint16_t k = 1; k < FFT_N / 2; k++) {
-        data_out[k] += 20 * log10(1 + sqrt(pow(data_in[2 * k], 2) + pow(data_in[2 * k + 1], 2)) / FFT_N * 2) * (max_val * scale_factor / 65535.0);
+        data_out[k] += 20 * log10(1 + sqrt(pow(data_in[2 * k], 2) + pow(data_in[2 * k + 1], 2)) / FFT_N * 2) * (max_val * scale_factor / 32768.0);
         data_out[k] /= 2;
         if (data_out[k] > max_val) {
             data_out[k] = max_val;
