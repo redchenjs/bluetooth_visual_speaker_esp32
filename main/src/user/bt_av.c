@@ -75,13 +75,15 @@ void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
     if (audio_buff) {
         uint32_t pkt = 0, remain = 0;
 
-        for (pkt = 0; pkt < len / FFT_BLOCK_SIZE; pkt++) {
-            xRingbufferSend(audio_buff, (void *)(data + pkt * FFT_BLOCK_SIZE), FFT_BLOCK_SIZE, portMAX_DELAY);
+        for (pkt = 0; pkt < len / FFT_BLOCK_SIZE / 2; pkt++) {
+            xRingbufferSend(audio_buff, (void *)(data + pkt * FFT_BLOCK_SIZE * 2), FFT_BLOCK_SIZE * 2, portMAX_DELAY);
+            taskYIELD();
         }
 
-        remain = len - pkt * FFT_BLOCK_SIZE;
+        remain = len - pkt * FFT_BLOCK_SIZE * 2;
         if (remain != 0) {
-            xRingbufferSend(audio_buff, (void *)(data + pkt * FFT_BLOCK_SIZE), remain, portMAX_DELAY);
+            xRingbufferSend(audio_buff, (void *)(data + pkt * FFT_BLOCK_SIZE * 2), remain, portMAX_DELAY);
+            taskYIELD();
         }
     }
 }
