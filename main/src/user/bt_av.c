@@ -138,14 +138,15 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                 esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
             }
 
+            if (!(uxBits & BT_A2DP_IDLE_BIT)) {
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
-            audio_player_play_file(MP3_FILE_IDX_DISCONNECTED);
+                audio_player_play_file(MP3_FILE_IDX_DISCONNECTED);
 #endif
 #ifdef CONFIG_ENABLE_LED
-            led_set_mode(LED_MODE_IDX_BLINK_M0);
+                led_set_mode(LED_MODE_IDX_BLINK_M0);
 #endif
-
-            xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
+                xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
+            }
         } else if (a2d->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
             xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
 
