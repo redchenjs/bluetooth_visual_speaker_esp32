@@ -127,7 +127,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_l = vfx.lightness;
             fft_config_t *fft = NULL;
             uint16_t fft_out[64] = {0};
-            const uint16_t flush_period = 20;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -226,7 +226,7 @@ static void vfx_task(void *pvParameter)
             fft_config_t *fft = NULL;
             uint16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
-            const uint16_t flush_period = 20;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -346,9 +346,9 @@ static void vfx_task(void *pvParameter)
             static uint8_t vu_peak_value[24] = {0};
             static uint8_t vu_peak_delay[24] = {0};
             static uint8_t vu_drop_delay[24] = {0};
-            const uint8_t vu_peak_delay_init = 18;
-            const uint8_t vu_drop_delay_init = 2;
-            const uint16_t flush_period = 20;
+            const uint16_t vu_peak_delay_cnt = 20;
+            const uint16_t vu_drop_delay_cnt = 2;
+            const uint16_t flush_period = 16;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -357,8 +357,8 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            memset(vu_peak_delay, vu_peak_delay_init - 1, sizeof(vu_peak_delay));
-            memset(vu_drop_delay, vu_drop_delay_init - 1, sizeof(vu_drop_delay));
+            memset(vu_peak_delay, vu_peak_delay_cnt - 1, sizeof(vu_peak_delay));
+            memset(vu_drop_delay, vu_drop_delay_cnt - 1, sizeof(vu_drop_delay));
 
             memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
             fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
@@ -396,20 +396,20 @@ static void vfx_task(void *pvParameter)
                     if (vu_peak_delay[i]-- == 0) {
                         vu_peak_delay[i] = 0;
                         if (vu_drop_delay[i]-- == 0) {
-                            vu_drop_delay[i] = vu_drop_delay_init - 1;
+                            vu_drop_delay[i] = vu_drop_delay_cnt - 1;
                             vu_peak_value[i]--;
                         }
                     }
                     if (vu_peak_value[i] <= vu_val_out) {
                         vu_peak_value[i] = vu_val_out;
-                        vu_peak_delay[i] = vu_peak_delay_init - 1 + vu_peak_delay[i] % vu_drop_delay_init;
+                        vu_peak_delay[i] = vu_peak_delay_cnt - 1 + vu_peak_delay[i] % vu_drop_delay_cnt;
                     }
                     if (vu_peak_value[i] != vu_val_out) {
-                        gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, Black);
+                        gdispGFillArea(vfx_gdisp, i * vu_width + 1, (vu_val_max - vu_peak_value[i]) * vu_height + 1, vu_width - 2, vu_height - 2, Black);
                     }
 
                     uint32_t peak_color = hsl2rgb(432 / 511.0, 1.0, color_l / 511.0);
-                    gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-vu_peak_value[i])*vu_height+1, vu_width-2, vu_height-2, peak_color);
+                    gdispGFillArea(vfx_gdisp, i * vu_width + 1, (vu_val_max - vu_peak_value[i]) * vu_height + 1, vu_width - 2, vu_height - 2, peak_color);
 
                     color_h = 0;
                     for (int8_t j = vu_val_max; j >= vu_val_min; j--) {
@@ -421,10 +421,10 @@ static void vfx_task(void *pvParameter)
 
                         if (j > vu_val_out || ((j == 0) && (vu_val_out == 0))) {
                             // upside
-                            gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, Black);
+                            gdispGFillArea(vfx_gdisp, i * vu_width + 1, (vu_val_max - j) * vu_height + 1, vu_width - 2, vu_height - 2, Black);
                         } else {
                             // underside
-                            gdispGFillArea(vfx_gdisp, i*vu_width+1, (vu_val_max-j)*vu_height+1, vu_width-2, vu_height-2, pixel_color);
+                            gdispGFillArea(vfx_gdisp, i * vu_width + 1, (vu_val_max - j) * vu_height + 1, vu_width - 2, vu_height - 2, pixel_color);
                         }
 
                         color_h += vu_step;
