@@ -66,8 +66,21 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
         esp_a2d_sink_register_data_callback(bt_app_a2d_data_cb);
         esp_a2d_sink_init();
 
-        /* set discoverable and connectable mode, wait to be connected */
-        esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+        if (memcmp(last_remote_bda, "\x00\x00\x00\x00\x00\x00", 6) != 0) {
+            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
+                ESP_LOGW(BT_APP_TAG, "connecting to [%02x:%02x:%02x:%02x:%02x:%02x]",
+                         last_remote_bda[0], last_remote_bda[1], last_remote_bda[2],
+                         last_remote_bda[3], last_remote_bda[4], last_remote_bda[5]);
+
+                esp_a2d_sink_connect(last_remote_bda);
+            }
+        } else {
+            xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
+
+            /* set discoverable and connectable mode, wait to be connected */
+            esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+        }
 
         break;
     }
@@ -81,8 +94,6 @@ void bt_app_init(void)
 {
     size_t length = sizeof(esp_bd_addr_t);
     app_getenv("LAST_REMOTE_BDA", &last_remote_bda, &length);
-
-    xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
 
     /* create application task */
     bt_app_task_start_up();
@@ -103,17 +114,4 @@ void bt_app_init(void)
     esp_bt_gap_set_pin(pin_type, 4, pin_code);
 
     ESP_LOGI(BT_APP_TAG, "started.");
-
-    if (memcmp(last_remote_bda, "\x00\x00\x00\x00\x00\x00", 6) != 0) {
-        vTaskDelay(2000 / portTICK_RATE_MS);
-
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (uxBits & BT_A2DP_IDLE_BIT && !(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
-            ESP_LOGW(BT_APP_TAG, "connecting to [%02x:%02x:%02x:%02x:%02x:%02x]",
-                     last_remote_bda[0], last_remote_bda[1], last_remote_bda[2],
-                     last_remote_bda[3], last_remote_bda[4], last_remote_bda[5]);
-
-            esp_a2d_sink_connect(last_remote_bda);
-        }
-    }
 }
