@@ -208,7 +208,7 @@ void vfx_draw_layer_number(uint8_t num, uint8_t layer, float color_h, float colo
     uint8_t z = 0;
 
     for (uint8_t i = 0; i < 8; i++) {
-        unsigned char temp = vfx_bitmap_number[num][i];
+        uint8_t temp = vfx_bitmap_number[num][i];
 
         for (uint8_t j = 0; j < 8; j++) {
             if (temp & 0x80) {
