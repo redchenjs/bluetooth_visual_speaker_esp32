@@ -22,12 +22,11 @@
 
 #define TAG "ain"
 
+static uint8_t data[FFT_BLOCK_SIZE] = {0};
 static ain_mode_t ain_mode = DEFAULT_AIN_MODE;
 
 static void ain_task(void *pvParameters)
 {
-    char data[FFT_BLOCK_SIZE] = {0};
-
     ESP_LOGI(TAG, "started.");
 
     while (1) {
@@ -104,5 +103,5 @@ void ain_init(void)
 
     ain_set_mode(ain_mode);
 
-    xTaskCreatePinnedToCore(ain_task, "ainT", 1920, NULL, configMAX_PRIORITIES - 3, NULL, 0);
+    xTaskCreatePinnedToCore(ain_task, "ainT", 1536, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }

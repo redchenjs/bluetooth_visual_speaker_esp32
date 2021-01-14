@@ -26,7 +26,7 @@
 RingbufHandle_t audio_buff = NULL;
 
 static StaticRingbuffer_t buff_struct = {0};
-static uint8_t buff_data[FFT_BLOCK_SIZE * 20] = {0};
+static uint8_t buff_data[FFT_BLOCK_SIZE * 4] = {0};
 
 /* render callback for the libmad synth */
 void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels)
@@ -85,10 +85,10 @@ static void audio_render_task(void *pvParameter)
         if (start) {
             uint32_t remain = sizeof(buff_data) - xRingbufferGetCurFreeSize(audio_buff);
 
-            if (remain >= FFT_BLOCK_SIZE * 2) {
+            if (remain >= FFT_BLOCK_SIZE) {
                 delay = 0;
 
-                data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, portMAX_DELAY, FFT_BLOCK_SIZE * 2);
+                data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, portMAX_DELAY, FFT_BLOCK_SIZE);
             } else if (remain > 0) {
                 delay = 0;
 
@@ -107,7 +107,7 @@ static void audio_render_task(void *pvParameter)
                 continue;
             }
         } else {
-            if (xRingbufferGetCurFreeSize(audio_buff) > FFT_BLOCK_SIZE * 2) {
+            if (xRingbufferGetCurFreeSize(audio_buff) > FFT_BLOCK_SIZE) {
                 vTaskDelay(1 / portTICK_RATE_MS);
             } else {
                 start = true;

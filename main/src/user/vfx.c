@@ -118,6 +118,102 @@ static void vfx_task(void *pvParameter)
             }
             break;
         }
+        case VFX_MODE_IDX_12_BANDS_R:   // 音樂頻譜-12段-彩虹
+        case VFX_MODE_IDX_12_BANDS_G: { // 音樂頻譜-12段-漸變
+            uint16_t color_p = 0;
+            uint16_t color_h = 0;
+            uint16_t color_l = vfx.lightness;
+            uint16_t fft_out[FFT_BANDS_N] = {0};
+            uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
+            const uint16_t flush_period = 16;
+
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
+
+            gdispGClear(vfx_gdisp, Black);
+            gtimerJab(&vfx_flush_timer);
+
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+            vfx_fft_init();
+
+            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
+
+            while (1) {
+                xLastWakeTime = xTaskGetTickCount();
+
+                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
+                    break;
+                }
+
+                if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
+                    vfx_fft_execute();
+                }
+
+                vfx_fft_compute_bands(vfx_fft_data, fft_out, vfx.scale_factor, vfx_disp_height / 2, 0);
+
+                xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
+
+                if (vfx.mode == VFX_MODE_IDX_12_BANDS_R) {
+                    color_h = 0;
+                } else {
+                    color_p = color_h;
+                }
+
+                for (uint16_t i = 0; i < FFT_BANDS_N; i++) {
+                    uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
+
+#if defined(CONFIG_VFX_OUTPUT_ST7735)
+                    uint16_t clear_x  = i * 13;
+                    uint16_t clear_cx = 11;
+                    uint16_t clear_y  = 0;
+                    uint16_t clear_cy = vfx_disp_height;
+
+                    uint16_t fill_x  = i * 13;
+                    uint16_t fill_cx = 11;
+                    uint16_t fill_y  = center_y - fft_out[i];
+                    uint16_t fill_cy = fft_out[i] * 2 + 2;
+#else
+                    uint16_t clear_x  = i * 20;
+                    uint16_t clear_cx = 18;
+                    uint16_t clear_y  = 0;
+                    uint16_t clear_cy = vfx_disp_height;
+
+                    uint16_t fill_x  = i * 20;
+                    uint16_t fill_cx = 18;
+                    uint16_t fill_y  = center_y - fft_out[i];
+                    uint16_t fill_cy = fft_out[i] * 2 + 1;
+#endif
+
+                    gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
+                    gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
+
+                    if (vfx.mode == VFX_MODE_IDX_12_BANDS_R) {
+                        color_h += 40;
+                    } else {
+                        if (++color_h == 512) {
+                            color_h = 0;
+                        }
+                    }
+                }
+
+                if (++color_p == 512) {
+                    color_h = 0;
+                } else {
+                    color_h = color_p;
+                }
+
+                gtimerJab(&vfx_flush_timer);
+
+                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
+            }
+
+            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
+
+            vfx_fft_deinit();
+
+            break;
+        }
         case VFX_MODE_IDX_SPECTRUM_R_N:     // 音樂頻譜-彩虹-線性
         case VFX_MODE_IDX_SPECTRUM_G_N: {   // 音樂頻譜-漸變-線性
             uint16_t color_p = 0;
@@ -263,9 +359,8 @@ static void vfx_task(void *pvParameter)
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
                     uint16_t clear_x  = i * 3;
                     uint16_t clear_cx = 3;
-                    uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + fft_out[i] + 2;
-                    uint16_t clear_cy  = center_y - fft_out[i];
+                    uint16_t clear_y  = 0;
+                    uint16_t clear_cy = vfx_disp_height;
 
                     uint16_t fill_x  = i * 3;
                     uint16_t fill_cx = 3;
@@ -274,9 +369,8 @@ static void vfx_task(void *pvParameter)
 #else
                     uint16_t clear_x  = i * 4;
                     uint16_t clear_cx = 4;
-                    uint16_t clear_u_y = 0;
-                    uint16_t clear_d_y = center_y + fft_out[i] + 1;
-                    uint16_t clear_cy  = center_y - fft_out[i];
+                    uint16_t clear_y  = 0;
+                    uint16_t clear_cy = vfx_disp_height;
 
                     uint16_t fill_x  = i * 4;
                     uint16_t fill_cx = 4;
@@ -284,8 +378,7 @@ static void vfx_task(void *pvParameter)
                     uint16_t fill_cy = fft_out[i] * 2 + 1;
 #endif
 
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_u_y, clear_cx, clear_cy, Black);
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_d_y, clear_cx, clear_cy, Black);
+                    gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
                     if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_L) {

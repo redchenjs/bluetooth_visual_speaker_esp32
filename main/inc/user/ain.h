@@ -13,7 +13,7 @@ typedef enum {
     AIN_MODE_IDX_ON  = 0x01
 } ain_mode_t;
 
-#define DEFAULT_AIN_MODE AIN_MODE_IDX_ON
+#define DEFAULT_AIN_MODE AIN_MODE_IDX_OFF
 
 extern void ain_set_mode(ain_mode_t idx);
 extern ain_mode_t ain_get_mode(void);

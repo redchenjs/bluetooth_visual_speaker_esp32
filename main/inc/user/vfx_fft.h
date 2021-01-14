@@ -10,15 +10,18 @@
 
 #include <stdint.h>
 
-#define FFT_N          (128)
+#define FFT_N          (512)
+#define FFT_BANDS_N    (12)
+#define FFT_BLOCK_STEP (FFT_N / 64)
 #define FFT_BLOCK_SIZE (FFT_N * 4)
 
 extern float vfx_fft_data[FFT_N];
 
-extern void vfx_fft_execute(void);
-
+extern void vfx_fft_compute_bands(const float *data_in, uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val);
 extern void vfx_fft_compute_lin(const float *data_in, uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val);
 extern void vfx_fft_compute_log(const float *data_in, uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val);
+
+extern void vfx_fft_execute(void);
 
 extern void vfx_fft_init(void);
 extern void vfx_fft_deinit(void);

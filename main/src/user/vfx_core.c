@@ -5,13 +5,9 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
 #include "gfx.h"
 
 #include "user/vfx.h"
-#include "user/vfx_core.h"
 #include "user/vfx_bitmap.h"
 
 static float hue2rgb(float v1, float v2, float vH)

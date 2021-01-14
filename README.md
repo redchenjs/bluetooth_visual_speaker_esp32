@@ -56,6 +56,10 @@ idf.py menuconfig
 idf.py flash monitor
 ```
 
+## VFX on ST7789 135x240 LCD Panel (12-Band Spectrum)
+
+<img src="docs/st7789band.png">
+
 ## VFX on ST7789 135x240 LCD Panel (VU Meter)
 
 <img src="docs/st7789vu.png">
