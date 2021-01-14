@@ -17,8 +17,9 @@
 
 #include "core/os.h"
 #include "chip/i2s.h"
-#include "user/vfx.h"
+
 #include "user/bt_av.h"
+#include "user/vfx_fft.h"
 
 #define TAG "audio_render"
 
@@ -72,7 +73,7 @@ static void audio_render_task(void *pvParameter)
         if (!(uxBits & AUDIO_RENDER_CLR_BIT)) {
 #ifdef CONFIG_ENABLE_VFX
             if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
-                memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+                memset(vfx_fft_data, 0x00, sizeof(vfx_fft_data));
                 xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
             }
 #endif
@@ -150,14 +151,14 @@ static void audio_render_task(void *pvParameter)
         for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
             data_l = data[idx + 1] << 8 | data[idx];
 
-            vfx_fft_input[k] = (float)data_l;
+            vfx_fft_data[k] = (float)data_l;
         }
 #elif defined(CONFIG_BT_AUDIO_FFT_ONLY_RIGHT)
         int16_t data_r = 0;
         for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
             data_r = data[idx + 3] << 8 | data[idx + 2];
 
-            vfx_fft_input[k] = (float)data_r;
+            vfx_fft_data[k] = (float)data_r;
         }
 #else
         int16_t data_l = 0, data_r = 0;
@@ -165,7 +166,7 @@ static void audio_render_task(void *pvParameter)
             data_l = data[idx + 1] << 8 | data[idx];
             data_r = data[idx + 3] << 8 | data[idx + 2];
 
-            vfx_fft_input[k] = (float)((data_l + data_r) / 2);
+            vfx_fft_data[k] = (float)((data_l + data_r) / 2);
         }
 #endif
 

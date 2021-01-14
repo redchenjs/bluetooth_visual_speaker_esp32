@@ -10,7 +10,6 @@
 
 #include <stdint.h>
 
-#include "fft.h"
 #include "gfx.h"
 
 typedef enum {
@@ -61,9 +60,6 @@ typedef struct {
     uint8_t backlight;
 } vfx_config_t;
 
-#define FFT_N          (128)
-#define FFT_BLOCK_SIZE (FFT_N * 4)
-
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
     #define DEFAULT_VFX_MODE            VFX_MODE_IDX_SPECTRUM_M_N
     #define DEFAULT_VFX_SCALE_FACTOR    0xFF
@@ -77,9 +73,6 @@ typedef struct {
 #endif
 
 extern GDisplay *vfx_gdisp;
-
-extern float vfx_fft_input[FFT_N];
-extern float vfx_fft_output[FFT_N];
 
 #ifdef CONFIG_VFX_OUTPUT_ST7735
     // ani0.gif

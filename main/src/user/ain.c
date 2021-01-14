@@ -14,9 +14,11 @@
 
 #include "core/os.h"
 #include "core/app.h"
+
 #include "chip/i2s.h"
-#include "user/vfx.h"
+
 #include "user/ain.h"
+#include "user/vfx_fft.h"
 
 #define TAG "ain"
 
@@ -49,14 +51,14 @@ static void ain_task(void *pvParameters)
         for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
             data_l = data[idx + 1] << 8 | data[idx];
 
-            vfx_fft_input[k] = (float)data_l;
+            vfx_fft_data[k] = (float)data_l;
         }
 #elif defined(CONFIG_AUDIO_INPUT_FFT_ONLY_RIGHT)
         int16_t data_r = 0;
         for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
             data_r = data[idx + 3] << 8 | data[idx + 2];
 
-            vfx_fft_input[k] = (float)data_r;
+            vfx_fft_data[k] = (float)data_r;
         }
 #else
         int16_t data_l = 0, data_r = 0;
@@ -64,13 +66,13 @@ static void ain_task(void *pvParameters)
             data_l = data[idx + 1] << 8 | data[idx];
             data_r = data[idx + 3] << 8 | data[idx + 2];
 
-            vfx_fft_input[k] = (float)((data_l + data_r) / 2);
+            vfx_fft_data[k] = (float)((data_l + data_r) / 2);
         }
 #endif
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (!(uxBits & AUDIO_INPUT_RUN_BIT)) {
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
+            memset(vfx_fft_data, 0x00, sizeof(vfx_fft_data));
         }
 
         xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);

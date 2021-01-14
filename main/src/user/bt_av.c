@@ -19,8 +19,8 @@
 
 #include "user/led.h"
 #include "user/key.h"
-#include "user/vfx.h"
 #include "user/bt_app.h"
+#include "user/vfx_fft.h"
 #include "user/bt_app_core.h"
 #include "user/audio_player.h"
 #include "user/audio_render.h"

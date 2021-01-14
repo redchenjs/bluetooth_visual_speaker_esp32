@@ -9,12 +9,13 @@
 
 #include "esp_log.h"
 
-#include "fft.h"
 #include "gfx.h"
 
 #include "core/os.h"
 #include "core/app.h"
+
 #include "user/vfx.h"
+#include "user/vfx_fft.h"
 #include "user/vfx_core.h"
 #include "user/vfx_bitmap.h"
 
@@ -28,9 +29,6 @@ static vfx_config_t vfx = {
 };
 
 GDisplay *vfx_gdisp = NULL;
-
-float vfx_fft_input[FFT_N] = {0.0};
-float vfx_fft_output[FFT_N] = {0.0};
 
 static coord_t vfx_disp_width = 0;
 static coord_t vfx_disp_height = 0;
@@ -125,7 +123,6 @@ static void vfx_task(void *pvParameter)
             uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
             uint16_t fft_out[64] = {0};
             const uint16_t flush_period = 16;
 
@@ -136,8 +133,7 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+            vfx_fft_init();
 
             xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
@@ -150,11 +146,12 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
+                    vfx_fft_execute();
                 }
 
-                vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor, vfx_disp_height, 1);
+                vfx_fft_compute_lin(vfx_fft_data, fft_out, vfx.scale_factor, vfx_disp_height, 1);
+
+                xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
                 if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_N) {
                     color_h = 0;
@@ -214,7 +211,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
-            fft_destroy(fft);
+            vfx_fft_deinit();
 
             break;
         }
@@ -223,7 +220,6 @@ static void vfx_task(void *pvParameter)
             uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
             uint16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 16;
@@ -235,8 +231,7 @@ static void vfx_task(void *pvParameter)
 
             gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+            vfx_fft_init();
 
             xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
@@ -249,11 +244,12 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
+                    vfx_fft_execute();
                 }
 
-                vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor, vfx_disp_height / 2, 0);
+                vfx_fft_compute_log(vfx_fft_data, fft_out, vfx.scale_factor, vfx_disp_height / 2, 0);
+
+                xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
                 if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_L) {
                     color_h = 0;
@@ -316,7 +312,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
-            fft_destroy(fft);
+            vfx_fft_deinit();
 
             break;
         }
@@ -324,7 +320,6 @@ static void vfx_task(void *pvParameter)
         case VFX_MODE_IDX_SPECTRUM_M_L: {   // 音樂頻譜-格柵-對數
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
             uint16_t fft_out[64] = {0};
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
             const uint8_t vu_idx_min = 0;
@@ -360,8 +355,7 @@ static void vfx_task(void *pvParameter)
             memset(vu_peak_delay, vu_peak_delay_cnt - 1, sizeof(vu_peak_delay));
             memset(vu_drop_delay, vu_drop_delay_cnt - 1, sizeof(vu_drop_delay));
 
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+            vfx_fft_init();
 
             xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
@@ -374,15 +368,16 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
+                    vfx_fft_execute();
                 }
 
                 if (vfx.mode == VFX_MODE_IDX_SPECTRUM_M_N) {
-                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor, vu_val_max, 0);
+                    vfx_fft_compute_lin(vfx_fft_data, fft_out, vfx.scale_factor, vu_val_max, 0);
                 } else {
-                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor, vu_val_max, 0);
+                    vfx_fft_compute_log(vfx_fft_data, fft_out, vfx.scale_factor, vu_val_max, 0);
                 }
+
+                xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
                 for (uint8_t i = vu_idx_min; i <= vu_idx_max; i++) {
                     int16_t vu_val_out = fft_out[i];
@@ -438,7 +433,7 @@ static void vfx_task(void *pvParameter)
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
-            fft_destroy(fft);
+            vfx_fft_deinit();
 
             break;
         }
@@ -869,7 +864,6 @@ exit:
             uint16_t color_p = 504;
             uint16_t color_h = 504;
             uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
             uint16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
@@ -877,8 +871,7 @@ exit:
 
             xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+            vfx_fft_init();
 
             xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
@@ -891,15 +884,16 @@ exit:
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
+                    vfx_fft_execute();
                 }
 
                 if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_N || vfx.mode == VFX_MODE_IDX_FOUNTAIN_G_N) {
-                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor, canvas_height, 1);
+                    vfx_fft_compute_lin(vfx_fft_data, fft_out, vfx.scale_factor, canvas_height, 1);
                 } else {
-                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor, canvas_height, 1);
+                    vfx_fft_compute_log(vfx_fft_data, fft_out, vfx.scale_factor, canvas_height, 1);
                 }
+
+                xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
                 if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_N || vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_L) {
                     color_h = 504;
@@ -957,7 +951,7 @@ exit:
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
-            fft_destroy(fft);
+            vfx_fft_deinit();
 
             break;
         }
@@ -969,7 +963,6 @@ exit:
             uint8_t color_d = 0;
             uint16_t color_h[64] = {0};
             uint16_t color_l = vfx.lightness;
-            fft_config_t *fft = NULL;
             uint16_t fft_out[64] = {0};
             const uint8_t led_idx_table[][64] = {
                 {
@@ -994,8 +987,7 @@ exit:
                 color_h[i] = 504 - i * 8;
             }
 
-            memset(vfx_fft_input, 0x00, sizeof(vfx_fft_input));
-            fft = fft_init(FFT_N, FFT_REAL, FFT_FORWARD, vfx_fft_input, vfx_fft_output);
+            vfx_fft_init();
 
             xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
@@ -1008,15 +1000,16 @@ exit:
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute(fft);
-                    xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
+                    vfx_fft_execute();
                 }
 
                 if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_H_N) {
-                    vfx_compute_freq_lin(vfx_fft_output, fft_out, vfx.scale_factor, canvas_height, 1);
+                    vfx_fft_compute_lin(vfx_fft_data, fft_out, vfx.scale_factor, canvas_height, 1);
                 } else {
-                    vfx_compute_freq_log(vfx_fft_output, fft_out, vfx.scale_factor, canvas_height, 1);
+                    vfx_fft_compute_log(vfx_fft_data, fft_out, vfx.scale_factor, canvas_height, 1);
                 }
+
+                xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
                 for (uint16_t i = 0; i < canvas_width; i++) {
                     x = led_idx_table[0][i];
@@ -1064,7 +1057,7 @@ exit:
 
             xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
-            fft_destroy(fft);
+            vfx_fft_deinit();
 
             break;
         }

@@ -17,6 +17,7 @@
 
 #include "core/os.h"
 #include "core/app.h"
+
 #include "user/bt_av.h"
 #include "user/bt_app.h"
 #include "user/bt_app_core.h"
