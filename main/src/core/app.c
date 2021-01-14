@@ -27,7 +27,7 @@ esp_err_t app_getenv(const char *key, void *out_value, size_t *length)
 {
     nvs_handle_t handle;
 
-    esp_err_t err = nvs_open("storage", NVS_READONLY, &handle);
+    esp_err_t err = nvs_open("storage", NVS_READWRITE, &handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "failed to open nvs");
         return err;
