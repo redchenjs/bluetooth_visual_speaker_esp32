@@ -59,8 +59,6 @@ static void vfx_task(void *pvParameter)
     gfxInit();
 
     vfx_gdisp = gdispGetDisplay(0);
-    vfx_disp_width = gdispGGetWidth(vfx_gdisp);
-    vfx_disp_height = gdispGGetHeight(vfx_gdisp);
 
     gtimerStart(&vfx_flush_timer, vfx_flush_task, NULL, TRUE, TIME_INFINITE);
 
@@ -69,6 +67,9 @@ static void vfx_task(void *pvParameter)
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
     gdispGSetOrientation(vfx_gdisp, CONFIG_LCD_ROTATION_DEGREE);
 #endif
+
+    vfx_disp_width = gdispGGetWidth(vfx_gdisp);
+    vfx_disp_height = gdispGGetHeight(vfx_gdisp);
 
     while (1) {
         switch (vfx.mode) {
