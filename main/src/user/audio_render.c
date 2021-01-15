@@ -26,7 +26,7 @@
 RingbufHandle_t audio_buff = NULL;
 
 static StaticRingbuffer_t buff_struct = {0};
-static uint8_t buff_data[FFT_BLOCK_SIZE * 4] = {0};
+static uint8_t buff_data[FFT_BLOCK_SIZE * 5] = {0};
 
 /* render callback for the libmad synth */
 void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels)
