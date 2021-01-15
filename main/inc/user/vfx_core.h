@@ -14,6 +14,7 @@ extern uint32_t hsl2rgb(float H, float S, float L);
 
 extern void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color);
 extern void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l);
+
 extern void vfx_fill_cube(uint8_t x, uint8_t y, uint8_t z, uint8_t cx, uint8_t cy, uint8_t cz, float color_h, float color_l);
 extern void vfx_draw_cube_bitmap(const uint8_t *bitmap, float color_l);
 extern void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, float color_l);

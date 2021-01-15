@@ -56,7 +56,7 @@ uint32_t hsl2rgb(float H, float S, float L)
 }
 
 #if defined(CONFIG_VFX_OUTPUT_WS2812) || defined(CONFIG_VFX_OUTPUT_CUBE0414)
-inline void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color)
+void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color)
 {
 #ifdef CONFIG_LED_LAYER_H
     uint8_t pixel_x = x + y * 8;
@@ -94,7 +94,7 @@ inline void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color)
     gdispGDrawPixel(vfx_gdisp, pixel_x, pixel_y, color);
 }
 
-inline void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
+void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
 {
     vfx_draw_pixel_raw(x, y, z, hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0));
 }
