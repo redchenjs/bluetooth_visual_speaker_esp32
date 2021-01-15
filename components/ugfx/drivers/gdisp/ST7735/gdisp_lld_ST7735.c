@@ -68,9 +68,9 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     write_cmd(g, ST7735_SLPOUT);    //  2: out of sleep mode, no args, w/delay
     gfxSleepMilliseconds(120);
     write_cmd(g, ST7735_FRMCTR1);   //  3: frame rate control - normal mode, 3 args:
-        write_data(g, 0x05);
-        write_data(g, 0x37);
-        write_data(g, 0x37);
+        write_data(g, 0x00);
+        write_data(g, 0x04);
+        write_data(g, 0x04);
     write_cmd(g, ST7735_FRMCTR2);   //  4: frame rate control - idle mode, 3 args:
         write_data(g, 0x05);
         write_data(g, 0x37);
