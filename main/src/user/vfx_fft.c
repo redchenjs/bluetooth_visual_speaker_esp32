@@ -55,13 +55,13 @@ void vfx_fft_compute_bands(const float *data_in, uint16_t *data_out, uint16_t sc
     float freq[FFT_N / 2] = {0.0};
 
     for (int n = 0; n < FFT_N / 2 - 1; n++) {
-        freq[n] = 2 * fabs(data_in[1 + n]) / FFT_N * (max_val * scale_factor / 511.0 / 16384.0);
+        freq[n] = 2 * fabs(data_in[1 + n]) / FFT_N * (scale_factor / 8.0 / 16384.0);
     }
 
-    freq[FFT_N / 2 - 1] = fabs(data_in[FFT_N / 2]) / FFT_N * (max_val * scale_factor / 511.0 / 16384.0);
+    freq[FFT_N / 2 - 1] = fabs(data_in[FFT_N / 2]) / FFT_N * (scale_factor / 8.0 / 16384.0);
 
     for (int i = 0; i < FFT_BANDS_N; i++) {
-        float x = 40 + compute_freq_band(freq, xscale, i, FFT_BANDS_N);
+        float x = (40 + compute_freq_band(freq, xscale, i, FFT_BANDS_N)) * (max_val / 64.0);
 
         if (x > data_out[i]) {
             data_out[i] = x;
