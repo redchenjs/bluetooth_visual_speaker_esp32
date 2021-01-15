@@ -126,7 +126,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_l = vfx.lightness;
             uint16_t fft_out[FFT_BANDS_N] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -221,7 +221,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             uint16_t fft_out[64] = {0};
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -319,7 +319,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_l = vfx.lightness;
             uint16_t fft_out[64] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -437,7 +437,7 @@ static void vfx_task(void *pvParameter)
             static uint8_t vu_drop_delay[24] = {0};
             const uint16_t vu_peak_delay_cnt = 20;
             const uint16_t vu_drop_delay_cnt = 2;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -544,7 +544,7 @@ static void vfx_task(void *pvParameter)
             uint8_t z = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -585,7 +585,7 @@ static void vfx_task(void *pvParameter)
             uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -629,7 +629,7 @@ static void vfx_task(void *pvParameter)
         case VFX_MODE_IDX_GRADUAL: {   // 漸變
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -656,7 +656,7 @@ static void vfx_task(void *pvParameter)
             uint16_t fade_cnt = 0;
             uint16_t color_h = esp_random() % 512;
             uint16_t color_l = vfx.lightness;
-            const uint16_t flush_period = 8;
+            const uint16_t flush_period = 10;
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -697,7 +697,7 @@ static void vfx_task(void *pvParameter)
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
             uint16_t color_l = vfx.lightness;
-            const uint16_t flush_period = 8;
+            const uint16_t flush_period = 10;
 
             gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
@@ -856,7 +856,7 @@ exit:
         case VFX_MODE_IDX_MAGIC_CARPET: {   // 魔毯
             uint16_t frame_i = 0;
             uint16_t color_l = vfx.lightness;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -961,7 +961,7 @@ exit:
             uint16_t fft_out[64] = {0};
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -1073,7 +1073,7 @@ exit:
             };
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
-            const uint16_t flush_period = 16;
+            const uint16_t flush_period = 20;
 
             xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
