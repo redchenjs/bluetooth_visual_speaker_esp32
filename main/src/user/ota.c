@@ -294,6 +294,8 @@ void ota_exec(const char *data, uint32_t len)
 #endif
                 }
 
+                esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
                 if (!(uxBits & BT_A2DP_IDLE_BIT)) {
                     esp_a2d_sink_disconnect(a2d_remote_bda);
@@ -302,7 +304,12 @@ void ota_exec(const char *data, uint32_t len)
                 esp_ble_gatts_close(gatts_profile_tbl[PROFILE_IDX_OTA].gatts_if,
                                     gatts_profile_tbl[PROFILE_IDX_OTA].conn_id);
 
-                os_pwr_reset_wait(BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT);
+                os_pwr_reset_wait(
+                    BT_A2DP_IDLE_BIT | BLE_GATTS_IDLE_BIT
+#ifdef CONFIG_ENABLE_AUDIO_PROMPT
+                    | AUDIO_PLAYER_IDLE_BIT
+#endif
+                );
 
                 update_handle = 0;
 
