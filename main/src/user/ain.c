@@ -18,7 +18,7 @@
 #include "chip/i2s.h"
 
 #include "user/ain.h"
-#include "user/vfx_fft.h"
+#include "user/fft.h"
 
 #define TAG "ain"
 
@@ -42,36 +42,17 @@ static void ain_task(void *pvParameters)
         i2s_read(CONFIG_AUDIO_INPUT_I2S_NUM, data, FFT_BLOCK_SIZE, &bytes_read, portMAX_DELAY);
 
 #ifdef CONFIG_ENABLE_VFX
-        // copy data to FFT input buffer
-        uint32_t idx = 0;
-
-#ifdef CONFIG_AUDIO_INPUT_FFT_ONLY_LEFT
-        int16_t data_l = 0;
-        for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
-            data_l = data[idx + 1] << 8 | data[idx];
-
-            vfx_fft_data[k] = (float)data_l;
-        }
-#elif defined(CONFIG_AUDIO_INPUT_FFT_ONLY_RIGHT)
-        int16_t data_r = 0;
-        for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
-            data_r = data[idx + 3] << 8 | data[idx + 2];
-
-            vfx_fft_data[k] = (float)data_r;
-        }
-#else
-        int16_t data_l = 0, data_r = 0;
-        for (uint16_t k = 0; k < FFT_N; k++, idx += 4) {
-            data_l = data[idx + 1] << 8 | data[idx];
-            data_r = data[idx + 3] << 8 | data[idx + 2];
-
-            vfx_fft_data[k] = (float)((data_l + data_r) / 2);
-        }
-#endif
+    #ifdef CONFIG_AUDIO_INPUT_FFT_ONLY_LEFT
+        fft_load_data(data, FFT_CHANNEL_L);
+    #elif defined(CONFIG_AUDIO_INPUT_FFT_ONLY_RIGHT)
+        fft_load_data(data, FFT_CHANNEL_R);
+    #else
+        fft_load_data(data, FFT_CHANNEL_LR);
+    #endif
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if (!(uxBits & AUDIO_INPUT_RUN_BIT)) {
-            memset(vfx_fft_data, 0x00, sizeof(vfx_fft_data));
+            fft_init();
         }
 
         xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);

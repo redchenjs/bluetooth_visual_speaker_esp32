@@ -28,6 +28,7 @@ static xQueueHandle s_bt_app_task_queue = NULL;
 bool bt_app_work_dispatch(bt_app_cb_t p_cback, uint16_t event, void *p_params, int param_len, bt_app_copy_cb_t p_copy_cback)
 {
     bt_app_msg_t msg;
+
     memset(&msg, 0, sizeof(bt_app_msg_t));
 
     msg.sig = BT_APP_SIG_WORK_DISPATCH;

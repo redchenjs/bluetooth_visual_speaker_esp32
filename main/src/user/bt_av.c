@@ -19,8 +19,8 @@
 
 #include "user/led.h"
 #include "user/key.h"
+#include "user/fft.h"
 #include "user/bt_app.h"
-#include "user/vfx_fft.h"
 #include "user/bt_app_core.h"
 #include "user/audio_player.h"
 #include "user/audio_render.h"
@@ -67,7 +67,6 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
     EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-
     if (uxBits & AUDIO_PLAYER_RUN_BIT) {
         return;
     }

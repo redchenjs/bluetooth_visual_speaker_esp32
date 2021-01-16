@@ -29,7 +29,7 @@ esp_bd_addr_t last_remote_bda = {0};
 
 /* event for handler "bt_app_hdl_stack_up */
 enum {
-    BT_APP_EVT_STACK_UP = 0,
+    BT_APP_EVT_STACK_UP = 0
 };
 
 static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
