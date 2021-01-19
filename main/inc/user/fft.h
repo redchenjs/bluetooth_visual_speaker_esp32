@@ -17,9 +17,9 @@
 #define BAND_FADE      (2)
 #define BAND_DELAY     (2)
 
-#define FFT_N          (512)
+#define FFT_N          (256)
 #define FFT_OUT_N      (64)
-#define FFT_BLOCK_SIZE (FFT_N * 4)
+#define FFT_BLOCK_SIZE (FFT_N * 8)
 
 #define MIN(a, b)      ((a) < (b) ? (a) : (b))
 #define MAX(a, b)      ((a) > (b) ? (a) : (b))
