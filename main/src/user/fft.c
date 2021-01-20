@@ -18,7 +18,6 @@ static float complex data[FFT_N] = {0.0};
 static float complex root[FFT_N / 2] = {0.0};
 
 static  bool generated = false;
-static  char xdelay[BAND_N] = {0};
 static float xscale[BAND_N + 1] = {0.0};
 
 static int bit_reverse(int x)
@@ -58,7 +57,7 @@ static void compute_log_xscale(float *xscale, int bands)
     }
 }
 
-static float compute_freq_band(const float *freq, const float *xscale, int band, int bands)
+static float compute_freq_band(const float *freq, const float *xscale, int band)
 {
     float n = 0.0;
     int a = ceilf(xscale[band]);
@@ -78,9 +77,7 @@ static float compute_freq_band(const float *freq, const float *xscale, int band,
         }
     }
 
-    n *= bands / 12.0;
-
-    return 20 * log10f(n);
+    return 20 * log10f(n * BAND_N / FFT_N / 12.0);
 }
 
 void fft_compute_lin(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val)
@@ -88,14 +85,14 @@ void fft_compute_lin(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val
     float freq[FFT_N] = {0.0};
 
     for (int i = 0; i < FFT_N / 2; i++) {
-        freq[i * 2]     = cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 512.0);
-        freq[i * 2 + 1] = cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 512.0);
+        freq[i * 2]     = cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
+        freq[i * 2 + 1] = cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
     }
 
     freq[0] /= 2.0;
 
     for (int i = 0; i < FFT_OUT_N; i++) {
-        data_out[i] += freq[FFT_N / FFT_OUT_N * i] * (max_val / 32.0);
+        data_out[i] += freq[FFT_N / FFT_OUT_N * i] * (max_val / 40.0);
         data_out[i] /= 2.0;
 
         if (data_out[i] > max_val) {
@@ -111,14 +108,14 @@ void fft_compute_log(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val
     float freq[FFT_N] = {0.0};
 
     for (int i = 0; i < FFT_N / 2; i++) {
-        freq[i * 2]     = cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 512.0);
-        freq[i * 2 + 1] = cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 512.0);
+        freq[i * 2]     = cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
+        freq[i * 2 + 1] = cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
     }
 
     freq[0] /= 2.0;
 
     for (int i = 0; i < FFT_OUT_N; i++) {
-        data_out[i] += 20 * log10f(1 + freq[FFT_N / FFT_OUT_N * i]) * (max_val / 32.0);
+        data_out[i] += 20 * log10f(1 + freq[FFT_N / FFT_OUT_N * i]) * (max_val / 40.0);
         data_out[i] /= 2.0;
 
         if (data_out[i] > max_val) {
@@ -132,27 +129,28 @@ void fft_compute_log(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val
 void fft_compute_bands(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val)
 {
     float freq[FFT_N] = {0.0};
+    static char delay[BAND_N] = {0};
 
     for (int i = 0; i < FFT_N / 2; i++) {
-        freq[i * 2]     = cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 512.0 / FFT_N);
-        freq[i * 2 + 1] = cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 512.0 / FFT_N);
+        freq[i * 2]     = cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
+        freq[i * 2 + 1] = cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
     }
 
     freq[0] /= 2.0;
 
     for (int i = 0; i < BAND_N; i++) {
-        float x = (40 + compute_freq_band(freq, xscale, i, BAND_N)) * (max_val / 64.0);
+        float x = (40 + compute_freq_band(freq, xscale, i)) * (max_val / 64.0);
 
-        data_out[i] = MAX(0, data_out[i] - (BAND_FADE - xdelay[i]));
+        data_out[i] = MAX(0, data_out[i] - (BAND_FADE - delay[i]));
 
-        if (xdelay[i]) {
-            xdelay[i]--;
+        if (delay[i]) {
+            delay[i]--;
         }
 
         if (x > data_out[i]) {
             data_out[i]= x;
 
-            xdelay[i] = BAND_DELAY;
+            delay[i] = BAND_DELAY;
         }
 
         if (data_out[i] > max_val) {

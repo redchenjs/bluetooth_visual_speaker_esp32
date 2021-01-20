@@ -9,7 +9,6 @@
 #define INC_USER_FFT_H_
 
 #include <stdint.h>
-#include <complex.h>
 
 #define TWO_PI         (6.2831853f)
 
