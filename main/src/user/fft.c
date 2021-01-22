@@ -14,11 +14,11 @@
 
 static   int bitrev[FFT_N] = {0.0};
 static float window[FFT_N * 2] = {0.0};
+static float xscale[BAND_N + 1] = {0.0};
 static float complex data[FFT_N] = {0.0};
 static float complex root[FFT_N / 2] = {0.0};
 
-static  bool generated = false;
-static float xscale[BAND_N + 1] = {0.0};
+static bool generated = false;
 
 static int bit_reverse(int x)
 {
@@ -44,17 +44,26 @@ static void compute_fft_tables(void)
         window[i] = 0.53836 - 0.46164 * cosf(i * TWO_PI / (FFT_N * 2 - 1));
     }
 
+    // log xscale
+    for (int i = 0; i <= BAND_N; i++) {
+        xscale[i] = powf(FFT_N, (float)i / BAND_N) - 0.5;
+    }
+
     // twiddle factor
     for (int i = 0; i < FFT_N / 2; i++) {
         root[i] = cexpf(-i * TWO_PI / (FFT_N - 1) * I);
     }
 }
 
-static void compute_log_xscale(float *xscale, int bands)
+static float compute_freq_lin(const float *freq, int step, int idx)
 {
-    for (int i = 0; i <= bands; i++) {
-        xscale[i] = powf(FFT_N, (float)i / bands) - 0.5;
+    float n = 0.0;
+
+    for (int i = 0; i < step; i++) {
+        n += freq[step * idx + i];
     }
+
+    return n / step * 2.0;
 }
 
 static float compute_freq_band(const float *freq, const float *xscale, int band)
@@ -92,7 +101,7 @@ void fft_compute_lin(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val
     freq[0] /= 2.0;
 
     for (int i = 0; i < FFT_OUT_N; i++) {
-        data_out[i] += freq[FFT_N / FFT_OUT_N * i] * (max_val / 40.0);
+        data_out[i] += compute_freq_lin(freq, FFT_N / FFT_OUT_N, i) * (max_val / 40.0);
         data_out[i] /= 2.0;
 
         if (data_out[i] > max_val) {
@@ -115,7 +124,7 @@ void fft_compute_log(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val
     freq[0] /= 2.0;
 
     for (int i = 0; i < FFT_OUT_N; i++) {
-        data_out[i] += 20 * log10f(1 + freq[FFT_N / FFT_OUT_N * i]) * (max_val / 40.0);
+        data_out[i] += 20 * log10f(1 + compute_freq_lin(freq, FFT_N / FFT_OUT_N, i)) * (max_val / 40.0);
         data_out[i] /= 2.0;
 
         if (data_out[i] > max_val) {
@@ -227,7 +236,6 @@ void fft_init(void)
 
     if (!generated) {
         compute_fft_tables();
-        compute_log_xscale(xscale, BAND_N);
 
         generated = true;
     }
