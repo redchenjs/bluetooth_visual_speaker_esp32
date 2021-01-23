@@ -119,8 +119,8 @@ static void vfx_task(void *pvParameter)
             }
             break;
         }
-        case VFX_MODE_IDX_12_BANDS_R:   // 音樂頻譜-12段-彩虹
-        case VFX_MODE_IDX_12_BANDS_G: { // 音樂頻譜-12段-漸變
+        case VFX_MODE_IDX_12_BAND_R:    // 音樂頻譜-12段-彩虹
+        case VFX_MODE_IDX_12_BAND_G: {  // 音樂頻譜-12段-漸變
             uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
@@ -155,7 +155,7 @@ static void vfx_task(void *pvParameter)
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
-                if (vfx.mode == VFX_MODE_IDX_12_BANDS_R) {
+                if (vfx.mode == VFX_MODE_IDX_12_BAND_R) {
                     color_h = 0;
                 } else {
                     color_p = color_h;
@@ -189,7 +189,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (vfx.mode == VFX_MODE_IDX_12_BANDS_R) {
+                    if (vfx.mode == VFX_MODE_IDX_12_BAND_R) {
                         color_h += 40;
                     } else {
                         if (++color_h == 512) {

@@ -19,8 +19,8 @@ typedef enum {
 
     VFX_MODE_IDX_GIF_MAX,
 
-    VFX_MODE_IDX_12_BANDS_R   = 0x0A,
-    VFX_MODE_IDX_12_BANDS_G   = 0x0B,
+    VFX_MODE_IDX_12_BAND_R    = 0x0A,
+    VFX_MODE_IDX_12_BAND_G    = 0x0B,
     VFX_MODE_IDX_SPECTRUM_R_N = 0x0C,
     VFX_MODE_IDX_SPECTRUM_G_N = 0x0D,
     VFX_MODE_IDX_SPECTRUM_M_N = 0x0E,
@@ -63,13 +63,13 @@ typedef struct {
 } vfx_config_t;
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
-    #define DEFAULT_VFX_MODE            VFX_MODE_IDX_12_BANDS_G
-    #define DEFAULT_VFX_SCALE_FACTOR    0xFF
+    #define DEFAULT_VFX_MODE            VFX_MODE_IDX_12_BAND_G
+    #define DEFAULT_VFX_SCALE_FACTOR    0x00FF
     #define DEFAULT_VFX_LIGHTNESS       0x00FF
     #define DEFAULT_VFX_BACKLIGHT       0xFF
 #else
-    #define DEFAULT_VFX_MODE            VFX_MODE_IDX_FOUNTAIN_H_N
-    #define DEFAULT_VFX_SCALE_FACTOR    0xFF
+    #define DEFAULT_VFX_MODE            VFX_MODE_IDX_FOUNTAIN_H_L
+    #define DEFAULT_VFX_SCALE_FACTOR    0x00FF
     #define DEFAULT_VFX_LIGHTNESS       0x006F
     #define DEFAULT_VFX_BACKLIGHT       0x00
 #endif
