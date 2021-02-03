@@ -30,8 +30,6 @@
 # include "bit.h"
 # include "stream.h"
 
-main_data_t MainData; //static alloc of decoder data
-
 /*
  * NAME:	stream->init()
  * DESCRIPTION:	initialize stream struct
@@ -66,7 +64,7 @@ void mad_stream_init(struct mad_stream *stream)
 void mad_stream_finish(struct mad_stream *stream)
 {
   if (stream->main_data) {
-//    free(stream->main_data);
+    free(stream->main_data);
     stream->main_data = 0;
   }
 

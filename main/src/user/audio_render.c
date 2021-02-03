@@ -29,33 +29,19 @@ static uint8_t buff_data[10 * 1024] = {0};
 static StaticRingbuffer_t buff_struct = {0};
 
 /* render callback for the libmad synth */
-void render_sample_block(short *sample_buff_ch0, short *sample_buff_ch1, int num_samples, unsigned int num_channels)
+void render_sample_block(short *sample_ch0, short *sample_ch1, unsigned int sample_rate, unsigned int nch, unsigned int ns)
 {
-    // pointer to left / right sample position
-    char *ptr_l = (char *)sample_buff_ch0;
-    char *ptr_r = (char *)sample_buff_ch1;
-    uint8_t stride = sizeof(short);
-
-    if (num_channels == 1) {
-        ptr_r = ptr_l;
+    if (nch == 1) {
+        sample_ch1 = sample_ch0;
     }
+
+    i2s_output_set_sample_rate(sample_rate);
 
     size_t bytes_written = 0;
-    for (int i = 0; i < num_samples; i++) {
-        /* low - high / low - high */
-        const char samp32[4] = {ptr_l[0], ptr_l[1], ptr_r[0], ptr_r[1]};
-
-        i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, (const char *)&samp32, sizeof(samp32), &bytes_written, portMAX_DELAY);
-
-        ptr_l += stride;
-        ptr_r += stride;
+    for (int i = 0; i < ns; i++) {
+        i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, sample_ch0++, sizeof(short), &bytes_written, portMAX_DELAY);
+        i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, sample_ch1++, sizeof(short), &bytes_written, portMAX_DELAY);
     }
-}
-
-/* frame callback for the libmad synth, set the needed output sample rate */
-void set_dac_sample_rate(int rate)
-{
-    i2s_output_set_sample_rate(rate);
 }
 
 static void audio_render_task(void *pvParameter)
@@ -123,7 +109,7 @@ static void audio_render_task(void *pvParameter)
             continue;
         }
 
-        set_dac_sample_rate(a2d_sample_rate);
+        i2s_output_set_sample_rate(a2d_sample_rate);
 
         size_t bytes_written = 0;
         i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, data, size, &bytes_written, portMAX_DELAY);

@@ -152,10 +152,10 @@ void i2s_output_deinit(void)
 #endif
 }
 
-void i2s_output_set_sample_rate(int rate)
+void i2s_output_set_sample_rate(unsigned int sample_rate)
 {
-    if (rate != i2s_output_config.sample_rate) {
-        i2s_output_config.sample_rate = rate;
+    if (sample_rate != i2s_output_config.sample_rate) {
+        i2s_output_config.sample_rate = sample_rate;
         i2s_zero_dma_buffer(CONFIG_AUDIO_OUTPUT_I2S_NUM);
         i2s_set_sample_rates(CONFIG_AUDIO_OUTPUT_I2S_NUM, i2s_output_config.sample_rate);
     }

@@ -36,8 +36,8 @@
 #define APP_RC_CT_TL_RN_PLAYBACK_CHANGE  (3)
 #define APP_RC_CT_TL_RN_PLAY_POS_CHANGE  (4)
 
-int a2d_sample_rate = 16000;
 esp_bd_addr_t a2d_remote_bda = {0};
+unsigned int a2d_sample_rate = 16000;
 
 /* a2dp event handler */
 static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param);

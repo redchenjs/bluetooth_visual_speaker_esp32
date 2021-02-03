@@ -27,6 +27,4 @@
 
 int mad_layer_III(struct mad_stream *, struct mad_frame *);
 
-extern main_data_t MainData;
-
 # endif

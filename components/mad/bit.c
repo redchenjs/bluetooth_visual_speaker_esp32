@@ -32,7 +32,6 @@
 # endif
 
 # include "bit.h"
-#include "align.h"
 
 /*
  * This is the lookup table for computing the CRC-check word.
@@ -191,7 +190,6 @@ void mad_bit_write(struct mad_bitptr *bitptr, unsigned int len,
 }
 # endif
 
-
 /*
  * NAME:	bit->crc()
  * DESCRIPTION:	compute CRC-check word
@@ -206,22 +204,24 @@ unsigned short mad_bit_crc(struct mad_bitptr bitptr, unsigned int len,
 
     data = mad_bit_read(&bitptr, 32);
 
-    crc = (crc << 8) ^ unalShort(&crc_table[((crc >> 8) ^ (data >> 24)) & 0xff]);
-    crc = (crc << 8) ^ unalShort(&crc_table[((crc >> 8) ^ (data >> 16)) & 0xff]);
-    crc = (crc << 8) ^ unalShort(&crc_table[((crc >> 8) ^ (data >>  8)) & 0xff]);
-    crc = (crc << 8) ^ unalShort(&crc_table[((crc >> 8) ^ (data >>  0)) & 0xff]);
+    crc = (crc << 8) ^ crc_table[((crc >> 8) ^ (data >> 24)) & 0xff];
+    crc = (crc << 8) ^ crc_table[((crc >> 8) ^ (data >> 16)) & 0xff];
+    crc = (crc << 8) ^ crc_table[((crc >> 8) ^ (data >>  8)) & 0xff];
+    crc = (crc << 8) ^ crc_table[((crc >> 8) ^ (data >>  0)) & 0xff];
   }
 
   switch (len / 8) {
   case 3: crc = (crc << 8) ^
-	    unalShort(&crc_table[((crc >> 8) ^ mad_bit_read(&bitptr, 8)) & 0xff]);
+	    crc_table[((crc >> 8) ^ mad_bit_read(&bitptr, 8)) & 0xff];
 	    /* fall through */
   case 2: crc = (crc << 8) ^
-	    unalShort(&crc_table[((crc >> 8) ^ mad_bit_read(&bitptr, 8)) & 0xff]);
+	    crc_table[((crc >> 8) ^ mad_bit_read(&bitptr, 8)) & 0xff];
 	    /* fall through */
   case 1: crc = (crc << 8) ^
-	    unalShort(&crc_table[((crc >> 8) ^ mad_bit_read(&bitptr, 8)) & 0xff]);
-	    len %= 8;
+	    crc_table[((crc >> 8) ^ mad_bit_read(&bitptr, 8)) & 0xff];
+
+  len %= 8;
+
   case 0: break;
   }
 

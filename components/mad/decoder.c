@@ -322,9 +322,7 @@ int run_sync(struct mad_decoder *decoder)
   struct mad_frame *frame;
   struct mad_synth *synth;
   int result = 0;
-  int r;
 
-//	printf("run_sync\n");
   if (decoder->input_func == 0)
     return 0;
 
@@ -348,9 +346,7 @@ int run_sync(struct mad_decoder *decoder)
   mad_stream_options(stream, decoder->options);
 
   do {
-    r=decoder->input_func(decoder->cb_data, stream);
-//   printf("Input fn: %d\n", r);
-    switch (r) {
+    switch (decoder->input_func(decoder->cb_data, stream)) {
     case MAD_FLOW_STOP:
       goto done;
     case MAD_FLOW_BREAK:
@@ -377,9 +373,7 @@ int run_sync(struct mad_decoder *decoder)
 # endif
 
       if (decoder->header_func) {
-	r=mad_header_decode(&frame->header, stream);
-//	printf("mad_header_decode_func: %d\n", r);
-	if (r!=-1) {
+	if (mad_header_decode(&frame->header, stream) == -1) {
 	  if (!MAD_RECOVERABLE(stream->error))
 	    break;
 
@@ -407,9 +401,7 @@ int run_sync(struct mad_decoder *decoder)
 	}
       }
 
-      r=mad_frame_decode(frame, stream);
-//	printf("mad_frame_decode: %d\n", r);
-      if (r == -1) {
+      if (mad_frame_decode(frame, stream) == -1) {
 	if (!MAD_RECOVERABLE(stream->error))
 	  break;
 
@@ -443,7 +435,6 @@ int run_sync(struct mad_decoder *decoder)
 
       mad_synth_frame(synth, frame);
 
-//	printf("Calling output fn\n");
       if (decoder->output_func) {
 	switch (decoder->output_func(decoder->cb_data,
 				     &frame->header, &synth->pcm)) {
@@ -543,7 +534,6 @@ int mad_decoder_run(struct mad_decoder *decoder, enum mad_decoder_mode mode)
 {
   int result;
   int (*run)(struct mad_decoder *) = 0;
-  static struct sync_t decsync; //statically-allocated decoder obj
 
   switch (decoder->mode = mode) {
   case MAD_DECODER_MODE_SYNC:
@@ -560,15 +550,14 @@ int mad_decoder_run(struct mad_decoder *decoder, enum mad_decoder_mode mode)
   if (run == 0)
     return -1;
 
-//  decoder->sync = malloc(sizeof(*decoder->sync));
-  decoder->sync=&decsync;
+  decoder->sync = malloc(sizeof(*decoder->sync));
   if (decoder->sync == 0)
     return -1;
 
   result = run(decoder);
 
-//  free(decoder->sync);
-//  decoder->sync = 0;
+  free(decoder->sync);
+  decoder->sync = 0;
 
   return result;
 }

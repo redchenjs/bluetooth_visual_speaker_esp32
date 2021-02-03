@@ -13,8 +13,8 @@
 #include "esp_a2dp_api.h"
 #include "esp_avrc_api.h"
 
-extern int a2d_sample_rate;
 extern esp_bd_addr_t a2d_remote_bda;
+extern unsigned int a2d_sample_rate;
 
 /**
  * @brief     callback function for A2DP sink
