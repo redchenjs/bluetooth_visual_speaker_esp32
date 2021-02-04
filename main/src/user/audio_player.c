@@ -13,11 +13,14 @@
 #include "driver/i2s.h"
 
 #include "mad.h"
+
 #include "frame.h"
 #include "synth.h"
 #include "stream.h"
 
 #include "core/os.h"
+#include "chip/i2s.h"
+
 #include "user/audio_player.h"
 
 #define TAG "audio_player"
@@ -48,6 +51,22 @@ static const char *mp3_file_ptr[][2] = {
 
 static bool playback_pending = false;
 static mp3_file_t mp3_file = MP3_FILE_IDX_MAX;
+
+/* render callback for the libmad synth */
+void render_sample_block(short *sample_ch0, short *sample_ch1, unsigned int sample_rate, unsigned int nch, unsigned int ns)
+{
+    if (nch == 1) {
+        sample_ch1 = sample_ch0;
+    }
+
+    i2s_output_set_sample_rate(sample_rate);
+
+    size_t bytes_written = 0;
+    for (int i = 0; i < ns; i++) {
+        i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, sample_ch0++, sizeof(short), &bytes_written, portMAX_DELAY);
+        i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, sample_ch1++, sizeof(short), &bytes_written, portMAX_DELAY);
+    }
+}
 
 static void audio_player_task(void *pvParameters)
 {
@@ -149,5 +168,5 @@ void audio_player_init(void)
         xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
     }
 
-    xTaskCreatePinnedToCore(audio_player_task, "audioPlayerT", 8448, NULL, configMAX_PRIORITIES - 3, NULL, 0);
+    xTaskCreatePinnedToCore(audio_player_task, "audioPlayerT", 8448, NULL, configMAX_PRIORITIES - 2, NULL, 0);
 }

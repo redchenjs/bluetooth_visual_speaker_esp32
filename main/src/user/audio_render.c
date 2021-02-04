@@ -5,8 +5,6 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include <string.h>
-
 #include "esp_log.h"
 
 #include "freertos/FreeRTOS.h"
@@ -27,22 +25,6 @@ RingbufHandle_t audio_buff = NULL;
 
 static uint8_t buff_data[10 * 1024] = {0};
 static StaticRingbuffer_t buff_struct = {0};
-
-/* render callback for the libmad synth */
-void render_sample_block(short *sample_ch0, short *sample_ch1, unsigned int sample_rate, unsigned int nch, unsigned int ns)
-{
-    if (nch == 1) {
-        sample_ch1 = sample_ch0;
-    }
-
-    i2s_output_set_sample_rate(sample_rate);
-
-    size_t bytes_written = 0;
-    for (int i = 0; i < ns; i++) {
-        i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, sample_ch0++, sizeof(short), &bytes_written, portMAX_DELAY);
-        i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, sample_ch1++, sizeof(short), &bytes_written, portMAX_DELAY);
-    }
-}
 
 static void audio_render_task(void *pvParameter)
 {
@@ -80,7 +62,7 @@ static void audio_render_task(void *pvParameter)
 
                 data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, portMAX_DELAY, remain);
             } else {
-                if (++delay < 16) {
+                if (++delay <= 256000 / a2d_sample_rate) {
                     vTaskDelay(1 / portTICK_RATE_MS);
                 } else {
                     delay = 0;
@@ -93,7 +75,7 @@ static void audio_render_task(void *pvParameter)
                 continue;
             }
         } else {
-            if (xRingbufferGetCurFreeSize(audio_buff) > FFT_BLOCK_SIZE) {
+            if (xRingbufferGetCurFreeSize(audio_buff) >= FFT_BLOCK_SIZE) {
                 vTaskDelay(1 / portTICK_RATE_MS);
             } else {
                 start = true;
@@ -146,7 +128,6 @@ static void audio_render_task(void *pvParameter)
 
 void audio_render_init(void)
 {
-    memset(&buff_struct, 0x00, sizeof(StaticRingbuffer_t));
     audio_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
 
     xTaskCreatePinnedToCore(audio_render_task, "audioRenderT", 1920, NULL, configMAX_PRIORITIES - 3, NULL, 0);

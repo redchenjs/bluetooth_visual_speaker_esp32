@@ -66,11 +66,6 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 
 void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len)
 {
-    EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-    if (uxBits & AUDIO_PLAYER_RUN_BIT) {
-        return;
-    }
-
     if (audio_buff) {
         uint32_t pkt = 0, remain = 0;
 
