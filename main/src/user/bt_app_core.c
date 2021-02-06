@@ -19,51 +19,7 @@
 
 #define BT_APP_CORE_TAG "bt_app_core"
 
-static void bt_app_task(void *pvParameter);
-static bool bt_app_send_msg(bt_app_msg_t *msg);
-static void bt_app_work_dispatched(bt_app_msg_t *msg);
-
 static xQueueHandle s_bt_app_task_queue = NULL;
-
-bool bt_app_work_dispatch(bt_app_cb_t p_cback, uint16_t event, void *p_params, int param_len, bt_app_copy_cb_t p_copy_cback)
-{
-    bt_app_msg_t msg;
-
-    memset(&msg, 0, sizeof(bt_app_msg_t));
-
-    msg.sig = BT_APP_SIG_WORK_DISPATCH;
-    msg.event = event;
-    msg.cb = p_cback;
-
-    if (param_len == 0) {
-        return bt_app_send_msg(&msg);
-    } else if (p_params && param_len > 0) {
-        if ((msg.param = malloc(param_len)) != NULL) {
-            memcpy(msg.param, p_params, param_len);
-            /* check if caller has provided a copy callback to do the deep copy */
-            if (p_copy_cback) {
-                p_copy_cback(&msg, msg.param, p_params);
-            }
-            return bt_app_send_msg(&msg);
-        }
-    }
-
-    return false;
-}
-
-static bool bt_app_send_msg(bt_app_msg_t *msg)
-{
-    if (msg == NULL) {
-        return false;
-    }
-
-    if (xQueueSend(s_bt_app_task_queue, msg, 10 / portTICK_RATE_MS) != pdTRUE) {
-        ESP_LOGE(BT_APP_CORE_TAG, "%s xQueue send failed", __func__);
-        return false;
-    }
-
-    return true;
-}
 
 static void bt_app_work_dispatched(bt_app_msg_t *msg)
 {
@@ -93,6 +49,44 @@ static void bt_app_task(void *pvParameter)
             }
         }
     }
+}
+
+static bool bt_app_send_msg(bt_app_msg_t *msg)
+{
+    if (msg == NULL) {
+        return false;
+    }
+
+    if (xQueueSend(s_bt_app_task_queue, msg, 10 / portTICK_RATE_MS) != pdTRUE) {
+        ESP_LOGE(BT_APP_CORE_TAG, "%s xQueue send failed", __func__);
+        return false;
+    }
+
+    return true;
+}
+
+bool bt_app_work_dispatch(bt_app_cb_t p_cback, uint16_t event, void *p_params, int param_len, bt_app_copy_cb_t p_copy_cback)
+{
+    bt_app_msg_t msg = {0};
+
+    msg.sig = BT_APP_SIG_WORK_DISPATCH;
+    msg.event = event;
+    msg.cb = p_cback;
+
+    if (param_len == 0) {
+        return bt_app_send_msg(&msg);
+    } else if (p_params && param_len > 0) {
+        if ((msg.param = malloc(param_len)) != NULL) {
+            memcpy(msg.param, p_params, param_len);
+            /* check if caller has provided a copy callback to do the deep copy */
+            if (p_copy_cback) {
+                p_copy_cback(&msg, msg.param, p_params);
+            }
+            return bt_app_send_msg(&msg);
+        }
+    }
+
+    return false;
 }
 
 void bt_app_task_start_up(void)

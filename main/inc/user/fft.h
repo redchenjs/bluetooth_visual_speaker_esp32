@@ -29,11 +29,11 @@ typedef enum {
     FFT_CHANNEL_LR = 0x02
 } fft_channel_t;
 
-extern void fft_compute_lin(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val);
-extern void fft_compute_log(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val);
-extern void fft_compute_bands(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val);
+extern void fft_compute_lin(uint16_t *data_out, uint16_t max_val, uint16_t min_val);
+extern void fft_compute_log(uint16_t *data_out, uint16_t max_val, uint16_t min_val);
+extern void fft_compute_bands(uint16_t *data_out, uint16_t max_val, uint16_t min_val);
 
-extern void fft_execute(void);
+extern void fft_execute(float scale_factor);
 extern void fft_load_data(const uint8_t *data_in, fft_channel_t channel);
 
 extern void fft_init(void);

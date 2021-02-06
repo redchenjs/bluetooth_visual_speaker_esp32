@@ -42,12 +42,11 @@ void sleep_key_handle(void)
 
     esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
-    EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-    if (!(uxBits & BT_A2DP_IDLE_BIT)) {
+    if (!(xEventGroupGetBits(user_event_group) & BT_A2DP_IDLE_BIT)) {
         esp_a2d_sink_disconnect(a2d_remote_bda);
     }
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-    if (!(uxBits & BLE_GATTS_IDLE_BIT)) {
+    if (!(xEventGroupGetBits(user_event_group) & BLE_GATTS_IDLE_BIT)) {
         esp_ble_gatts_close(gatts_profile_tbl[PROFILE_IDX_OTA].gatts_if,
                             gatts_profile_tbl[PROFILE_IDX_OTA].conn_id);
     }

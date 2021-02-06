@@ -296,8 +296,7 @@ void ota_exec(const char *data, uint32_t len)
 
                 esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
-                EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-                if (!(uxBits & BT_A2DP_IDLE_BIT)) {
+                if (!(xEventGroupGetBits(user_event_group) & BT_A2DP_IDLE_BIT)) {
                     esp_a2d_sink_disconnect(a2d_remote_bda);
                 }
 
@@ -361,7 +360,7 @@ void ota_end(void)
         update_handle = 0;
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
+        if (!(uxBits & OS_PWR_RESET_BIT) && !(uxBits & OS_PWR_SLEEP_BIT)) {
             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
         }
 

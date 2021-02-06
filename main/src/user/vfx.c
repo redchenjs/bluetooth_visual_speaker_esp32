@@ -148,10 +148,10 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute();
+                    fft_execute(vfx.scale_factor / 1000.0);
                 }
 
-                fft_compute_bands(fft_out, vfx.scale_factor, vfx_disp_height / 2, 0);
+                fft_compute_bands(fft_out, vfx_disp_height / 2, 0);
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -241,10 +241,10 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute();
+                    fft_execute(vfx.scale_factor / 1000.0);
                 }
 
-                fft_compute_lin(fft_out, vfx.scale_factor, vfx_disp_height, 1);
+                fft_compute_lin(fft_out, vfx_disp_height, 1);
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -337,10 +337,10 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute();
+                    fft_execute(vfx.scale_factor / 1000.0);
                 }
 
-                fft_compute_log(fft_out, vfx.scale_factor, vfx_disp_height / 2, 0);
+                fft_compute_log(fft_out, vfx_disp_height / 2, 0);
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -456,13 +456,13 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute();
+                    fft_execute(vfx.scale_factor / 1000.0);
                 }
 
                 if (vfx.mode == VFX_MODE_IDX_SPECTRUM_M_N) {
-                    fft_compute_lin(fft_out, vfx.scale_factor, vu_val_max, 0);
+                    fft_compute_lin(fft_out, vu_val_max, 0);
                 } else {
-                    fft_compute_log(fft_out, vfx.scale_factor, vu_val_max, 0);
+                    fft_compute_log(fft_out, vu_val_max, 0);
                 }
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
@@ -970,13 +970,13 @@ exit:
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute();
+                    fft_execute(vfx.scale_factor / 1000.0);
                 }
 
                 if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_N || vfx.mode == VFX_MODE_IDX_FOUNTAIN_G_N) {
-                    fft_compute_lin(fft_out, vfx.scale_factor, canvas_height, 1);
+                    fft_compute_lin(fft_out, canvas_height, 1);
                 } else {
-                    fft_compute_log(fft_out, vfx.scale_factor, canvas_height, 1);
+                    fft_compute_log(fft_out, canvas_height, 1);
                 }
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
@@ -1084,13 +1084,13 @@ exit:
                 }
 
                 if (!(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
-                    fft_execute();
+                    fft_execute(vfx.scale_factor / 1000.0);
                 }
 
                 if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_H_N) {
-                    fft_compute_lin(fft_out, vfx.scale_factor, canvas_height, 1);
+                    fft_compute_lin(fft_out, canvas_height, 1);
                 } else {
-                    fft_compute_log(fft_out, vfx.scale_factor, canvas_height, 1);
+                    fft_compute_log(fft_out, canvas_height, 1);
                 }
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);

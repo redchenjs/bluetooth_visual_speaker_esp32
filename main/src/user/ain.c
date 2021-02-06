@@ -50,8 +50,7 @@ static void ain_task(void *pvParameters)
         fft_load_data(data, FFT_CHANNEL_LR);
     #endif
 
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (!(uxBits & AUDIO_INPUT_RUN_BIT)) {
+        if (!(xEventGroupGetBits(user_event_group) & AUDIO_INPUT_RUN_BIT)) {
             fft_init();
         }
 

@@ -55,10 +55,9 @@ void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
     switch (event) {
     case ESP_A2D_CONNECTION_STATE_EVT:
     case ESP_A2D_AUDIO_STATE_EVT:
-    case ESP_A2D_AUDIO_CFG_EVT: {
+    case ESP_A2D_AUDIO_CFG_EVT:
         bt_app_work_dispatch(bt_av_hdl_a2d_evt, event, param, sizeof(esp_a2d_cb_param_t), NULL);
         break;
-    }
     default:
         break;
     }
@@ -103,10 +102,9 @@ void bt_app_avrc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t *par
     case ESP_AVRC_CT_PASSTHROUGH_RSP_EVT:
     case ESP_AVRC_CT_CHANGE_NOTIFY_EVT:
     case ESP_AVRC_CT_REMOTE_FEATURES_EVT:
-    case ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT: {
+    case ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT:
         bt_app_work_dispatch(bt_av_hdl_avrc_ct_evt, event, param, sizeof(esp_avrc_ct_cb_param_t), NULL);
         break;
-    }
     default:
         break;
     }
@@ -116,7 +114,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 {
     esp_a2d_cb_param_t *a2d = (esp_a2d_cb_param_t *)(p_param);
     switch (event) {
-    case ESP_A2D_CONNECTION_STATE_EVT: {
+    case ESP_A2D_CONNECTION_STATE_EVT:
         ESP_LOGI(BT_A2D_TAG, "A2DP connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_a2d_conn_state_str[a2d->conn_stat.state],
                  a2d->conn_stat.remote_bda[0], a2d->conn_stat.remote_bda[1],
@@ -127,7 +125,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             memset(&a2d_remote_bda, 0x00, sizeof(esp_bd_addr_t));
 
             EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
+            if (!(uxBits & OS_PWR_RESET_BIT) && !(uxBits & OS_PWR_SLEEP_BIT)) {
 #ifdef CONFIG_ENABLE_SLEEP_KEY
                 key_set_scan_mode(KEY_SCAN_MODE_IDX_ON);
 #endif
@@ -155,7 +153,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
             EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
+            if (!(uxBits & OS_PWR_RESET_BIT) && !(uxBits & OS_PWR_SLEEP_BIT)) {
                 key_set_scan_mode(KEY_SCAN_MODE_IDX_ON);
             }
 #endif
@@ -172,8 +170,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
             xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
         }
         break;
-    }
-    case ESP_A2D_AUDIO_STATE_EVT: {
+    case ESP_A2D_AUDIO_STATE_EVT:
         ESP_LOGI(BT_A2D_TAG, "A2DP audio state: %s", s_a2d_audio_state_str[a2d->audio_stat.state]);
 
 #ifdef CONFIG_ENABLE_LED
@@ -184,8 +181,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         }
 #endif
         break;
-    }
-    case ESP_A2D_AUDIO_CFG_EVT: {
+    case ESP_A2D_AUDIO_CFG_EVT:
         ESP_LOGI(BT_A2D_TAG, "A2DP audio stream configuration, codec type %d", a2d->audio_cfg.mcc.type);
         // for now only SBC stream is supported
         if (a2d->audio_cfg.mcc.type == ESP_A2D_MCT_SBC) {
@@ -210,7 +206,6 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
         }
 
         break;
-    }
     default:
         ESP_LOGE(BT_A2D_TAG, "%s unhandled evt %d", __func__, event);
         break;
@@ -263,7 +258,7 @@ static void bt_av_hdl_avrc_ct_evt(uint16_t event, void *p_param)
 {
     esp_avrc_ct_cb_param_t *rc = (esp_avrc_ct_cb_param_t *)(p_param);
     switch (event) {
-    case ESP_AVRC_CT_CONNECTION_STATE_EVT: {
+    case ESP_AVRC_CT_CONNECTION_STATE_EVT:
         ESP_LOGI(BT_RC_CT_TAG, "AVRC conn_state evt: state %d, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  rc->conn_stat.connected,
                  rc->conn_stat.remote_bda[0], rc->conn_stat.remote_bda[1],
@@ -278,26 +273,21 @@ static void bt_av_hdl_avrc_ct_evt(uint16_t event, void *p_param)
             s_avrc_peer_rn_cap.bits = 0;
         }
         break;
-    }
-    case ESP_AVRC_CT_PASSTHROUGH_RSP_EVT: {
+    case ESP_AVRC_CT_PASSTHROUGH_RSP_EVT:
         ESP_LOGI(BT_RC_CT_TAG, "AVRC passthrough rsp: key_code 0x%x, key_state %d", rc->psth_rsp.key_code, rc->psth_rsp.key_state);
         break;
-    }
-    case ESP_AVRC_CT_METADATA_RSP_EVT: {
+    case ESP_AVRC_CT_METADATA_RSP_EVT:
         ESP_LOGI(BT_RC_CT_TAG, "AVRC metadata rsp: attribute id 0x%x, %s", rc->meta_rsp.attr_id, rc->meta_rsp.attr_text);
         free(rc->meta_rsp.attr_text);
         break;
-    }
-    case ESP_AVRC_CT_CHANGE_NOTIFY_EVT: {
+    case ESP_AVRC_CT_CHANGE_NOTIFY_EVT:
         ESP_LOGI(BT_RC_CT_TAG, "AVRC event notification: %d", rc->change_ntf.event_id);
         bt_av_notify_evt_handler(rc->change_ntf.event_id, &rc->change_ntf.event_parameter);
         break;
-    }
-    case ESP_AVRC_CT_REMOTE_FEATURES_EVT: {
+    case ESP_AVRC_CT_REMOTE_FEATURES_EVT:
         ESP_LOGI(BT_RC_CT_TAG, "AVRC remote features %x, TG features %x", rc->rmt_feats.feat_mask, rc->rmt_feats.tg_feat_flag);
         break;
-    }
-    case ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT: {
+    case ESP_AVRC_CT_GET_RN_CAPABILITIES_RSP_EVT:
         ESP_LOGI(BT_RC_CT_TAG, "remote rn_cap: count %d, bitmask 0x%x", rc->get_rn_caps_rsp.cap_count,
                  rc->get_rn_caps_rsp.evt_set.bits);
         s_avrc_peer_rn_cap.bits = rc->get_rn_caps_rsp.evt_set.bits;
@@ -305,7 +295,6 @@ static void bt_av_hdl_avrc_ct_evt(uint16_t event, void *p_param)
         bt_av_play_status_changed();
         bt_av_play_pos_changed();
         break;
-    }
     default:
         ESP_LOGE(BT_RC_CT_TAG, "%s unhandled evt %d", __func__, event);
         break;

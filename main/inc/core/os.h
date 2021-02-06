@@ -30,10 +30,8 @@ typedef enum user_event_group_bits {
     AUDIO_INPUT_RUN_BIT = BIT9,
     AUDIO_INPUT_FFT_BIT = BIT10,
 
-    AUDIO_RENDER_CLR_BIT = BIT11,
-
-    AUDIO_PLAYER_RUN_BIT  = BIT12,
-    AUDIO_PLAYER_IDLE_BIT = BIT13
+    AUDIO_PLAYER_RUN_BIT  = BIT11,
+    AUDIO_PLAYER_IDLE_BIT = BIT12
 } user_event_group_bits_t;
 
 extern EventGroupHandle_t user_event_group;

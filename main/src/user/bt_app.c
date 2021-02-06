@@ -35,14 +35,13 @@ enum {
 static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 {
     switch (event) {
-    case ESP_BT_GAP_AUTH_CMPL_EVT: {
+    case ESP_BT_GAP_AUTH_CMPL_EVT:
         if (param->auth_cmpl.stat == ESP_BT_STATUS_SUCCESS) {
             ESP_LOGI(BT_GAP_TAG, "authentication success: %s", param->auth_cmpl.device_name);
         } else {
             ESP_LOGE(BT_GAP_TAG, "authentication failed, status: %d", param->auth_cmpl.stat);
         }
         break;
-    }
     default:
         break;
     }
@@ -51,7 +50,7 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
 static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
 {
     switch (event) {
-    case BT_APP_EVT_STACK_UP: {
+    case BT_APP_EVT_STACK_UP:
         /* set up device name */
         esp_bt_dev_set_device_name(CONFIG_BT_NAME);
 
@@ -69,7 +68,7 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
 
         if (memcmp(last_remote_bda, "\x00\x00\x00\x00\x00\x00", 6) != 0) {
             EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-            if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
+            if (!(uxBits & OS_PWR_RESET_BIT) && !(uxBits & OS_PWR_SLEEP_BIT)) {
                 ESP_LOGW(BT_APP_TAG, "connecting to [%02x:%02x:%02x:%02x:%02x:%02x]",
                          last_remote_bda[0], last_remote_bda[1], last_remote_bda[2],
                          last_remote_bda[3], last_remote_bda[4], last_remote_bda[5]);
@@ -84,7 +83,6 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
         }
 
         break;
-    }
     default:
         ESP_LOGE(BT_APP_TAG, "%s unhandled evt %d", __func__, event);
         break;

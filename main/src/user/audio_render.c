@@ -28,25 +28,16 @@ static StaticRingbuffer_t buff_struct = {0};
 
 static void audio_render_task(void *pvParameter)
 {
-    uint16_t delay = 0;
+    uint8_t delay = 0;
+    bool clear = false;
     bool start = false;
+    EventBits_t uxBits = 0;
 
     ESP_LOGI(TAG, "started.");
 
     while (1) {
         uint8_t *data = NULL;
         uint32_t size = 0;
-
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (!(uxBits & AUDIO_RENDER_CLR_BIT)) {
-#ifdef CONFIG_ENABLE_VFX
-            if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
-                fft_init();
-                xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
-            }
-#endif
-            xEventGroupSetBits(user_event_group, AUDIO_RENDER_CLR_BIT);
-        }
 
         taskYIELD();
 
@@ -62,23 +53,34 @@ static void audio_render_task(void *pvParameter)
 
                 data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, portMAX_DELAY, remain);
             } else {
-                if (++delay <= 256000 / a2d_sample_rate) {
-                    vTaskDelay(1 / portTICK_RATE_MS);
+                if (++delay <= 10) {
+                    vTaskDelay(256000 / a2d_sample_rate / portTICK_RATE_MS);
                 } else {
                     delay = 0;
 
-                    xEventGroupClearBits(user_event_group, AUDIO_RENDER_CLR_BIT);
-
+                    clear = false;
                     start = false;
                 }
 
                 continue;
             }
         } else {
-            if (xRingbufferGetCurFreeSize(audio_buff) >= FFT_BLOCK_SIZE) {
-                vTaskDelay(1 / portTICK_RATE_MS);
+            if (!clear) {
+                audio_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
+#ifdef CONFIG_ENABLE_VFX
+                uxBits = xEventGroupGetBits(user_event_group);
+                if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
+                    fft_init();
+                    xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
+                }
+#endif
+                clear = true;
             } else {
-                start = true;
+                if (xRingbufferGetCurFreeSize(audio_buff) >= FFT_BLOCK_SIZE) {
+                    vTaskDelay(1 / portTICK_RATE_MS);
+                } else {
+                    start = true;
+                }
             }
 
             continue;
@@ -86,7 +88,7 @@ static void audio_render_task(void *pvParameter)
 
         uxBits = xEventGroupGetBits(user_event_group);
         if ((uxBits & AUDIO_PLAYER_RUN_BIT) || (uxBits & BT_A2DP_IDLE_BIT)
-             || (uxBits & OS_PWR_SLEEP_BIT) || (uxBits & OS_PWR_RESET_BIT)) {
+             || (uxBits & OS_PWR_RESET_BIT) || (uxBits & OS_PWR_SLEEP_BIT)) {
             vRingbufferReturnItem(audio_buff, (void *)data);
             continue;
         }
@@ -128,7 +130,5 @@ static void audio_render_task(void *pvParameter)
 
 void audio_render_init(void)
 {
-    audio_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
-
     xTaskCreatePinnedToCore(audio_render_task, "audioRenderT", 1920, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }

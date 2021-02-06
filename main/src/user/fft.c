@@ -12,6 +12,8 @@
 
 #include "user/fft.h"
 
+static float freq[FFT_N] = {0.0};
+
 static   int bitrev[FFT_N] = {0.0};
 static float window[FFT_N * 2] = {0.0};
 static float xscale[BAND_N + 1] = {0.0};
@@ -69,6 +71,7 @@ static float compute_freq_lin(const float *freq, int step, int idx)
 static float compute_freq_band(const float *freq, const float *xscale, int band)
 {
     float n = 0.0;
+
     int a = ceilf(xscale[band]);
     int b = floorf(xscale[band + 1]);
 
@@ -78,9 +81,11 @@ static float compute_freq_band(const float *freq, const float *xscale, int band)
         if (a > 0) {
             n += freq[a - 1] * (a - xscale[band]);
         }
+
         for (; a < b; a++) {
             n += freq[a];
         }
+
         if (b < FFT_N) {
             n += freq[b] * (xscale[band + 1] - b);
         }
@@ -89,17 +94,8 @@ static float compute_freq_band(const float *freq, const float *xscale, int band)
     return 20 * log10f(n * BAND_N / FFT_N / 12.0);
 }
 
-void fft_compute_lin(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val)
+void fft_compute_lin(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
 {
-    float freq[FFT_N] = {0.0};
-
-    for (int i = 0; i < FFT_N / 2; i++) {
-        freq[i * 2]     = cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
-        freq[i * 2 + 1] = cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
-    }
-
-    freq[0] /= 2.0;
-
     for (int i = 0; i < FFT_OUT_N; i++) {
         data_out[i] += compute_freq_lin(freq, FFT_N / FFT_OUT_N, i) * (max_val / 40.0);
         data_out[i] /= 2.0;
@@ -112,17 +108,8 @@ void fft_compute_lin(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val
     }
 }
 
-void fft_compute_log(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val)
+void fft_compute_log(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
 {
-    float freq[FFT_N] = {0.0};
-
-    for (int i = 0; i < FFT_N / 2; i++) {
-        freq[i * 2]     = cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
-        freq[i * 2 + 1] = cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
-    }
-
-    freq[0] /= 2.0;
-
     for (int i = 0; i < FFT_OUT_N; i++) {
         data_out[i] += 20 * log10f(1 + compute_freq_lin(freq, FFT_N / FFT_OUT_N, i)) * (max_val / 40.0);
         data_out[i] /= 2.0;
@@ -135,17 +122,9 @@ void fft_compute_log(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val
     }
 }
 
-void fft_compute_bands(uint16_t *data_out, uint16_t scale_factor, uint16_t max_val, uint16_t min_val)
+void fft_compute_bands(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
 {
-    float freq[FFT_N] = {0.0};
     static char delay[BAND_N] = {0};
-
-    for (int i = 0; i < FFT_N / 2; i++) {
-        freq[i * 2]     = cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
-        freq[i * 2 + 1] = cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / 4.0 / FFT_N * (scale_factor / 511.0);
-    }
-
-    freq[0] /= 2.0;
 
     for (int i = 0; i < BAND_N; i++) {
         float x = (40 + compute_freq_band(freq, xscale, i)) * (max_val / 64.0);
@@ -170,11 +149,11 @@ void fft_compute_bands(uint16_t *data_out, uint16_t scale_factor, uint16_t max_v
     }
 }
 
-void fft_execute(void)
+void fft_execute(float scale_factor)
 {
     int half = 1;
 
-    // fast fourier transform, radix-2 case
+    // Cooley–Tukey algorithm, radix-2 case
     for (int i = FFT_N >> 1; i > 0; i >>= 1) {
         for (int g = 0; g < FFT_N; g += half << 1) {
             for (int b = 0, r = 0; b < half; b++, r += i) {
@@ -188,6 +167,14 @@ void fft_execute(void)
 
         half <<= 1;
     }
+
+    // compute the amplitude of each frequency
+    for (int i = 0; i < FFT_N / 2; i++) {
+        freq[i * 2]     = 0.5 * cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / FFT_N * scale_factor;
+        freq[i * 2 + 1] = 0.5 * cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / FFT_N * scale_factor;
+    }
+
+    freq[0] /= 2.0;
 }
 
 void fft_load_data(const uint8_t *data_in, fft_channel_t channel)

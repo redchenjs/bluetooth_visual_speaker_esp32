@@ -69,9 +69,8 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         esp_ble_gatts_create_service(gatts_if, &gatts_profile_tbl[PROFILE_IDX_OTA].service_id, GATTS_NUM_HANDLE_OTA);
         break;
     case ESP_GATTS_READ_EVT: {
-        esp_gatt_rsp_t rsp;
+        esp_gatt_rsp_t rsp = {0};
 
-        memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
 
         if (param->read.handle == gatts_profile_tbl[PROFILE_IDX_OTA].descr_handle) {
@@ -168,7 +167,7 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         ota_end();
 
         EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (!(uxBits & OS_PWR_SLEEP_BIT) && !(uxBits & OS_PWR_RESET_BIT)) {
+        if (!(uxBits & OS_PWR_RESET_BIT) && !(uxBits & OS_PWR_SLEEP_BIT)) {
             esp_ble_gap_start_advertising(&adv_params);
         }
 
@@ -199,9 +198,8 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         esp_ble_gatts_create_service(gatts_if, &gatts_profile_tbl[PROFILE_IDX_VFX].service_id, GATTS_NUM_HANDLE_VFX);
         break;
     case ESP_GATTS_READ_EVT: {
-        esp_gatt_rsp_t rsp;
+        esp_gatt_rsp_t rsp = {0};
 
-        memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
 
         if (param->read.handle == gatts_profile_tbl[PROFILE_IDX_VFX].descr_handle) {
