@@ -90,7 +90,7 @@ static void audio_player_task(void *pvParameters)
             xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
             xEventGroupClearBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
 
-            ESP_LOGE(TAG, "allocate memory failed.");
+            ESP_LOGE(TAG, "failed to allocate memory");
 
             playback_pending = false;
 
@@ -142,7 +142,6 @@ static void audio_player_task(void *pvParameters)
 void audio_player_play_file(mp3_file_t idx)
 {
     if (idx >= sizeof(mp3_file_ptr) / sizeof(mp3_file_ptr[0])) {
-        ESP_LOGE(TAG, "invalid file index");
         return;
     }
 

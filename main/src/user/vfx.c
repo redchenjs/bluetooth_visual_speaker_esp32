@@ -1185,7 +1185,7 @@ void vfx_set_conf(vfx_config_t *cfg)
 
     xEventGroupSetBits(user_event_group, VFX_RLD_MODE_BIT);
 
-    ESP_LOGI(TAG, "mode: 0x%02X, scale-factor: %u, lightness: 0x%04X, backlight: %u",
+    ESP_LOGI(TAG, "mode: 0x%02X, scale-factor: 0x%04X, lightness: 0x%04X, backlight: %u",
              vfx.mode, vfx.scale_factor, vfx.lightness, vfx.backlight);
 }
 

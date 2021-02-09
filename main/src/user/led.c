@@ -77,7 +77,6 @@ static void led_task(void *pvParameter)
 void led_set_mode(led_mode_t idx)
 {
     if (idx >= sizeof(led_mode_table) / sizeof(led_mode_table[0])) {
-        ESP_LOGE(TAG, "invalid mode index");
         return;
     }
 

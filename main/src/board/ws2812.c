@@ -37,7 +37,7 @@ void ws2812_init_board(void)
     led_strip_config_t strip_config = LED_STRIP_DEFAULT_CONFIG(WS2812_X * WS2812_Y, RMT_CHANNEL_0);
     strip = led_strip_new_rmt_ws2812(&strip_config);
     if (!strip) {
-        ESP_LOGE(TAG, "initialization failed");
+        ESP_LOGE(TAG, "initialization failed.");
     } else {
         ESP_LOGI(TAG, "initialized, din: %d", CONFIG_WS2812_DIN_PIN);
     }

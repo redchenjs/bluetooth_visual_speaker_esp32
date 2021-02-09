@@ -32,9 +32,7 @@ typedef struct gatts_profile_inst {
     esp_bt_uuid_t descr_uuid;
 } gatts_profile_inst_t;
 
-extern gatts_profile_inst_t gatts_profile_tbl[];
-
-extern void gatts_ota_send_notification(const char *data, uint32_t len);
+extern gatts_profile_inst_t gatts_profile_tbl[PROFILE_IDX_MAX];
 
 extern void ble_gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 

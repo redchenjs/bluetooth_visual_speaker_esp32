@@ -30,10 +30,16 @@
 #define OTA_TAG "ota"
 
 #define ota_send_response(X) \
-    gatts_ota_send_notification((const char *)rsp_str[X], strlen(rsp_str[X]))
+    esp_ble_gatts_send_indicate(gatts_profile_tbl[PROFILE_IDX_OTA].gatts_if, \
+                                gatts_profile_tbl[PROFILE_IDX_OTA].conn_id, \
+                                gatts_profile_tbl[PROFILE_IDX_OTA].char_handle, \
+                                strlen(rsp_str[X]), (uint8_t *)rsp_str[X], false);
 
 #define ota_send_data(X, N) \
-    gatts_ota_send_notification((const char *)X, N)
+    esp_ble_gatts_send_indicate(gatts_profile_tbl[PROFILE_IDX_OTA].gatts_if, \
+                                gatts_profile_tbl[PROFILE_IDX_OTA].conn_id, \
+                                gatts_profile_tbl[PROFILE_IDX_OTA].char_handle, \
+                                N, (uint8_t *)X, false);
 
 #define RX_BUF_SIZE 512
 
@@ -118,9 +124,9 @@ static void ota_write_task(void *pvParameter)
         }
 
         if (data_length >= RX_BUF_SIZE) {
-            data = (uint8_t *)xRingbufferReceiveUpTo(ota_buff, &size, 10 / portTICK_RATE_MS, RX_BUF_SIZE);
+            data = xRingbufferReceiveUpTo(ota_buff, &size, 10 / portTICK_RATE_MS, RX_BUF_SIZE);
         } else {
-            data = (uint8_t *)xRingbufferReceiveUpTo(ota_buff, &size, 10 / portTICK_RATE_MS, data_length);
+            data = xRingbufferReceiveUpTo(ota_buff, &size, 10 / portTICK_RATE_MS, data_length);
         }
 
         if (data == NULL || size == 0) {
@@ -143,7 +149,7 @@ static void ota_write_task(void *pvParameter)
         if (data_length == 0) {
             err = esp_ota_end(update_handle);
             if (err != ESP_OK) {
-                ESP_LOGE(OTA_TAG, "image data error.");
+                ESP_LOGE(OTA_TAG, "image data error");
 
                 data_err = true;
 
@@ -154,7 +160,7 @@ static void ota_write_task(void *pvParameter)
 
             err = esp_ota_set_boot_partition(update_partition);
             if (err != ESP_OK) {
-                ESP_LOGE(OTA_TAG, "set boot partition failed.");
+                ESP_LOGE(OTA_TAG, "failed to set boot partition");
 
                 data_err = true;
 
@@ -337,7 +343,7 @@ void ota_exec(const char *data, uint32_t len)
                 break;
             }
             default:
-                ESP_LOGW(OTA_TAG, "unknown command.");
+                ESP_LOGW(OTA_TAG, "unknown command");
 
                 ota_send_response(RSP_IDX_ERROR);
 
@@ -345,7 +351,7 @@ void ota_exec(const char *data, uint32_t len)
         }
     } else {
         if (ota_buff) {
-            xRingbufferSend(ota_buff, (void *)data, len, portMAX_DELAY);
+            xRingbufferSend(ota_buff, data, len, portMAX_DELAY);
         }
     }
 }

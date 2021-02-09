@@ -47,11 +47,11 @@ static void audio_render_task(void *pvParameter)
             if (remain >= FFT_BLOCK_SIZE) {
                 delay = 0;
 
-                data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, portMAX_DELAY, FFT_BLOCK_SIZE);
+                data = xRingbufferReceiveUpTo(audio_buff, &size, portMAX_DELAY, FFT_BLOCK_SIZE);
             } else if (remain > 0) {
                 delay = 0;
 
-                data = (uint8_t *)xRingbufferReceiveUpTo(audio_buff, &size, portMAX_DELAY, remain);
+                data = xRingbufferReceiveUpTo(audio_buff, &size, portMAX_DELAY, remain);
             } else {
                 if (++delay <= 10) {
                     vTaskDelay(256000 / a2d_sample_rate / portTICK_RATE_MS);

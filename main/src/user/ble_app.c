@@ -19,7 +19,7 @@
 #define BLE_APP_TAG "ble_app"
 #define BLE_GAP_TAG "ble_gap"
 
-esp_ble_adv_params_t adv_params = {
+static esp_ble_adv_params_t adv_params = {
     .adv_int_min = 0x20,
     .adv_int_max = 0x40,
     .adv_type = ADV_TYPE_IND,
@@ -35,14 +35,13 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
         esp_ble_gap_start_advertising(&adv_params);
         break;
     case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
-        // advertising start complete event to indicate advertising start successfully or failed
         if (param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-            ESP_LOGE(BLE_GAP_TAG, "advertising start failed");
+            ESP_LOGE(BLE_GAP_TAG, "failed to start advertising");
         }
         break;
     case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT:
         if (param->adv_stop_cmpl.status != ESP_BT_STATUS_SUCCESS) {
-            ESP_LOGE(BLE_GAP_TAG, "advertising stop failed");
+            ESP_LOGE(BLE_GAP_TAG, "failed to stop advertising");
         }
         break;
     case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
@@ -54,7 +53,7 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
     }
 }
 
-static void gap_config_adv_data(const char *name)
+static void ble_gap_config_adv_data(const char *name)
 {
     size_t len = strlen(name);
     uint8_t raw_adv_data[len + 5];
@@ -71,8 +70,13 @@ static void gap_config_adv_data(const char *name)
 
     esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
     if (raw_adv_ret) {
-        ESP_LOGE(BLE_GAP_TAG, "config raw adv data failed, error code = 0x%x ", raw_adv_ret);
+        ESP_LOGE(BLE_GAP_TAG, "failed to config raw adv data: %d", raw_adv_ret);
     }
+}
+
+void ble_gap_start_advertising(void)
+{
+    esp_ble_gap_start_advertising(&adv_params);
 }
 
 void ble_app_init(void)
@@ -88,7 +92,7 @@ void ble_app_init(void)
 
     ESP_ERROR_CHECK(esp_ble_gatt_set_local_mtu(ESP_GATT_MAX_MTU_SIZE));
 
-    gap_config_adv_data(CONFIG_BT_NAME);
+    ble_gap_config_adv_data(CONFIG_BT_NAME);
 
     ESP_LOGI(BLE_APP_TAG, "started.");
 }
