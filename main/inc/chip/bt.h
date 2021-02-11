@@ -8,7 +8,13 @@
 #ifndef INC_CHIP_BT_H_
 #define INC_CHIP_BT_H_
 
-extern const char *bt_dev_address;
+#include <stdint.h>
+
+extern char *bt_get_mac_string(void);
+extern char *ble_get_mac_string(void);
+
+extern uint8_t *bt_get_mac_address(void);
+extern uint8_t *ble_get_mac_address(void);
 
 extern void bt_init(void);
 

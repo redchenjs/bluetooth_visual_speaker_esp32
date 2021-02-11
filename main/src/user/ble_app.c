@@ -14,6 +14,8 @@
 #include "esp_gatt_common_api.h"
 
 #include "core/os.h"
+#include "chip/bt.h"
+
 #include "user/ble_gatts.h"
 
 #define BLE_APP_TAG "ble_app"
@@ -23,7 +25,7 @@ static esp_ble_adv_params_t adv_params = {
     .adv_int_min = 0x20,
     .adv_int_max = 0x40,
     .adv_type = ADV_TYPE_IND,
-    .own_addr_type = BLE_ADDR_TYPE_PUBLIC,
+    .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .channel_map = ADV_CHNL_ALL,
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY
 };
@@ -66,6 +68,7 @@ static void ble_gap_config_adv_data(const char *name)
     // adv name
     raw_adv_data[3] = len + 1;
     raw_adv_data[4] = ESP_BLE_AD_TYPE_NAME_CMPL;
+
     memcpy(raw_adv_data + 5, name, len);
 
     esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
@@ -84,6 +87,7 @@ void ble_app_init(void)
     xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
     ESP_ERROR_CHECK(esp_ble_gap_register_callback(ble_gap_event_handler));
+    ESP_ERROR_CHECK(esp_ble_gap_set_rand_addr(ble_get_mac_address()));
     ESP_ERROR_CHECK(esp_ble_gap_set_device_name(CONFIG_BT_NAME));
 
     ESP_ERROR_CHECK(esp_ble_gatts_register_callback(ble_gatts_event_handler));

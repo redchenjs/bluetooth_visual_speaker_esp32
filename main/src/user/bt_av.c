@@ -133,7 +133,7 @@ static void bt_av_hdl_a2d_evt(uint16_t event, void *p_param)
                 a2d_sample_rate = 16000;
             }
 
-            ESP_LOGI(BT_A2D_TAG, "A2DP audio player configuration, sample rate: %d", a2d_sample_rate);
+            ESP_LOGI(BT_A2D_TAG, "A2DP audio player configuration, sample rate: %d Hz", a2d_sample_rate);
         }
 
         break;
