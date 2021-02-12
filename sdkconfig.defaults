@@ -1,4 +1,9 @@
 #
+# Bootloader config
+#
+CONFIG_BOOTLOADER_SKIP_VALIDATE_IN_DEEP_SLEEP=y
+
+#
 # Serial flasher config
 #
 CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
