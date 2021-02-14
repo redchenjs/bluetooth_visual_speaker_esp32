@@ -98,7 +98,12 @@ static void vfx_task(void *pvParameter)
                     }
 
                     gtimerJab(&vfx_flush_timer);
-                    gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+                    if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
+                        gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+                        vTaskDelay(500 / portTICK_RATE_MS);
+                    }
 
                     delaytime_t delay = gdispImageNext(&gfx_image);
                     if (delay == TIME_INFINITE) {
@@ -129,8 +134,6 @@ static void vfx_task(void *pvParameter)
             const uint16_t flush_period = 20;
 
             fft_init();
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -196,7 +199,12 @@ static void vfx_task(void *pvParameter)
                 }
 
                 gtimerJab(&vfx_flush_timer);
-                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+                if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
+                    gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+                    vTaskDelay(500 / portTICK_RATE_MS);
+                }
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
@@ -212,8 +220,6 @@ static void vfx_task(void *pvParameter)
             const uint16_t flush_period = 20;
 
             fft_init();
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -281,7 +287,12 @@ static void vfx_task(void *pvParameter)
                 }
 
                 gtimerJab(&vfx_flush_timer);
-                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+                if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
+                    gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+                    vTaskDelay(500 / portTICK_RATE_MS);
+                }
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
@@ -298,8 +309,6 @@ static void vfx_task(void *pvParameter)
             const uint16_t flush_period = 20;
 
             fft_init();
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -367,7 +376,12 @@ static void vfx_task(void *pvParameter)
                 }
 
                 gtimerJab(&vfx_flush_timer);
-                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+                if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
+                    gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+                    vTaskDelay(500 / portTICK_RATE_MS);
+                }
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
@@ -407,8 +421,6 @@ static void vfx_task(void *pvParameter)
             memset(vu_drop_delay, vu_drop_delay_cnt - 1, sizeof(vu_drop_delay));
 
             fft_init();
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
@@ -477,7 +489,12 @@ static void vfx_task(void *pvParameter)
                 }
 
                 gtimerJab(&vfx_flush_timer);
-                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+                if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
+                    gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+
+                    vTaskDelay(500 / portTICK_RATE_MS);
+                }
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
@@ -899,8 +916,6 @@ exit:
 
             fft_init();
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
-
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
@@ -985,7 +1000,7 @@ exit:
             uint16_t color_h[64] = {0};
             uint16_t color_l = vfx.lightness;
             uint16_t fft_out[FFT_OUT_N] = {0};
-            const uint8_t led_idx_table[][64] = {
+            const uint8_t led_idx_table[2][64] = {
                 {
                     3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
                     1, 1, 1, 1, 1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 5,
@@ -1007,8 +1022,6 @@ exit:
             }
 
             fft_init();
-
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
