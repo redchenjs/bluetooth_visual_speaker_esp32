@@ -50,6 +50,8 @@ static const char *img_file_ptr[][2] = {
 static void vfx_flush_task(void *pvParameter)
 {
     gdispGFlush(vfx_gdisp);
+
+    xEventGroupSetBits(user_event_group, VFX_CLR_DONE_BIT);
 }
 
 static void vfx_task(void *pvParameter)
@@ -82,13 +84,10 @@ static void vfx_task(void *pvParameter)
             if (!(gdispImageOpenMemory(&gfx_image, img_file_ptr[vfx.mode][0]) & GDISP_IMAGE_ERR_UNRECOVERABLE)) {
                 gdispImageSetBgColor(&gfx_image, Black);
 
-                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
                 while (1) {
                     xLastWakeTime = xTaskGetTickCount();
 
                     if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                        xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                         break;
                     }
 
@@ -99,6 +98,7 @@ static void vfx_task(void *pvParameter)
                     }
 
                     gtimerJab(&vfx_flush_timer);
+                    gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
                     delaytime_t delay = gdispImageNext(&gfx_image);
                     if (delay == TIME_INFINITE) {
@@ -128,22 +128,14 @@ static void vfx_task(void *pvParameter)
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             fft_init();
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -185,7 +177,6 @@ static void vfx_task(void *pvParameter)
                     uint16_t fill_y  = center_y - fft_out[i];
                     uint16_t fill_cy = fft_out[i] * 2 + 1;
 #endif
-
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
@@ -205,11 +196,10 @@ static void vfx_task(void *pvParameter)
                 }
 
                 gtimerJab(&vfx_flush_timer);
+                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             break;
         }
@@ -221,22 +211,14 @@ static void vfx_task(void *pvParameter)
             uint16_t fft_out[FFT_OUT_N] = {0};
             const uint16_t flush_period = 20;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             fft_init();
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -278,7 +260,6 @@ static void vfx_task(void *pvParameter)
                     uint16_t fill_y  = vfx_disp_height - fft_out[i];
                     uint16_t fill_cy = fft_out[i];
 #endif
-
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
@@ -300,11 +281,10 @@ static void vfx_task(void *pvParameter)
                 }
 
                 gtimerJab(&vfx_flush_timer);
+                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             break;
         }
@@ -317,22 +297,14 @@ static void vfx_task(void *pvParameter)
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             fft_init();
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -374,7 +346,6 @@ static void vfx_task(void *pvParameter)
                     uint16_t fill_y  = center_y - fft_out[i];
                     uint16_t fill_cy = fft_out[i] * 2 + 1;
 #endif
-
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
@@ -396,11 +367,10 @@ static void vfx_task(void *pvParameter)
                 }
 
                 gtimerJab(&vfx_flush_timer);
+                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             break;
         }
@@ -433,25 +403,17 @@ static void vfx_task(void *pvParameter)
             const uint16_t vu_drop_delay_cnt = 2;
             const uint16_t flush_period = 20;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
-
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
-            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
             memset(vu_peak_delay, vu_peak_delay_cnt - 1, sizeof(vu_peak_delay));
             memset(vu_drop_delay, vu_drop_delay_cnt - 1, sizeof(vu_drop_delay));
 
             fft_init();
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -515,11 +477,10 @@ static void vfx_task(void *pvParameter)
                 }
 
                 gtimerJab(&vfx_flush_timer);
+                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
-
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
 
             break;
         }
@@ -542,7 +503,6 @@ static void vfx_task(void *pvParameter)
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -583,7 +543,6 @@ static void vfx_task(void *pvParameter)
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -627,7 +586,6 @@ static void vfx_task(void *pvParameter)
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -654,7 +612,6 @@ static void vfx_task(void *pvParameter)
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -691,9 +648,6 @@ static void vfx_task(void *pvParameter)
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 10;
 
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
             for (uint16_t i = 0; i < 512; i++) {
                 led_idx[i] = i;
                 switch (vfx.mode) {
@@ -724,7 +678,6 @@ static void vfx_task(void *pvParameter)
                     xLastWakeTime = xTaskGetTickCount();
 
                     if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                        xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                         goto exit;
                     }
 
@@ -760,14 +713,10 @@ exit:
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 1000;
 
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -793,9 +742,6 @@ exit:
             uint16_t color_l = vfx.lightness;
             const uint16_t flush_period = 80;
 
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
             number  = esp_random() % 10;
             color_h = esp_random() % 512;
 
@@ -803,7 +749,6 @@ exit:
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -854,7 +799,6 @@ exit:
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -880,7 +824,6 @@ exit:
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -915,7 +858,6 @@ exit:
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -955,17 +897,14 @@ exit:
             const coord_t canvas_height = 8;
             const uint16_t flush_period = 20;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
-
             fft_init();
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -1035,8 +974,6 @@ exit:
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
             break;
         }
         case VFX_MODE_IDX_FOUNTAIN_H_N:     // 音樂噴泉-螺旋-線性
@@ -1065,21 +1002,18 @@ exit:
             const coord_t canvas_height = 8;
             const uint16_t flush_period = 20;
 
-            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
-
             for (uint16_t i = 0; i < 64; i++) {
                 color_h[i] = 504 - i * 8;
             }
 
             fft_init();
 
-            xEventGroupSetBits(user_event_group, AUDIO_INPUT_FFT_BIT);
+            xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 
             while (1) {
                 xLastWakeTime = xTaskGetTickCount();
 
                 if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
                     break;
                 }
 
@@ -1139,8 +1073,6 @@ exit:
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
-            xEventGroupClearBits(user_event_group, AUDIO_INPUT_FFT_BIT);
-
             break;
         }
 #endif
@@ -1156,10 +1088,11 @@ exit:
             break;
         case VFX_MODE_IDX_OFF:
         default:
+#if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
             gdispGSetBacklight(vfx_gdisp, 0);
 
             vTaskDelay(500 / portTICK_RATE_MS);
-
+#endif
             gdispGClear(vfx_gdisp, Black);
             gtimerJab(&vfx_flush_timer);
 
@@ -1172,6 +1105,25 @@ exit:
             );
 
             break;
+        }
+
+        if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+#if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
+            gdispGSetBacklight(vfx_gdisp, 0);
+
+            vTaskDelay(500 / portTICK_RATE_MS);
+#endif
+            gdispGClear(vfx_gdisp, Black);
+            gtimerJab(&vfx_flush_timer);
+
+            xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT | VFX_CLR_DONE_BIT);
+            xEventGroupWaitBits(
+                user_event_group,
+                VFX_CLR_DONE_BIT,
+                pdFALSE,
+                pdFALSE,
+                portMAX_DELAY
+            );
         }
     }
 }

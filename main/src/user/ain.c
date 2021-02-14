@@ -32,7 +32,7 @@ static void ain_task(void *pvParameters)
     while (1) {
         xEventGroupWaitBits(
             user_event_group,
-            AUDIO_INPUT_RUN_BIT | AUDIO_INPUT_FFT_BIT | VFX_FFT_IDLE_BIT,
+            AUDIO_INPUT_RUN_BIT | VFX_FFT_IDLE_BIT,
             pdFALSE,
             pdTRUE,
             portMAX_DELAY
@@ -49,10 +49,6 @@ static void ain_task(void *pvParameters)
     #else
         fft_load_data(data, FFT_CHANNEL_LR);
     #endif
-
-        if (!(xEventGroupGetBits(user_event_group) & AUDIO_INPUT_RUN_BIT)) {
-            fft_init();
-        }
 
         xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 #endif

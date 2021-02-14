@@ -65,6 +65,8 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
         esp_a2d_sink_register_data_callback(bt_app_a2d_data_cb);
         esp_a2d_sink_init();
 
+        vTaskDelay(2000 / portTICK_RATE_MS);
+
         if (memcmp(last_remote_bda, "\x00\x00\x00\x00\x00\x00", 6) != 0) {
             EventBits_t uxBits = xEventGroupGetBits(user_event_group);
             if (!(uxBits & OS_PWR_RESET_BIT) && !(uxBits & OS_PWR_SLEEP_BIT)) {

@@ -23,7 +23,7 @@ static float hue2rgb(float v1, float v2, float vH)
     } else if (2.0 * vH < 1.0) {
         return v2;
     } else if (3.0 * vH < 2.0) {
-        return v1 + (v2 - v1) * ((2.0 / 3.0) - vH) * 6.0;
+        return v1 + (v2 - v1) * (2.0 / 3.0 - vH) * 6.0;
     } else {
         return v1;
     }
@@ -47,9 +47,9 @@ uint32_t hsl2rgb(float H, float S, float L)
 
         v1 = 2.0 * L - v2;
 
-        R = 255.0 * hue2rgb(v1, v2, H + (1.0 / 3.0));
+        R = 255.0 * hue2rgb(v1, v2, H + 1.0 / 3.0);
         G = 255.0 * hue2rgb(v1, v2, H);
-        B = 255.0 * hue2rgb(v1, v2, H - (1.0 / 3.0));
+        B = 255.0 * hue2rgb(v1, v2, H - 1.0 / 3.0);
     }
 
     return (uint32_t)(R << 16 | G << 8 | B);

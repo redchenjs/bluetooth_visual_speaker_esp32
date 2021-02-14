@@ -31,7 +31,6 @@ static void audio_render_task(void *pvParameter)
     uint8_t delay = 0;
     bool clear = false;
     bool start = false;
-    EventBits_t uxBits = 0;
 
     ESP_LOGI(TAG, "started.");
 
@@ -68,8 +67,7 @@ static void audio_render_task(void *pvParameter)
             if (!clear) {
                 audio_buff = xRingbufferCreateStatic(sizeof(buff_data), RINGBUF_TYPE_BYTEBUF, buff_data, &buff_struct);
 #ifdef CONFIG_ENABLE_VFX
-                uxBits = xEventGroupGetBits(user_event_group);
-                if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & AUDIO_INPUT_FFT_BIT)) {
+                if (!(xEventGroupGetBits(user_event_group) & AUDIO_INPUT_RUN_BIT)) {
                     fft_init();
                     xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
                 }
@@ -86,10 +84,10 @@ static void audio_render_task(void *pvParameter)
             continue;
         }
 
-        uxBits = xEventGroupGetBits(user_event_group);
+        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
         if ((uxBits & AUDIO_PLAYER_RUN_BIT) || (uxBits & BT_A2DP_IDLE_BIT)
              || (uxBits & OS_PWR_RESET_BIT) || (uxBits & OS_PWR_SLEEP_BIT)) {
-            vRingbufferReturnItem(audio_buff, (void *)data);
+            vRingbufferReturnItem(audio_buff, data);
             continue;
         }
 
@@ -99,17 +97,15 @@ static void audio_render_task(void *pvParameter)
         i2s_write(CONFIG_AUDIO_OUTPUT_I2S_NUM, data, size, &bytes_written, portMAX_DELAY);
 
 #ifndef CONFIG_AUDIO_INPUT_NONE
-        uxBits = xEventGroupGetBits(user_event_group);
-        if (uxBits & AUDIO_INPUT_RUN_BIT) {
-            vRingbufferReturnItem(audio_buff, (void *)data);
+        if (xEventGroupGetBits(user_event_group) & AUDIO_INPUT_RUN_BIT) {
+            vRingbufferReturnItem(audio_buff, data);
             continue;
         }
 #endif
 
 #ifdef CONFIG_ENABLE_VFX
-        uxBits = xEventGroupGetBits(user_event_group);
-        if ((size < FFT_BLOCK_SIZE) || !(uxBits & VFX_FFT_IDLE_BIT)) {
-            vRingbufferReturnItem(audio_buff, (void *)data);
+        if ((size < FFT_BLOCK_SIZE) || !(xEventGroupGetBits(user_event_group) & VFX_FFT_IDLE_BIT)) {
+            vRingbufferReturnItem(audio_buff, data);
             continue;
         }
 
@@ -124,7 +120,7 @@ static void audio_render_task(void *pvParameter)
         xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
 #endif
 
-        vRingbufferReturnItem(audio_buff, (void *)data);
+        vRingbufferReturnItem(audio_buff, data);
     }
 }
 
