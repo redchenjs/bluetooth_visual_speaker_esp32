@@ -79,8 +79,9 @@ static void vfx_task(void *pvParameter)
         // LCD Output
         case VFX_MODE_IDX_GIF_NYAN_CAT:
         case VFX_MODE_IDX_GIF_BILIBILI: {   // 動態貼圖
-            gdispImage gfx_image;
+            uint16_t backlight = vfx.backlight;
 
+            gdispImage gfx_image;
             if (!(gdispImageOpenMemory(&gfx_image, img_file_ptr[vfx.mode][0]) & GDISP_IMAGE_ERR_UNRECOVERABLE)) {
                 gdispImageSetBgColor(&gfx_image, Black);
 
@@ -99,8 +100,8 @@ static void vfx_task(void *pvParameter)
 
                     gtimerJab(&vfx_flush_timer);
 
-                    if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
-                        gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+                    if (gdispGGetBacklight(vfx_gdisp) != backlight) {
+                        gdispGSetBacklight(vfx_gdisp, backlight);
 
                         vTaskDelay(500 / portTICK_RATE_MS);
                     }
@@ -126,9 +127,11 @@ static void vfx_task(void *pvParameter)
         }
         case VFX_MODE_IDX_12_BAND_R:    // 音樂頻譜-12段-彩虹
         case VFX_MODE_IDX_12_BAND_G: {  // 音樂頻譜-12段-漸變
+            vfx_mode_t mode = vfx.mode;
             uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            uint16_t backlight = vfx.backlight;
             uint16_t fft_out[BAND_N] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
@@ -150,7 +153,7 @@ static void vfx_task(void *pvParameter)
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
-                if (vfx.mode == VFX_MODE_IDX_12_BAND_R) {
+                if (mode == VFX_MODE_IDX_12_BAND_R) {
                     color_h = 0;
                 } else {
                     color_p = color_h;
@@ -183,7 +186,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (vfx.mode == VFX_MODE_IDX_12_BAND_R) {
+                    if (mode == VFX_MODE_IDX_12_BAND_R) {
                         color_h += 40;
                     } else {
                         if (++color_h == 512) {
@@ -200,8 +203,8 @@ static void vfx_task(void *pvParameter)
 
                 gtimerJab(&vfx_flush_timer);
 
-                if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
-                    gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+                if (gdispGGetBacklight(vfx_gdisp) != backlight) {
+                    gdispGSetBacklight(vfx_gdisp, backlight);
 
                     vTaskDelay(500 / portTICK_RATE_MS);
                 }
@@ -213,9 +216,11 @@ static void vfx_task(void *pvParameter)
         }
         case VFX_MODE_IDX_SPECTRUM_R_N:     // 音樂頻譜-彩虹-線性
         case VFX_MODE_IDX_SPECTRUM_G_N: {   // 音樂頻譜-漸變-線性
+            vfx_mode_t mode = vfx.mode;
             uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            uint16_t backlight = vfx.backlight;
             uint16_t fft_out[FFT_OUT_N] = {0};
             const uint16_t flush_period = 20;
 
@@ -236,7 +241,7 @@ static void vfx_task(void *pvParameter)
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
-                if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_N) {
+                if (mode == VFX_MODE_IDX_SPECTRUM_R_N) {
                     color_h = 0;
                 } else {
                     color_p = color_h;
@@ -269,7 +274,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_N) {
+                    if (mode == VFX_MODE_IDX_SPECTRUM_R_N) {
                         if ((color_h += 8) == 512) {
                             color_h = 0;
                         }
@@ -288,8 +293,8 @@ static void vfx_task(void *pvParameter)
 
                 gtimerJab(&vfx_flush_timer);
 
-                if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
-                    gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+                if (gdispGGetBacklight(vfx_gdisp) != backlight) {
+                    gdispGSetBacklight(vfx_gdisp, backlight);
 
                     vTaskDelay(500 / portTICK_RATE_MS);
                 }
@@ -301,9 +306,11 @@ static void vfx_task(void *pvParameter)
         }
         case VFX_MODE_IDX_SPECTRUM_R_L:     // 音樂頻譜-彩虹-對數
         case VFX_MODE_IDX_SPECTRUM_G_L: {   // 音樂頻譜-漸變-對數
+            vfx_mode_t mode = vfx.mode;
             uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            uint16_t backlight = vfx.backlight;
             uint16_t fft_out[FFT_OUT_N] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
@@ -325,7 +332,7 @@ static void vfx_task(void *pvParameter)
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
-                if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_L) {
+                if (mode == VFX_MODE_IDX_SPECTRUM_R_L) {
                     color_h = 0;
                 } else {
                     color_p = color_h;
@@ -358,7 +365,7 @@ static void vfx_task(void *pvParameter)
                     gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
                     gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
 
-                    if (vfx.mode == VFX_MODE_IDX_SPECTRUM_R_L) {
+                    if (mode == VFX_MODE_IDX_SPECTRUM_R_L) {
                         if ((color_h += 8) == 512) {
                             color_h = 0;
                         }
@@ -377,8 +384,8 @@ static void vfx_task(void *pvParameter)
 
                 gtimerJab(&vfx_flush_timer);
 
-                if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
-                    gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+                if (gdispGGetBacklight(vfx_gdisp) != backlight) {
+                    gdispGSetBacklight(vfx_gdisp, backlight);
 
                     vTaskDelay(500 / portTICK_RATE_MS);
                 }
@@ -388,10 +395,12 @@ static void vfx_task(void *pvParameter)
 
             break;
         }
-        case VFX_MODE_IDX_SPECTRUM_M_N:     // 音樂頻譜-格柵-線性
-        case VFX_MODE_IDX_SPECTRUM_M_L: {   // 音樂頻譜-格柵-對數
+        case VFX_MODE_IDX_SPECTRUM_M_N:     // 音樂頻譜-電平-線性
+        case VFX_MODE_IDX_SPECTRUM_M_L: {   // 音樂頻譜-電平-對數
+            vfx_mode_t mode = vfx.mode;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
+            uint16_t backlight = vfx.backlight;
             uint16_t fft_out[FFT_OUT_N] = {0};
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
             const uint8_t vu_idx_min = 0;
@@ -417,6 +426,7 @@ static void vfx_task(void *pvParameter)
             const uint16_t vu_drop_delay_cnt = 2;
             const uint16_t flush_period = 20;
 
+            memset(vu_peak_value, 0x00, sizeof(vu_peak_value));
             memset(vu_peak_delay, vu_peak_delay_cnt - 1, sizeof(vu_peak_delay));
             memset(vu_drop_delay, vu_drop_delay_cnt - 1, sizeof(vu_drop_delay));
 
@@ -433,7 +443,7 @@ static void vfx_task(void *pvParameter)
                     fft_execute(vfx.scale_factor / 1000.0);
                 }
 
-                if (vfx.mode == VFX_MODE_IDX_SPECTRUM_M_N) {
+                if (mode == VFX_MODE_IDX_SPECTRUM_M_N) {
                     fft_compute_lin(fft_out, vu_val_max, 0);
                 } else {
                     fft_compute_log(fft_out, vu_val_max, 0);
@@ -490,8 +500,8 @@ static void vfx_task(void *pvParameter)
 
                 gtimerJab(&vfx_flush_timer);
 
-                if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
-                    gdispGSetBacklight(vfx_gdisp, vfx.backlight);
+                if (gdispGGetBacklight(vfx_gdisp) != backlight) {
+                    gdispGSetBacklight(vfx_gdisp, backlight);
 
                     vTaskDelay(500 / portTICK_RATE_MS);
                 }
@@ -903,6 +913,7 @@ exit:
         case VFX_MODE_IDX_FOUNTAIN_S_L:     // 音樂噴泉-靜態-對數
         case VFX_MODE_IDX_FOUNTAIN_G_N:     // 音樂噴泉-漸變-線性
         case VFX_MODE_IDX_FOUNTAIN_G_L: {   // 音樂噴泉-漸變-對數
+            vfx_mode_t mode = vfx.mode;
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t  color_d = 0;
@@ -927,7 +938,7 @@ exit:
                     fft_execute(vfx.scale_factor / 1000.0);
                 }
 
-                if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_N || vfx.mode == VFX_MODE_IDX_FOUNTAIN_G_N) {
+                if (mode == VFX_MODE_IDX_FOUNTAIN_S_N || mode == VFX_MODE_IDX_FOUNTAIN_G_N) {
                     fft_compute_lin(fft_out, canvas_height, 1);
                 } else {
                     fft_compute_log(fft_out, canvas_height, 1);
@@ -935,7 +946,7 @@ exit:
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
-                if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_N || vfx.mode == VFX_MODE_IDX_FOUNTAIN_S_L) {
+                if (mode == VFX_MODE_IDX_FOUNTAIN_S_N || mode == VFX_MODE_IDX_FOUNTAIN_S_L) {
                     color_h = 504;
                 } else {
                     color_h = color_p;
@@ -993,6 +1004,7 @@ exit:
         }
         case VFX_MODE_IDX_FOUNTAIN_H_N:     // 音樂噴泉-螺旋-線性
         case VFX_MODE_IDX_FOUNTAIN_H_L: {   // 音樂噴泉-螺旋-對數
+            vfx_mode_t mode = vfx.mode;
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t color_n = 0;
@@ -1034,7 +1046,7 @@ exit:
                     fft_execute(vfx.scale_factor / 1000.0);
                 }
 
-                if (vfx.mode == VFX_MODE_IDX_FOUNTAIN_H_N) {
+                if (mode == VFX_MODE_IDX_FOUNTAIN_H_N) {
                     fft_compute_lin(fft_out, canvas_height, 1);
                 } else {
                     fft_compute_log(fft_out, canvas_height, 1);
