@@ -16,9 +16,10 @@ static float freq[FFT_N] = {0.0};
 
 static   int bitrev[FFT_N] = {0.0};
 static float window[FFT_N * 2] = {0.0};
-static float xscale[BAND_N + 1] = {0.0};
+static float complex root[FFT_N] = {0.0};
 static float complex data[FFT_N] = {0.0};
-static float complex root[FFT_N / 2] = {0.0};
+
+static float xscale[BAND_N + 1] = {0.0};
 
 static bool generated = false;
 
@@ -46,14 +47,14 @@ static void compute_fft_tables(void)
         window[i] = 0.53836 - 0.46164 * cosf(i * TWO_PI / (FFT_N * 2 - 1));
     }
 
+    // twiddle factor
+    for (int i = 0; i < FFT_N; i++) {
+        root[i] = cexpf(-I * i * TWO_PI / (FFT_N * 2));
+    }
+
     // log xscale
     for (int i = 0; i <= BAND_N; i++) {
         xscale[i] = powf(FFT_N, (float)i / BAND_N) - 0.5;
-    }
-
-    // twiddle factor
-    for (int i = 0; i < FFT_N / 2; i++) {
-        root[i] = cexpf(-i * TWO_PI / (FFT_N - 1) * I);
     }
 }
 
@@ -151,14 +152,15 @@ void fft_compute_bands(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
 
 void fft_execute(float scale_factor)
 {
-    int half = 1;
+    float complex even = 0, odd = 0;
 
     // Cooley–Tukey algorithm, radix-2 case
+    int half = 1;
     for (int i = FFT_N >> 1; i > 0; i >>= 1) {
         for (int g = 0; g < FFT_N; g += half << 1) {
             for (int b = 0, r = 0; b < half; b++, r += i) {
-                float complex even = data[g + b];
-                float complex odd  = data[g + b + half] * root[r];
+                even = data[g + b];
+                odd  = data[g + b + half] * root[r * 2];
 
                 data[g + b]        = even + odd;
                 data[g + b + half] = even - odd;
@@ -169,12 +171,17 @@ void fft_execute(float scale_factor)
     }
 
     // compute the amplitude of each frequency
-    for (int i = 0; i < FFT_N / 2; i++) {
-        freq[i * 2]     = 0.5 * cabsf(data[i] + conjf(data[FFT_N - 1 - i])) / FFT_N * scale_factor;
-        freq[i * 2 + 1] = 0.5 * cabsf(data[i] - conjf(data[FFT_N - 1 - i])) / FFT_N * scale_factor;
+    for (int i = 1; i < FFT_N; i++) {
+        even = data[i] + conjf(data[FFT_N - i]);
+        odd  = data[i] - conjf(data[FFT_N - i]);
+
+        freq[i - 1] = 0.5 * cabsf(even - I * odd * root[i]) / FFT_N * scale_factor;
     }
 
-    freq[0] /= 2.0;
+    even = data[0] + conjf(data[0]);
+    odd  = data[0] - conjf(data[0]);
+
+    freq[FFT_N - 1] = 0.5 * cabsf(even + I * odd) / (FFT_N * 2) * scale_factor;
 }
 
 void fft_load_data(const uint8_t *data_in, fft_channel_t channel)
@@ -187,7 +194,7 @@ void fft_load_data(const uint8_t *data_in, fft_channel_t channel)
                 float data_re = data_re_l * window[i * 2];
                 float data_im = data_im_l * window[i * 2 + 1];
 
-                data[bitrev[i]] = data_re + data_im * I;
+                data[bitrev[i]] = data_re + I * data_im;
             }
             break;
         case FFT_CHANNEL_R:
@@ -197,7 +204,7 @@ void fft_load_data(const uint8_t *data_in, fft_channel_t channel)
                 float data_re = data_re_r * window[i * 2];
                 float data_im = data_im_r * window[i * 2 + 1];
 
-                data[bitrev[i]] = data_re + data_im * I;
+                data[bitrev[i]] = data_re + I * data_im;
             }
             break;
         case FFT_CHANNEL_LR:
@@ -209,7 +216,7 @@ void fft_load_data(const uint8_t *data_in, fft_channel_t channel)
                 float data_re = (data_re_l + data_re_r) / 2.0 * window[i * 2];
                 float data_im = (data_im_l + data_im_r) / 2.0 * window[i * 2 + 1];
 
-                data[bitrev[i]] = data_re + data_im * I;
+                data[bitrev[i]] = data_re + I * data_im;
             }
             break;
         default:
