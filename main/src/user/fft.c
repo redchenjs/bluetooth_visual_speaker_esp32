@@ -227,6 +227,7 @@ void fft_load_data(const uint8_t *data_in, fft_channel_t channel)
 void fft_init(void)
 {
     memset(data, 0x00, sizeof(data));
+    memset(freq, 0x00, sizeof(freq));
 
     if (!generated) {
         compute_fft_tables();

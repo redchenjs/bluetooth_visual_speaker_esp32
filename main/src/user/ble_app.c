@@ -46,10 +46,6 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
             ESP_LOGE(BLE_GAP_TAG, "failed to stop advertising");
         }
         break;
-    case ESP_GAP_BLE_UPDATE_CONN_PARAMS_EVT:
-        break;
-    case ESP_GAP_BLE_SET_LOCAL_PRIVACY_COMPLETE_EVT:
-        break;
     default:
         break;
     }

@@ -30,16 +30,15 @@ static void bt_app_work_dispatched(bt_app_msg_t *msg)
 
 static void bt_app_task(void *pvParameter)
 {
-    bt_app_msg_t msg;
+    bt_app_msg_t msg = {0};
 
     while (1) {
-        if (pdTRUE == xQueueReceive(s_bt_app_task_queue, &msg, portMAX_DELAY)) {
+        if (xQueueReceive(s_bt_app_task_queue, &msg, portMAX_DELAY) == pdTRUE) {
             switch (msg.sig) {
             case BT_APP_SIG_WORK_DISPATCH:
                 bt_app_work_dispatched(&msg);
                 break;
             default:
-                ESP_LOGW(BT_APP_CORE_TAG, "unhandled sig: %d", msg.sig);
                 break;
             }
 

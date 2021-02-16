@@ -365,8 +365,7 @@ void ota_end(void)
         esp_ota_end(update_handle);
         update_handle = 0;
 
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (!(uxBits & OS_PWR_RESET_BIT) && !(uxBits & OS_PWR_SLEEP_BIT)) {
+        if (!(xEventGroupGetBits(user_event_group) & (OS_PWR_RESET_BIT | OS_PWR_SLEEP_BIT))) {
             esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
         }
 

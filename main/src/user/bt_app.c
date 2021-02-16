@@ -60,6 +60,10 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
         esp_avrc_ct_init();
         esp_avrc_ct_register_callback(bt_app_avrc_ct_cb);
 
+        /* initialize AVRCP target */
+        esp_avrc_tg_init();
+        esp_avrc_tg_register_callback(bt_app_avrc_tg_cb);
+
         /* initialize A2DP sink */
         esp_a2d_register_callback(&bt_app_a2d_cb);
         esp_a2d_sink_register_data_callback(bt_app_a2d_data_cb);
@@ -68,8 +72,7 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
         vTaskDelay(2000 / portTICK_RATE_MS);
 
         if (memcmp(last_remote_bda, "\x00\x00\x00\x00\x00\x00", 6) != 0) {
-            EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-            if (!(uxBits & OS_PWR_RESET_BIT) && !(uxBits & OS_PWR_SLEEP_BIT)) {
+            if (!(xEventGroupGetBits(user_event_group) & (OS_PWR_RESET_BIT | OS_PWR_SLEEP_BIT))) {
                 ESP_LOGW(BT_APP_TAG, "connecting to [%02x:%02x:%02x:%02x:%02x:%02x]",
                          last_remote_bda[0], last_remote_bda[1], last_remote_bda[2],
                          last_remote_bda[3], last_remote_bda[4], last_remote_bda[5]);
@@ -85,7 +88,6 @@ static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
 
         break;
     default:
-        ESP_LOGW(BT_APP_TAG, "unhandled evt: %d", event);
         break;
     }
 }

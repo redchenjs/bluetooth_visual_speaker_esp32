@@ -58,11 +58,10 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         gatts_profile_tbl[PROFILE_IDX_OTA].service_id.id.uuid.uuid.uuid16 = GATTS_SRV_UUID_OTA;
 
         esp_ble_gatts_create_service(gatts_if, &gatts_profile_tbl[PROFILE_IDX_OTA].service_id, GATTS_NUM_HANDLE_OTA);
+
         break;
     case ESP_GATTS_READ_EVT: {
         esp_gatt_rsp_t rsp = {0};
-
-        rsp.attr_value.handle = param->read.handle;
 
         if (param->read.handle == gatts_profile_tbl[PROFILE_IDX_OTA].descr_handle) {
             rsp.attr_value.len = 2;
@@ -74,6 +73,7 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         }
 
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
+
         break;
     }
     case ESP_GATTS_WRITE_EVT:
@@ -88,12 +88,7 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         if (param->write.need_rsp) {
             esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
         }
-        break;
-    case ESP_GATTS_EXEC_WRITE_EVT:
-        break;
-    case ESP_GATTS_MTU_EVT:
-        break;
-    case ESP_GATTS_UNREG_EVT:
+
         break;
     case ESP_GATTS_CREATE_EVT:
         gatts_profile_tbl[PROFILE_IDX_OTA].service_handle = param->create.service_handle;
@@ -111,8 +106,7 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         if (add_char_ret) {
             ESP_LOGE(GATTS_OTA_TAG, "failed to add char: %d", add_char_ret);
         }
-        break;
-    case ESP_GATTS_ADD_INCL_SRVC_EVT:
+
         break;
     case ESP_GATTS_ADD_CHAR_EVT:
         gatts_profile_tbl[PROFILE_IDX_OTA].char_handle = param->add_char.attr_handle;
@@ -127,22 +121,17 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         if (add_descr_ret) {
             ESP_LOGE(GATTS_OTA_TAG, "failed to add char descr: %d", add_descr_ret);
         }
+
         break;
     case ESP_GATTS_ADD_CHAR_DESCR_EVT:
         gatts_profile_tbl[PROFILE_IDX_OTA].descr_handle = param->add_char_descr.attr_handle;
-        break;
-    case ESP_GATTS_DELETE_EVT:
-        break;
-    case ESP_GATTS_START_EVT:
-        break;
-    case ESP_GATTS_STOP_EVT:
         break;
     case ESP_GATTS_CONNECT_EVT:
         xEventGroupClearBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
         esp_ble_gap_stop_advertising();
 
-        ESP_LOGI(GATTS_OTA_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+        ESP_LOGI(GATTS_OTA_TAG, "connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[1],
                  param->connect.remote_bda[0], param->connect.remote_bda[1],
                  param->connect.remote_bda[2], param->connect.remote_bda[3],
@@ -152,7 +141,7 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 
         break;
     case ESP_GATTS_DISCONNECT_EVT:
-        ESP_LOGI(GATTS_OTA_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+        ESP_LOGI(GATTS_OTA_TAG, "connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[0],
                  param->connect.remote_bda[0], param->connect.remote_bda[1],
                  param->connect.remote_bda[2], param->connect.remote_bda[3],
@@ -160,20 +149,13 @@ static void profile_ota_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 
         ota_end();
 
-        EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-        if (!(uxBits & OS_PWR_RESET_BIT) && !(uxBits & OS_PWR_SLEEP_BIT)) {
+        if (!(xEventGroupGetBits(user_event_group) & (OS_PWR_RESET_BIT | OS_PWR_SLEEP_BIT))) {
             ble_gap_start_advertising();
         }
 
         xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
         break;
-    case ESP_GATTS_CONF_EVT:
-    case ESP_GATTS_OPEN_EVT:
-    case ESP_GATTS_CANCEL_OPEN_EVT:
-    case ESP_GATTS_CLOSE_EVT:
-    case ESP_GATTS_LISTEN_EVT:
-    case ESP_GATTS_CONGEST_EVT:
     default:
         break;
     }
@@ -189,11 +171,10 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         gatts_profile_tbl[PROFILE_IDX_VFX].service_id.id.uuid.uuid.uuid16 = GATTS_SRV_UUID_VFX;
 
         esp_ble_gatts_create_service(gatts_if, &gatts_profile_tbl[PROFILE_IDX_VFX].service_id, GATTS_NUM_HANDLE_VFX);
+
         break;
     case ESP_GATTS_READ_EVT: {
         esp_gatt_rsp_t rsp = {0};
-
-        rsp.attr_value.handle = param->read.handle;
 
         if (param->read.handle == gatts_profile_tbl[PROFILE_IDX_VFX].descr_handle) {
             rsp.attr_value.len = 2;
@@ -239,6 +220,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         }
 
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id, ESP_GATT_OK, &rsp);
+
         break;
     }
     case ESP_GATTS_WRITE_EVT:
@@ -292,12 +274,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         if (param->write.need_rsp) {
             esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
         }
-        break;
-    case ESP_GATTS_EXEC_WRITE_EVT:
-        break;
-    case ESP_GATTS_MTU_EVT:
-        break;
-    case ESP_GATTS_UNREG_EVT:
+
         break;
     case ESP_GATTS_CREATE_EVT:
         gatts_profile_tbl[PROFILE_IDX_VFX].service_handle = param->create.service_handle;
@@ -315,8 +292,7 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         if (add_char_ret) {
             ESP_LOGE(GATTS_VFX_TAG, "failed to add char: %d", add_char_ret);
         }
-        break;
-    case ESP_GATTS_ADD_INCL_SRVC_EVT:
+
         break;
     case ESP_GATTS_ADD_CHAR_EVT:
         gatts_profile_tbl[PROFILE_IDX_VFX].char_handle = param->add_char.attr_handle;
@@ -331,18 +307,13 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
         if (add_descr_ret) {
             ESP_LOGE(GATTS_VFX_TAG, "failed to add char descr: %d", add_descr_ret);
         }
+
         break;
     case ESP_GATTS_ADD_CHAR_DESCR_EVT:
         gatts_profile_tbl[PROFILE_IDX_VFX].descr_handle = param->add_char_descr.attr_handle;
         break;
-    case ESP_GATTS_DELETE_EVT:
-        break;
-    case ESP_GATTS_START_EVT:
-        break;
-    case ESP_GATTS_STOP_EVT:
-        break;
     case ESP_GATTS_CONNECT_EVT:
-        ESP_LOGI(GATTS_VFX_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+        ESP_LOGI(GATTS_VFX_TAG, "connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[1],
                  param->connect.remote_bda[0], param->connect.remote_bda[1],
                  param->connect.remote_bda[2], param->connect.remote_bda[3],
@@ -352,18 +323,12 @@ static void profile_vfx_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t 
 
         break;
     case ESP_GATTS_DISCONNECT_EVT:
-        ESP_LOGI(GATTS_VFX_TAG, "GATTS connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
+        ESP_LOGI(GATTS_VFX_TAG, "connection state: %s, [%02x:%02x:%02x:%02x:%02x:%02x]",
                  s_gatts_conn_state_str[0],
                  param->connect.remote_bda[0], param->connect.remote_bda[1],
                  param->connect.remote_bda[2], param->connect.remote_bda[3],
                  param->connect.remote_bda[4], param->connect.remote_bda[5]);
         break;
-    case ESP_GATTS_CONF_EVT:
-    case ESP_GATTS_OPEN_EVT:
-    case ESP_GATTS_CANCEL_OPEN_EVT:
-    case ESP_GATTS_CLOSE_EVT:
-    case ESP_GATTS_LISTEN_EVT:
-    case ESP_GATTS_CONGEST_EVT:
     default:
         break;
     }
