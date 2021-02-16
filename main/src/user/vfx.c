@@ -1102,29 +1102,20 @@ exit:
         }
 #endif
         case VFX_MODE_IDX_PAUSE:
-            xEventGroupWaitBits(
-                user_event_group,
-                VFX_RLD_MODE_BIT,
-                pdTRUE,
-                pdFALSE,
-                portMAX_DELAY
-            );
+#if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
+            if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
+                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 
-            break;
+                vTaskDelay(500 / portTICK_RATE_MS);
+            }
+#endif
+            /* fall through */
         case VFX_MODE_IDX_OFF:
         default:
-#if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
-            gdispGSetBacklight(vfx_gdisp, 0);
-
-            vTaskDelay(500 / portTICK_RATE_MS);
-#endif
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
             xEventGroupWaitBits(
                 user_event_group,
                 VFX_RLD_MODE_BIT,
-                pdTRUE,
+                pdFALSE,
                 pdFALSE,
                 portMAX_DELAY
             );
@@ -1133,6 +1124,11 @@ exit:
         }
 
         if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
+            if (vfx.mode == VFX_MODE_IDX_PAUSE) {
+                xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
+                continue;
+            }
+
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
             gdispGSetBacklight(vfx_gdisp, 0);
 
