@@ -101,9 +101,9 @@ static void vfx_task(void *pvParameter)
                     gtimerJab(&vfx_flush_timer);
 
                     if (gdispGGetBacklight(vfx_gdisp) != backlight) {
-                        gdispGSetBacklight(vfx_gdisp, backlight);
+                        vTaskDelay(50 / portTICK_RATE_MS);
 
-                        vTaskDelay(500 / portTICK_RATE_MS);
+                        gdispGSetBacklight(vfx_gdisp, backlight);
                     }
 
                     delaytime_t delay = gdispImageNext(&gfx_image);
@@ -204,9 +204,9 @@ static void vfx_task(void *pvParameter)
                 gtimerJab(&vfx_flush_timer);
 
                 if (gdispGGetBacklight(vfx_gdisp) != backlight) {
-                    gdispGSetBacklight(vfx_gdisp, backlight);
+                    vTaskDelay(50 / portTICK_RATE_MS);
 
-                    vTaskDelay(500 / portTICK_RATE_MS);
+                    gdispGSetBacklight(vfx_gdisp, backlight);
                 }
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
@@ -294,9 +294,9 @@ static void vfx_task(void *pvParameter)
                 gtimerJab(&vfx_flush_timer);
 
                 if (gdispGGetBacklight(vfx_gdisp) != backlight) {
-                    gdispGSetBacklight(vfx_gdisp, backlight);
+                    vTaskDelay(50 / portTICK_RATE_MS);
 
-                    vTaskDelay(500 / portTICK_RATE_MS);
+                    gdispGSetBacklight(vfx_gdisp, backlight);
                 }
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
@@ -385,9 +385,9 @@ static void vfx_task(void *pvParameter)
                 gtimerJab(&vfx_flush_timer);
 
                 if (gdispGGetBacklight(vfx_gdisp) != backlight) {
-                    gdispGSetBacklight(vfx_gdisp, backlight);
+                    vTaskDelay(50 / portTICK_RATE_MS);
 
-                    vTaskDelay(500 / portTICK_RATE_MS);
+                    gdispGSetBacklight(vfx_gdisp, backlight);
                 }
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
@@ -501,9 +501,9 @@ static void vfx_task(void *pvParameter)
                 gtimerJab(&vfx_flush_timer);
 
                 if (gdispGGetBacklight(vfx_gdisp) != backlight) {
-                    gdispGSetBacklight(vfx_gdisp, backlight);
+                    vTaskDelay(50 / portTICK_RATE_MS);
 
-                    vTaskDelay(500 / portTICK_RATE_MS);
+                    gdispGSetBacklight(vfx_gdisp, backlight);
                 }
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
@@ -1103,11 +1103,7 @@ exit:
 #endif
         case VFX_MODE_IDX_PAUSE:
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
-            if (gdispGGetBacklight(vfx_gdisp) != vfx.backlight) {
-                gdispGSetBacklight(vfx_gdisp, vfx.backlight);
-
-                vTaskDelay(500 / portTICK_RATE_MS);
-            }
+            gdispGSetBacklight(vfx_gdisp, vfx.backlight);
 #endif
             /* fall through */
         case VFX_MODE_IDX_OFF:
