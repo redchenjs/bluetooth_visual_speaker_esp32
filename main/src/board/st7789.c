@@ -63,8 +63,7 @@ void st7789_init_board(void)
 
 void st7789_set_backlight(uint8_t val)
 {
-    ledc_set_fade_with_time(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, val, 500);
-    ledc_fade_start(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, LEDC_FADE_NO_WAIT);
+    ledc_set_fade_time_and_start(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, val, 500, LEDC_FADE_NO_WAIT);
 }
 
 void st7789_setpin_dc(spi_transaction_t *t)
