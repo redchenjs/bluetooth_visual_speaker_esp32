@@ -16,9 +16,9 @@
 extern esp_bd_addr_t a2d_remote_bda;
 extern unsigned int a2d_sample_rate;
 
-extern void bt_app_avrc_ct_cb(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t *param);
-extern void bt_app_avrc_tg_cb(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t *param);
-extern void bt_app_a2d_cb(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param);
-extern void bt_app_a2d_data_cb(const uint8_t *data, uint32_t len);
+extern void bt_a2d_data_handler(const uint8_t *data, uint32_t len);
+extern void bt_a2d_event_handler(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param);
+extern void bt_avrc_ct_event_handler(esp_avrc_ct_cb_event_t event, esp_avrc_ct_cb_param_t *param);
+extern void bt_avrc_tg_event_handler(esp_avrc_tg_cb_event_t event, esp_avrc_tg_cb_param_t *param);
 
 #endif /* INC_USER_BT_AV_H_*/

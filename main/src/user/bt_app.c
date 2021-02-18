@@ -20,18 +20,13 @@
 
 #include "user/bt_av.h"
 #include "user/bt_app.h"
-#include "user/bt_app_core.h"
 
 #define BT_APP_TAG "bt_app"
 #define BT_GAP_TAG "bt_gap"
 
 esp_bd_addr_t last_remote_bda = {0};
 
-enum {
-    BT_APP_EVT_STACK_UP = 0
-};
-
-static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
+static void bt_gap_event_handler(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 {
     switch (event) {
     case ESP_BT_GAP_AUTH_CMPL_EVT:
@@ -46,67 +41,24 @@ static void bt_app_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *pa
     }
 }
 
-static void bt_app_hdl_stack_evt(uint16_t event, void *p_param)
-{
-    switch (event) {
-    case BT_APP_EVT_STACK_UP:
-        /* set up device name */
-        esp_bt_dev_set_device_name(CONFIG_BT_NAME);
-
-        /* register GAP callback */
-        esp_bt_gap_register_callback(bt_app_gap_cb);
-
-        /* initialize AVRCP controller */
-        esp_avrc_ct_init();
-        esp_avrc_ct_register_callback(bt_app_avrc_ct_cb);
-
-        /* initialize AVRCP target */
-        esp_avrc_tg_init();
-        esp_avrc_tg_register_callback(bt_app_avrc_tg_cb);
-
-        /* initialize A2DP sink */
-        esp_a2d_register_callback(&bt_app_a2d_cb);
-        esp_a2d_sink_register_data_callback(bt_app_a2d_data_cb);
-        esp_a2d_sink_init();
-
-        vTaskDelay(2000 / portTICK_RATE_MS);
-
-        if (memcmp(last_remote_bda, "\x00\x00\x00\x00\x00\x00", 6) != 0) {
-            if (!(xEventGroupGetBits(user_event_group) & (OS_PWR_RESET_BIT | OS_PWR_SLEEP_BIT))) {
-                ESP_LOGW(BT_APP_TAG, "connecting to [%02x:%02x:%02x:%02x:%02x:%02x]",
-                         last_remote_bda[0], last_remote_bda[1], last_remote_bda[2],
-                         last_remote_bda[3], last_remote_bda[4], last_remote_bda[5]);
-
-                esp_a2d_sink_connect(last_remote_bda);
-            }
-        } else {
-            xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
-
-            /* set discoverable and connectable mode, wait to be connected */
-            esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
-        }
-
-        break;
-    default:
-        break;
-    }
-}
-
 void bt_app_init(void)
 {
     size_t length = sizeof(esp_bd_addr_t);
     app_getenv("LAST_REMOTE_BDA", &last_remote_bda, &length);
 
-    /* create application task */
-    bt_app_task_start_up();
+    esp_bt_dev_set_device_name(CONFIG_BT_NAME);
+    esp_bt_gap_register_callback(bt_gap_event_handler);
 
-    /* Bluetooth device name, connection mode and profile set up */
-    bt_app_work_dispatch(bt_app_hdl_stack_evt, BT_APP_EVT_STACK_UP, NULL, 0, NULL);
+    esp_avrc_ct_init();
+    esp_avrc_ct_register_callback(bt_avrc_ct_event_handler);
 
-    /*
-     * set default parameters for Legacy Pairing
-     * use fixed pin code
-     */
+    esp_avrc_tg_init();
+    esp_avrc_tg_register_callback(bt_avrc_tg_event_handler);
+
+    esp_a2d_sink_init();
+    esp_a2d_register_callback(bt_a2d_event_handler);
+    esp_a2d_sink_register_data_callback(bt_a2d_data_handler);
+
     esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_FIXED;
     esp_bt_pin_code_t pin_code;
     pin_code[0] = '1';
@@ -116,4 +68,20 @@ void bt_app_init(void)
     esp_bt_gap_set_pin(pin_type, 4, pin_code);
 
     ESP_LOGI(BT_APP_TAG, "started.");
+
+    vTaskDelay(2000 / portTICK_RATE_MS);
+
+    if (memcmp(last_remote_bda, "\x00\x00\x00\x00\x00\x00", 6) != 0) {
+        if (!(xEventGroupGetBits(user_event_group) & (OS_PWR_RESET_BIT | OS_PWR_SLEEP_BIT))) {
+            ESP_LOGW(BT_APP_TAG, "connecting to [%02x:%02x:%02x:%02x:%02x:%02x]",
+                     last_remote_bda[0], last_remote_bda[1], last_remote_bda[2],
+                     last_remote_bda[3], last_remote_bda[4], last_remote_bda[5]);
+
+            esp_a2d_sink_connect(last_remote_bda);
+        }
+    } else {
+        xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
+
+        esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+    }
 }

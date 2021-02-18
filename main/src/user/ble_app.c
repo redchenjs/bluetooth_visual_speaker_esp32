@@ -51,7 +51,7 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
     }
 }
 
-static void ble_gap_config_adv_data(const char *name)
+static esp_err_t ble_gap_config_adv_data(const char *name)
 {
     size_t len = strlen(name);
     uint8_t raw_adv_data[len + 5];
@@ -67,10 +67,7 @@ static void ble_gap_config_adv_data(const char *name)
 
     memcpy(raw_adv_data + 5, name, len);
 
-    esp_err_t raw_adv_ret = esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
-    if (raw_adv_ret) {
-        ESP_LOGE(BLE_GAP_TAG, "failed to config raw adv data: %d", raw_adv_ret);
-    }
+    return esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
 }
 
 void ble_gap_start_advertising(void)
@@ -82,17 +79,16 @@ void ble_app_init(void)
 {
     xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
-    ESP_ERROR_CHECK(esp_ble_gap_register_callback(ble_gap_event_handler));
-    ESP_ERROR_CHECK(esp_ble_gap_set_rand_addr(ble_get_mac_address()));
     ESP_ERROR_CHECK(esp_ble_gap_set_device_name(CONFIG_BT_NAME));
+    ESP_ERROR_CHECK(esp_ble_gap_set_rand_addr(ble_get_mac_address()));
+    ESP_ERROR_CHECK(esp_ble_gap_register_callback(ble_gap_event_handler));
 
     ESP_ERROR_CHECK(esp_ble_gatts_register_callback(ble_gatts_event_handler));
     ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_IDX_OTA));
     ESP_ERROR_CHECK(esp_ble_gatts_app_register(PROFILE_IDX_VFX));
 
     ESP_ERROR_CHECK(esp_ble_gatt_set_local_mtu(ESP_GATT_MAX_MTU_SIZE));
-
-    ble_gap_config_adv_data(CONFIG_BT_NAME);
+    ESP_ERROR_CHECK(ble_gap_config_adv_data(CONFIG_BT_NAME));
 
     ESP_LOGI(BLE_APP_TAG, "started.");
 }
