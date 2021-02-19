@@ -20,7 +20,6 @@
 #include "user/led.h"
 #include "user/key.h"
 #include "user/fft.h"
-#include "user/bt_app.h"
 #include "user/audio_player.h"
 #include "user/audio_render.h"
 
@@ -87,14 +86,7 @@ void bt_a2d_event_handler(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 #endif
             xEventGroupSetBits(user_event_group, BT_A2DP_IDLE_BIT);
         } else if (param->conn_stat.state == ESP_A2D_CONNECTION_STATE_CONNECTED) {
-            xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
-
             memcpy(&a2d_remote_bda, param->conn_stat.remote_bda, sizeof(esp_bd_addr_t));
-
-            if (memcmp(&last_remote_bda, &a2d_remote_bda, sizeof(esp_bd_addr_t)) != 0) {
-                memcpy(&last_remote_bda, &a2d_remote_bda, sizeof(esp_bd_addr_t));
-                app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
-            }
 
             esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
 
@@ -109,6 +101,7 @@ void bt_a2d_event_handler(esp_a2d_cb_event_t event, esp_a2d_cb_param_t *param)
 #ifdef CONFIG_ENABLE_LED
             led_set_mode(LED_MODE_IDX_BLINK_M1);
 #endif
+            xEventGroupClearBits(user_event_group, BT_A2DP_IDLE_BIT);
         } else {
 #ifdef CONFIG_ENABLE_SLEEP_KEY
             key_set_scan_mode(KEY_SCAN_MODE_IDX_OFF);

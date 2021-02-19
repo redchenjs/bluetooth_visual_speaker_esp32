@@ -8,7 +8,9 @@
 #ifndef INC_USER_BLE_APP_H_
 #define INC_USER_BLE_APP_H_
 
-extern void ble_gap_start_advertising(void);
+#include "esp_gap_ble_api.h"
+
+extern esp_ble_adv_params_t *ble_app_get_adv_params(void);
 
 extern void ble_app_init(void);
 

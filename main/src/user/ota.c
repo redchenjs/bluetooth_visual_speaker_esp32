@@ -23,8 +23,6 @@
 #include "user/key.h"
 #include "user/ain.h"
 #include "user/bt_av.h"
-#include "user/bt_app.h"
-#include "user/ble_app.h"
 #include "user/ble_gatts.h"
 
 #define OTA_TAG "ota"
@@ -283,9 +281,6 @@ void ota_exec(const char *data, uint32_t len)
                 ESP_LOGI(OTA_TAG, "GET command: "CMD_FMT_RST);
 
                 xEventGroupSetBits(user_event_group, BLE_GATTS_LOCK_BIT);
-
-                memset(&last_remote_bda, 0x00, sizeof(esp_bd_addr_t));
-                app_setenv("LAST_REMOTE_BDA", &last_remote_bda, sizeof(esp_bd_addr_t));
 
                 if (!update_handle) {
 #ifdef CONFIG_ENABLE_SLEEP_KEY
