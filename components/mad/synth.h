@@ -29,7 +29,7 @@ struct mad_pcm {
   unsigned int samplerate;		/* sampling frequency (Hz) */
   unsigned short channels;		/* number of channels */
   unsigned short length;		/* number of samples per channel */
-  short samples[2][1152];		/* PCM output samples [ch][sample] */
+  short samples[2][32];		/* PCM output samples [ch][sample] */
 };
 
 struct mad_synth {

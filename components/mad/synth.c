@@ -593,13 +593,13 @@ void synth_full(struct mad_synth *synth, struct mad_frame const *frame,
   register mad_fixed64hi_t hi;
   register mad_fixed64lo_t lo;
 
-  for (ch = 0; ch < nch; ++ch) {
-    sbsample = &frame->sbsample[ch];
-    filter   = &synth->filter[ch];
-    phase    = synth->phase;
-    pcm1     = synth->pcm.samples[ch];
+  phase = synth->phase;
+  for (s = 0; s < ns; ++s) {
+    for (ch = 0; ch < nch; ++ch) {
+      sbsample = &frame->sbsample[ch];
+      filter   = &synth->filter[ch];
+      pcm1     = synth->pcm.samples[ch];
 
-    for (s = 0; s < ns; ++s) {
       dct32((*sbsample)[s], phase >> 1,
 	    (*filter)[0][phase & 1], (*filter)[1][phase & 1]);
 
@@ -710,10 +710,10 @@ void synth_full(struct mad_synth *synth, struct mad_frame const *frame,
 
       phase = (phase + 1) % 16;
     }
-  }
 
-  /* render block */
-  render_sample_block(synth->pcm.samples[0], synth->pcm.samples[1], synth->pcm.samplerate, nch, 32 * ns);
+    /* render block */
+    render_sample_block(synth->pcm.samples[0], synth->pcm.samples[1], synth->pcm.samplerate, nch, 32);
+  }
 }
 # endif
 
@@ -734,13 +734,13 @@ void synth_half(struct mad_synth *synth, struct mad_frame const *frame,
   register mad_fixed64hi_t hi;
   register mad_fixed64lo_t lo;
 
-  for (ch = 0; ch < nch; ++ch) {
-    sbsample = &frame->sbsample[ch];
-    filter   = &synth->filter[ch];
-    phase    = synth->phase;
-    pcm1     = synth->pcm.samples[ch];
+  phase = synth->phase;
+  for (s = 0; s < ns; ++s) {
+    for (ch = 0; ch < nch; ++ch) {
+      sbsample = &frame->sbsample[ch];
+      filter   = &synth->filter[ch];
+      pcm1     = synth->pcm.samples[ch];
 
-    for (s = 0; s < ns; ++s) {
       dct32((*sbsample)[s], phase >> 1,
 	    (*filter)[0][phase & 1], (*filter)[1][phase & 1]);
 
@@ -853,10 +853,10 @@ void synth_half(struct mad_synth *synth, struct mad_frame const *frame,
 
       phase = (phase + 1) % 16;
     }
-  }
 
-  /* render block */
-  render_sample_block(synth->pcm.samples[0], synth->pcm.samples[1], synth->pcm.samplerate, nch, 16 * ns);
+    /* render block */
+    render_sample_block(synth->pcm.samples[0], synth->pcm.samples[1], synth->pcm.samplerate, nch, 16);
+  }
 }
 
 /*
