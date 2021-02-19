@@ -106,19 +106,20 @@ static void audio_player_task(void *pvParameters)
         mad_frame_init(frame);
         mad_synth_init(synth);
 
-        mad_stream_buffer(
-            stream, (const unsigned char *)mp3_file_ptr[mp3_file][0],
-            mp3_file_ptr[mp3_file][1] - mp3_file_ptr[mp3_file][0]
-        );
+        mad_stream_buffer(stream, (const unsigned char *)mp3_file_ptr[mp3_file][0],
+                          mp3_file_ptr[mp3_file][1] - mp3_file_ptr[mp3_file][0]);
 
         while (1) {
             if (mad_frame_decode(frame, stream) == -1) {
-                if (!MAD_RECOVERABLE(stream->error)) {
-                    break;
+                if (MAD_RECOVERABLE(stream->error)) {
+                    ESP_LOGE(TAG, "dec err 0x%04x (%s)", stream->error, mad_stream_errorstr(stream));
+
+                    continue;
                 }
-                ESP_LOGE(TAG, "dec err 0x%04x (%s)", stream->error, mad_stream_errorstr(stream));
-                continue;
+
+                break;
             }
+
             mad_synth_frame(synth, frame);
         }
 
