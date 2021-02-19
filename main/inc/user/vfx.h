@@ -14,11 +14,6 @@
 
 typedef enum {
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
-    VFX_MODE_IDX_GIF_NYAN_CAT = 0x00,
-    VFX_MODE_IDX_GIF_BILIBILI = 0x01,
-
-    VFX_MODE_IDX_GIF_MAX,
-
     VFX_MODE_IDX_12_BAND_R    = 0x0A,
     VFX_MODE_IDX_12_BAND_G    = 0x0B,
     VFX_MODE_IDX_SPECTRUM_R_N = 0x0C,
@@ -75,22 +70,6 @@ typedef struct {
 #endif
 
 extern GDisplay *vfx_gdisp;
-
-#ifdef CONFIG_VFX_OUTPUT_ST7735
-    // ani0.gif
-    extern const char ani0_160x80_gif_ptr[] asm("_binary_ani0_160x80_gif_start");
-    extern const char ani0_160x80_gif_end[] asm("_binary_ani0_160x80_gif_end");
-    // ani1.gif
-    extern const char ani1_160x80_gif_ptr[] asm("_binary_ani1_160x80_gif_start");
-    extern const char ani1_160x80_gif_end[] asm("_binary_ani1_160x80_gif_end");
-#else
-    // ani0.gif
-    extern const char ani0_240x135_gif_ptr[] asm("_binary_ani0_240x135_gif_start");
-    extern const char ani0_240x135_gif_end[] asm("_binary_ani0_240x135_gif_end");
-    // ani1.gif
-    extern const char ani1_240x135_gif_ptr[] asm("_binary_ani1_240x135_gif_start");
-    extern const char ani1_240x135_gif_end[] asm("_binary_ani1_240x135_gif_end");
-#endif
 
 extern void vfx_set_conf(vfx_config_t *cfg);
 extern vfx_config_t *vfx_get_conf(void);

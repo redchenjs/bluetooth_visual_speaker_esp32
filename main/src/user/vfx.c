@@ -35,18 +35,6 @@ static coord_t vfx_disp_height = 0;
 
 static GTimer vfx_flush_timer;
 
-#if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
-static const char *img_file_ptr[][2] = {
-#ifdef CONFIG_VFX_OUTPUT_ST7735
-    [VFX_MODE_IDX_GIF_NYAN_CAT] = {ani0_160x80_gif_ptr, ani0_160x80_gif_end},
-    [VFX_MODE_IDX_GIF_BILIBILI] = {ani1_160x80_gif_ptr, ani1_160x80_gif_end}
-#else
-    [VFX_MODE_IDX_GIF_NYAN_CAT] = {ani0_240x135_gif_ptr, ani0_240x135_gif_end},
-    [VFX_MODE_IDX_GIF_BILIBILI] = {ani1_240x135_gif_ptr, ani1_240x135_gif_end}
-#endif
-};
-#endif
-
 static void vfx_flush_task(void *pvParameter)
 {
     gdispGFlush(vfx_gdisp);
@@ -75,55 +63,6 @@ static void vfx_task(void *pvParameter)
         switch (vfx.mode) {
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
         // LCD Output
-        case VFX_MODE_IDX_GIF_NYAN_CAT:
-        case VFX_MODE_IDX_GIF_BILIBILI: {   // 動態貼圖
-            uint16_t backlight = vfx.backlight;
-
-            gdispImage gfx_image;
-            if (!(gdispImageOpenMemory(&gfx_image, img_file_ptr[vfx.mode][0]) & GDISP_IMAGE_ERR_UNRECOVERABLE)) {
-                gdispImageSetBgColor(&gfx_image, Black);
-
-                while (1) {
-                    xLastWakeTime = xTaskGetTickCount();
-
-                    if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                        break;
-                    }
-
-                    if (gdispImageDraw(&gfx_image, 0, 0, gfx_image.width, gfx_image.height, 0, 0) != GDISP_IMAGE_ERR_OK) {
-                        ESP_LOGE(TAG, "failed to draw image: %u", vfx.mode);
-                        vfx.mode = VFX_MODE_IDX_OFF;
-                        break;
-                    }
-
-                    gtimerJab(&vfx_flush_timer);
-
-                    if (gdispGGetBacklight(vfx_gdisp) != backlight) {
-                        vTaskDelay(50 / portTICK_RATE_MS);
-
-                        gdispGSetBacklight(vfx_gdisp, backlight);
-                    }
-
-                    delaytime_t delay = gdispImageNext(&gfx_image);
-                    if (delay == TIME_INFINITE) {
-                        vfx.mode = VFX_MODE_IDX_PAUSE;
-                        break;
-                    }
-
-                    if (delay != TIME_IMMEDIATE) {
-                        vTaskDelayUntil(&xLastWakeTime, delay / portTICK_RATE_MS);
-                    }
-                }
-
-                gdispImageClose(&gfx_image);
-            } else {
-                ESP_LOGE(TAG, "failed to open image: %u", vfx.mode);
-                vfx.mode = VFX_MODE_IDX_OFF;
-                break;
-            }
-
-            break;
-        }
         case VFX_MODE_IDX_12_BAND_R:    // 音樂頻譜-12段-彩虹
         case VFX_MODE_IDX_12_BAND_G: {  // 音樂頻譜-12段-漸變
             vfx_mode_t mode = vfx.mode;
