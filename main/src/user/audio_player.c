@@ -121,6 +121,8 @@ static void audio_player_task(void *pvParameters)
             }
 
             mad_synth_frame(synth, frame);
+
+            taskYIELD();
         }
 
         mad_synth_finish(synth);
