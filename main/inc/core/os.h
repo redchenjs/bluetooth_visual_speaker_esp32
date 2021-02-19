@@ -20,7 +20,7 @@ typedef enum user_event_group_bits {
 
     VFX_RLD_MODE_BIT = BIT3,
     VFX_FFT_IDLE_BIT = BIT4,
-    VFX_CLR_DONE_BIT = BIT5,
+    VFX_FFT_MODE_BIT = BIT5,
 
     KEY_SCAN_RUN_BIT = BIT6,
     KEY_SCAN_CLR_BIT = BIT7,

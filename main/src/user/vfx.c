@@ -50,8 +50,6 @@ static const char *img_file_ptr[][2] = {
 static void vfx_flush_task(void *pvParameter)
 {
     gdispGFlush(vfx_gdisp);
-
-    xEventGroupSetBits(user_event_group, VFX_CLR_DONE_BIT);
 }
 
 static void vfx_task(void *pvParameter)
@@ -123,6 +121,7 @@ static void vfx_task(void *pvParameter)
                 vfx.mode = VFX_MODE_IDX_OFF;
                 break;
             }
+
             break;
         }
         case VFX_MODE_IDX_12_BAND_R:    // 音樂頻譜-12段-彩虹
@@ -135,6 +134,8 @@ static void vfx_task(void *pvParameter)
             uint16_t fft_out[BAND_N] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
+
+            xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
 
             fft_init();
 
@@ -212,6 +213,8 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_MODE_BIT);
+
             break;
         }
         case VFX_MODE_IDX_SPECTRUM_R_N:     // 音樂頻譜-彩虹-線性
@@ -223,6 +226,8 @@ static void vfx_task(void *pvParameter)
             uint16_t backlight = vfx.backlight;
             uint16_t fft_out[FFT_OUT_N] = {0};
             const uint16_t flush_period = 20;
+
+            xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
 
             fft_init();
 
@@ -302,6 +307,8 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_MODE_BIT);
+
             break;
         }
         case VFX_MODE_IDX_SPECTRUM_R_L:     // 音樂頻譜-彩虹-對數
@@ -314,6 +321,8 @@ static void vfx_task(void *pvParameter)
             uint16_t fft_out[FFT_OUT_N] = {0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
+
+            xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
 
             fft_init();
 
@@ -393,6 +402,8 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_MODE_BIT);
+
             break;
         }
         case VFX_MODE_IDX_SPECTRUM_M_N:     // 音樂頻譜-電平-線性
@@ -429,6 +440,8 @@ static void vfx_task(void *pvParameter)
             memset(vu_peak_value, 0x00, sizeof(vu_peak_value));
             memset(vu_peak_delay, vu_peak_delay_cnt - 1, sizeof(vu_peak_delay));
             memset(vu_drop_delay, vu_drop_delay_cnt - 1, sizeof(vu_drop_delay));
+
+            xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
 
             fft_init();
 
@@ -509,6 +522,8 @@ static void vfx_task(void *pvParameter)
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_MODE_BIT);
+
             break;
         }
 #else
@@ -556,6 +571,7 @@ static void vfx_task(void *pvParameter)
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
+
             break;
         }
         case VFX_MODE_IDX_RIBBON: {   // 彩帶
@@ -602,6 +618,7 @@ static void vfx_task(void *pvParameter)
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
+
             break;
         }
         case VFX_MODE_IDX_GRADUAL: {   // 漸變
@@ -626,6 +643,7 @@ static void vfx_task(void *pvParameter)
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
+
             break;
         }
         case VFX_MODE_IDX_BREATHING: {   // 呼吸
@@ -661,6 +679,7 @@ static void vfx_task(void *pvParameter)
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
+
             break;
         }
         case VFX_MODE_IDX_STARSKY_R:     // 星空-紫紅
@@ -759,6 +778,7 @@ exit:
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
+
             break;
         }
         case VFX_MODE_IDX_NUMBERS_D: {   // 數字-滾動
@@ -815,6 +835,7 @@ exit:
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
+
             break;
         }
         case VFX_MODE_IDX_MAGIC_CARPET: {   // 魔毯
@@ -839,6 +860,7 @@ exit:
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
+
             break;
         }
         case VFX_MODE_IDX_ROTATING_F: {   // 旋轉曲面-正
@@ -873,6 +895,7 @@ exit:
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
+
             break;
         }
         case VFX_MODE_IDX_ROTATING_B: {   // 旋轉曲面-反
@@ -907,6 +930,7 @@ exit:
 
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
+
             break;
         }
         case VFX_MODE_IDX_FOUNTAIN_S_N:     // 音樂噴泉-靜態-線性
@@ -924,6 +948,8 @@ exit:
             const coord_t canvas_width = 64;
             const coord_t canvas_height = 8;
             const uint16_t flush_period = 20;
+
+            xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
 
             fft_init();
 
@@ -1000,6 +1026,8 @@ exit:
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_MODE_BIT);
+
             break;
         }
         case VFX_MODE_IDX_FOUNTAIN_H_N:     // 音樂噴泉-螺旋-線性
@@ -1032,6 +1060,8 @@ exit:
             for (uint16_t i = 0; i < 64; i++) {
                 color_h[i] = 504 - i * 8;
             }
+
+            xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
 
             fft_init();
 
@@ -1098,6 +1128,8 @@ exit:
                 vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
             }
 
+            xEventGroupClearBits(user_event_group, VFX_FFT_MODE_BIT);
+
             break;
         }
 #endif
@@ -1120,27 +1152,17 @@ exit:
         }
 
         if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-            if (vfx.mode == VFX_MODE_IDX_PAUSE) {
-                xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
-                continue;
-            }
+            xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
             gdispGSetBacklight(vfx_gdisp, 0);
 
             vTaskDelay(500 / portTICK_RATE_MS);
 #endif
-            gdispGClear(vfx_gdisp, Black);
-            gtimerJab(&vfx_flush_timer);
-
-            xEventGroupClearBits(user_event_group, VFX_RLD_MODE_BIT | VFX_CLR_DONE_BIT);
-            xEventGroupWaitBits(
-                user_event_group,
-                VFX_CLR_DONE_BIT,
-                pdFALSE,
-                pdFALSE,
-                portMAX_DELAY
-            );
+            if (vfx.mode != VFX_MODE_IDX_PAUSE) {
+                gdispGClear(vfx_gdisp, Black);
+                gtimerJab(&vfx_flush_timer);
+            }
         }
     }
 }

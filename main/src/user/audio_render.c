@@ -66,8 +66,18 @@ static void audio_render_task(void *pvParameter)
         } else {
             if (!clear) {
 #ifdef CONFIG_ENABLE_VFX
-                if (!(xEventGroupGetBits(user_event_group) & AUDIO_INPUT_RUN_BIT)) {
+                EventBits_t uxBits = xEventGroupGetBits(user_event_group);
+                if (!(uxBits & AUDIO_INPUT_RUN_BIT) && (uxBits & VFX_FFT_MODE_BIT)) {
+                    xEventGroupWaitBits(
+                        user_event_group,
+                        VFX_FFT_IDLE_BIT | VFX_RLD_MODE_BIT,
+                        pdFALSE,
+                        pdFALSE,
+                        portMAX_DELAY
+                    );
+
                     fft_init();
+
                     xEventGroupClearBits(user_event_group, VFX_FFT_IDLE_BIT);
                 }
 #endif
