@@ -707,9 +707,9 @@ void synth_full(struct mad_synth *synth, struct mad_frame const *frame,
 
       *pcm1 = scale(SHIFT(-MLZ(hi, lo)));
       pcm1 += 16;
-
-      phase = (phase + 1) % 16;
     }
+
+    phase = (phase + 1) % 16;
 
     /* render block */
     render_sample_block(synth->pcm.samples[0], synth->pcm.samples[1], synth->pcm.samplerate, nch, 32);
@@ -850,9 +850,9 @@ void synth_half(struct mad_synth *synth, struct mad_frame const *frame,
 
       *pcm1 = scale(SHIFT(-MLZ(hi, lo)));
       pcm1 += 8;
-
-      phase = (phase + 1) % 16;
     }
+
+    phase = (phase + 1) % 16;
 
     /* render block */
     render_sample_block(synth->pcm.samples[0], synth->pcm.samples[1], synth->pcm.samplerate, nch, 16);
