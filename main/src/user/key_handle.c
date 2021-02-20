@@ -32,6 +32,9 @@ void sleep_key_handle(void)
     vfx_config_t *vfx = vfx_get_conf();
     vfx->mode = VFX_MODE_IDX_OFF;
     vfx_set_conf(vfx);
+    #if defined(CONFIG_VFX_OUTPUT_ST7735) || defined(CONFIG_VFX_OUTPUT_ST7789)
+        vTaskDelay(500 / portTICK_RATE_MS);
+    #endif
 #endif
 #ifndef CONFIG_AUDIO_INPUT_NONE
     ain_set_mode(AIN_MODE_IDX_OFF);

@@ -71,8 +71,6 @@ static void key_task(void *pvParameter)
 
     ESP_LOGI(TAG, "started.");
 
-    vTaskDelay(2000 / portTICK_RATE_MS);
-
     while (1) {
         EventBits_t uxBits = xEventGroupWaitBits(
             user_event_group,
