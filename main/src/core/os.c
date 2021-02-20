@@ -109,13 +109,13 @@ void os_init(void)
     user_event_group = xEventGroupCreate();
 
 #if defined(CONFIG_ENABLE_SLEEP_KEY) || defined(CONFIG_ENABLE_BLE_CONTROL_IF)
-    xTaskCreatePinnedToCore(os_pwr_task_handle, "osPwrT", 2048, NULL, 5, NULL, 0);
+    xTaskCreatePinnedToCore(os_pwr_task_handle, "osPwrT", 1280, NULL, 5, NULL, 0);
 #endif
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
     if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_UNDEFINED) {
-#if CONFIG_SLEEP_KEY_HOLD_TIME > 500
-        vTaskDelay((CONFIG_SLEEP_KEY_HOLD_TIME - 500) / portTICK_RATE_MS);
+#if CONFIG_SLEEP_KEY_HOLD_TIME > 250
+        vTaskDelay((CONFIG_SLEEP_KEY_HOLD_TIME - 250) / portTICK_RATE_MS);
 
 #ifdef CONFIG_SLEEP_KEY_ACTIVE_LOW
         if (rtc_gpio_get_level(CONFIG_SLEEP_KEY_PIN) == 0) {
