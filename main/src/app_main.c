@@ -50,12 +50,18 @@ static void board_init(void) {}
 
 static void user_init(void)
 {
-#ifdef CONFIG_ENABLE_VFX
-    vfx_init();
+    bt_app_init();
+
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
+    ble_app_init();
 #endif
 
 #ifdef CONFIG_ENABLE_LED
     led_init();
+#endif
+
+#ifdef CONFIG_ENABLE_VFX
+    vfx_init();
 #endif
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY
@@ -70,13 +76,7 @@ static void user_init(void)
     audio_player_init();
 #endif
 
-#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
-    ble_app_init();
-#endif
-
     audio_render_init();
-
-    bt_app_init();
 }
 
 int app_main(void)
