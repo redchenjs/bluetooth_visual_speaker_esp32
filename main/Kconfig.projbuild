@@ -33,12 +33,12 @@ config AUDIO_PROMPT_DISCONNECTED
 
 config AUDIO_PROMPT_SLEEP
     bool "Sleep"
-    default n
+    default y
     depends on ENABLE_AUDIO_PROMPT && ENABLE_SLEEP_KEY
 
 config AUDIO_PROMPT_WAKEUP
     bool "Wake-Up"
-    default n
+    default y
     depends on ENABLE_AUDIO_PROMPT && ENABLE_SLEEP_KEY
 
 choice AUDIO_OUTPUT
