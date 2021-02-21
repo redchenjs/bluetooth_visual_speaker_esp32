@@ -21,11 +21,11 @@
 #define BLE_APP_TAG "ble_app"
 #define BLE_GAP_TAG "ble_gap"
 
-static uint8_t adv_data_raw[] = {
+static uint8_t adv_data_raw[5 + sizeof(CONFIG_BT_NAME)] = {
     2,
     ESP_BT_EIR_TYPE_FLAGS,
     ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT,
-    1,
+    1 + sizeof(CONFIG_BT_NAME),
     ESP_BLE_AD_TYPE_NAME_CMPL
 };
 
@@ -72,6 +72,7 @@ void ble_app_init(void)
     esp_ble_gap_set_rand_addr(ble_get_mac_address());
     esp_ble_gap_register_callback(ble_gap_event_handler);
 
+    strcpy((char *)adv_data_raw + 5, CONFIG_BT_NAME);
     esp_ble_gap_config_adv_data_raw(adv_data_raw, sizeof(adv_data_raw));
 
     esp_ble_gatts_register_callback(ble_gatts_event_handler);
