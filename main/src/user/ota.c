@@ -24,6 +24,7 @@
 #include "user/ain.h"
 #include "user/bt_av.h"
 #include "user/ble_gatts.h"
+#include "user/audio_player.h"
 
 #define OTA_TAG "ota"
 
@@ -137,7 +138,7 @@ static void ota_write_task(void *pvParameter)
 
             data_err = true;
 
-            ota_send_response(RSP_IDX_FAIL);
+            ota_send_response(RSP_IDX_ERROR);
 
             goto write_fail;
         }
@@ -151,7 +152,7 @@ static void ota_write_task(void *pvParameter)
 
                 data_err = true;
 
-                ota_send_response(RSP_IDX_FAIL);
+                ota_send_response(RSP_IDX_ERROR);
 
                 goto write_fail;
             }
@@ -162,7 +163,7 @@ static void ota_write_task(void *pvParameter)
 
                 data_err = true;
 
-                ota_send_response(RSP_IDX_FAIL);
+                ota_send_response(RSP_IDX_ERROR);
 
                 goto write_fail;
             }
@@ -208,10 +209,10 @@ void ota_exec(const char *data, uint32_t len)
                 ESP_LOGI(OTA_TAG, "GET command: "CMD_FMT_UPD, data_length);
 
                 EventBits_t uxBits = xEventGroupGetBits(user_event_group);
-                if (data_length == 0) {
-                    ota_send_response(RSP_IDX_ERROR);
-                } else if (!(uxBits & BT_A2DP_IDLE_BIT) || (uxBits & BLE_GATTS_LOCK_BIT)) {
+                if (!(uxBits & BT_A2DP_IDLE_BIT) || (uxBits & BLE_GATTS_LOCK_BIT)) {
                     ota_send_response(RSP_IDX_FAIL);
+                } else if (data_length == 0) {
+                    ota_send_response(RSP_IDX_ERROR);
                 } else {
                     if (!update_handle) {
                         esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
@@ -282,6 +283,8 @@ void ota_exec(const char *data, uint32_t len)
 
                 xEventGroupSetBits(user_event_group, BLE_GATTS_LOCK_BIT);
 
+                esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+
                 if (!update_handle) {
 #ifdef CONFIG_ENABLE_SLEEP_KEY
                     key_set_scan_mode(KEY_SCAN_MODE_IDX_OFF);
@@ -295,7 +298,9 @@ void ota_exec(const char *data, uint32_t len)
 #endif
                 }
 
-                esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+#if defined(CONFIG_ENABLE_AUDIO_PROMPT) && defined(CONFIG_ENABLE_SLEEP_KEY)
+                audio_player_play_file(MP3_FILE_IDX_SLEEP);
+#endif
 
                 if (!(xEventGroupGetBits(user_event_group) & BT_A2DP_IDLE_BIT)) {
                     esp_a2d_sink_disconnect(a2d_remote_bda);

@@ -28,6 +28,8 @@ void sleep_key_handle(void)
 {
     key_set_scan_mode(KEY_SCAN_MODE_IDX_OFF);
 
+    esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
+
 #ifdef CONFIG_ENABLE_VFX
     vfx_config_t *vfx = vfx_get_conf();
     vfx->mode = VFX_MODE_IDX_OFF;
@@ -36,18 +38,19 @@ void sleep_key_handle(void)
         vTaskDelay(500 / portTICK_RATE_MS);
     #endif
 #endif
+
 #ifndef CONFIG_AUDIO_INPUT_NONE
     ain_set_mode(AIN_MODE_IDX_OFF);
 #endif
+
 #ifdef CONFIG_ENABLE_AUDIO_PROMPT
     audio_player_play_file(MP3_FILE_IDX_SLEEP);
 #endif
 
-    esp_bt_gap_set_scan_mode(ESP_BT_NON_CONNECTABLE, ESP_BT_NON_DISCOVERABLE);
-
     if (!(xEventGroupGetBits(user_event_group) & BT_A2DP_IDLE_BIT)) {
         esp_a2d_sink_disconnect(a2d_remote_bda);
     }
+
 #ifdef CONFIG_ENABLE_BLE_CONTROL_IF
     if (!(xEventGroupGetBits(user_event_group) & BLE_GATTS_IDLE_BIT)) {
         esp_ble_gatts_close(gatts_profile_tbl[PROFILE_IDX_OTA].gatts_if,

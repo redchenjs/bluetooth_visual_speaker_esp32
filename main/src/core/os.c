@@ -43,8 +43,6 @@ static void os_pwr_task_handle(void *pvParameters)
             if (reset_wait_bits) {
                 ESP_LOGW(OS_PWR_TAG, "waiting for unfinished jobs....");
 
-                vTaskDelay(500 / portTICK_RATE_MS);
-
                 xEventGroupWaitBits(
                     user_event_group,
                     reset_wait_bits,
@@ -52,6 +50,8 @@ static void os_pwr_task_handle(void *pvParameters)
                     pdTRUE,
                     portMAX_DELAY
                 );
+
+                vTaskDelay(50 / portTICK_RATE_MS);
             }
 
             ESP_LOGW(OS_PWR_TAG, "reset now");
@@ -60,8 +60,6 @@ static void os_pwr_task_handle(void *pvParameters)
             if (sleep_wait_bits) {
                 ESP_LOGW(OS_PWR_TAG, "waiting for unfinished jobs....");
 
-                vTaskDelay(500 / portTICK_RATE_MS);
-
                 xEventGroupWaitBits(
                     user_event_group,
                     sleep_wait_bits,
@@ -69,6 +67,8 @@ static void os_pwr_task_handle(void *pvParameters)
                     pdTRUE,
                     portMAX_DELAY
                 );
+
+                vTaskDelay(50 / portTICK_RATE_MS);
             }
 
 #ifdef CONFIG_ENABLE_SLEEP_KEY

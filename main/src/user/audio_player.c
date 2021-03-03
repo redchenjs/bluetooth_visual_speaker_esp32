@@ -81,12 +81,11 @@ static void audio_player_task(void *pvParameters)
             portMAX_DELAY
         );
 
-        // allocate structs needed for mp3 decoding
         struct mad_stream *stream = malloc(sizeof(struct mad_stream));
         struct mad_frame  *frame  = malloc(sizeof(struct mad_frame));
         struct mad_synth  *synth  = malloc(sizeof(struct mad_synth));
 
-        if ((stream == NULL) || (frame == NULL) || (synth == NULL)) {
+        if (!stream || !frame || !synth) {
             xEventGroupSetBits(user_event_group, AUDIO_PLAYER_IDLE_BIT);
             xEventGroupClearBits(user_event_group, AUDIO_PLAYER_RUN_BIT);
 
@@ -101,7 +100,6 @@ static void audio_player_task(void *pvParameters)
             continue;
         }
 
-        // initialize mp3 parts
         mad_stream_init(stream);
         mad_frame_init(frame);
         mad_synth_init(synth);

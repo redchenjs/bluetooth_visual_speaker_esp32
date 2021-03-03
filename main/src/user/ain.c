@@ -79,5 +79,5 @@ void ain_init(void)
 
     ain_set_mode(ain_mode);
 
-    xTaskCreatePinnedToCore(ain_task, "ainT", 1280, NULL, configMAX_PRIORITIES - 3, NULL, 0);
+    xTaskCreatePinnedToCore(ain_task, "ainT", 1536, NULL, configMAX_PRIORITIES - 3, NULL, 0);
 }
