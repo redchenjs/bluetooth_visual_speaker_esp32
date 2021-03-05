@@ -19,8 +19,6 @@ static float window[FFT_N * 2] = {0.0};
 static float complex root[FFT_N] = {0.0};
 static float complex data[FFT_N] = {0.0};
 
-static float xscale[BAND_N + 1] = {0.0};
-
 static bool generated = false;
 
 static int bit_reverse(int x)
@@ -51,14 +49,9 @@ static void compute_fft_tables(void)
     for (int i = 0; i < FFT_N; i++) {
         root[i] = cexpf(-I * i * TWO_PI / (FFT_N * 2));
     }
-
-    // log xscale
-    for (int i = 0; i <= BAND_N; i++) {
-        xscale[i] = powf(FFT_N, (float)i / BAND_N) - 0.5;
-    }
 }
 
-static float compute_freq_lin(const float *freq, int step, int idx)
+static float compute_freq_lin(const float *freq, uint16_t step, uint16_t idx)
 {
     float n = 0.0;
 
@@ -69,7 +62,7 @@ static float compute_freq_lin(const float *freq, int step, int idx)
     return n / step * 2.0;
 }
 
-static float compute_freq_band(const float *freq, const float *xscale, int band)
+static float compute_freq_band(const float *freq, const float *xscale, uint16_t bands, uint16_t band)
 {
     float n = 0.0;
 
@@ -92,13 +85,13 @@ static float compute_freq_band(const float *freq, const float *xscale, int band)
         }
     }
 
-    return 20 * log10f(n * BAND_N / FFT_N / 12.0);
+    return 20 * log10f(n * bands / FFT_N / 12.0);
 }
 
-void fft_compute_lin(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
+void fft_compute_lin(uint16_t *data_out, uint16_t num, uint16_t step, uint16_t max_val, uint16_t min_val)
 {
-    for (int i = 0; i < FFT_OUT_N; i++) {
-        data_out[i] += compute_freq_lin(freq, FFT_N / FFT_OUT_N, i) * (max_val / 40.0);
+    for (int i = 0; i < num; i++) {
+        data_out[i] += compute_freq_lin(freq, step, i) * (max_val / 40.0);
         data_out[i] /= 2.0;
 
         if (data_out[i] > max_val) {
@@ -109,10 +102,10 @@ void fft_compute_lin(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
     }
 }
 
-void fft_compute_log(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
+void fft_compute_log(uint16_t *data_out, uint16_t num, uint16_t step, uint16_t max_val, uint16_t min_val)
 {
-    for (int i = 0; i < FFT_OUT_N; i++) {
-        data_out[i] += 20 * log10f(1 + compute_freq_lin(freq, FFT_N / FFT_OUT_N, i)) * (max_val / 40.0);
+    for (int i = 0; i < num; i++) {
+        data_out[i] += 20 * log10f(1 + compute_freq_lin(freq, step, i)) * (max_val / 40.0);
         data_out[i] /= 2.0;
 
         if (data_out[i] > max_val) {
@@ -123,12 +116,12 @@ void fft_compute_log(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
     }
 }
 
-void fft_compute_bands(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
+void fft_compute_bands(uint16_t *data_out, const float *xscale, uint16_t bands, uint16_t *delay, uint16_t max_val, uint16_t min_val)
 {
-    static char delay[BAND_N] = {0};
+    enum { BAND_FADE = 2, BAND_DELAY = 2 };
 
-    for (int i = 0; i < BAND_N; i++) {
-        float x = (40 + compute_freq_band(freq, xscale, i)) * (max_val / 64.0);
+    for (int i = 0; i < bands; i++) {
+        float x = (40 + compute_freq_band(freq, xscale, bands, i)) * (max_val / 64.0);
 
         data_out[i] = MAX(0, data_out[i] - (BAND_FADE - delay[i]));
 
@@ -137,7 +130,7 @@ void fft_compute_bands(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
         }
 
         if (x > data_out[i]) {
-            data_out[i]= x;
+            data_out[i] = x;
 
             delay[i] = BAND_DELAY;
         }
@@ -147,6 +140,13 @@ void fft_compute_bands(uint16_t *data_out, uint16_t max_val, uint16_t min_val)
         } else if (data_out[i] < min_val) {
             data_out[i] = min_val;
         }
+    }
+}
+
+void fft_compute_xscale(float *xscale, uint16_t bands)
+{
+    for (int i = 0; i <= bands; i++) {
+        xscale[i] = powf(FFT_N, (float)i / bands) - 0.5;
     }
 }
 

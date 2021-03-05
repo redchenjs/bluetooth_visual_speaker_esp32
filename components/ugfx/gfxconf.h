@@ -114,9 +114,9 @@
 //    #define GDISP_INCLUDE_USER_FONTS                 FALSE
 
 // #define GDISP_NEED_IMAGE                            TRUE
-   // #define GDISP_NEED_IMAGE_NATIVE                  TRUE
-   // #define GDISP_NEED_IMAGE_GIF                     TRUE
-      //  #define GDISP_IMAGE_GIF_BLIT_BUFFER_SIZE     32
+//    #define GDISP_NEED_IMAGE_NATIVE                  TRUE
+//    #define GDISP_NEED_IMAGE_GIF                     TRUE
+//        #define GDISP_IMAGE_GIF_BLIT_BUFFER_SIZE     32
 //    #define GDISP_NEED_IMAGE_BMP                     TRUE
 //        #define GDISP_NEED_IMAGE_BMP_1               TRUE
 //        #define GDISP_NEED_IMAGE_BMP_4               TRUE

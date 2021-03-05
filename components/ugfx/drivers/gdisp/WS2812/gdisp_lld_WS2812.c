@@ -86,7 +86,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     LLDSPEC void gdisp_lld_write_color(GDisplay *g) {
         uint16_t pos = write_y * g->g.Width + write_x;
         LLDCOLOR_TYPE c = gdispColor2Native(g->p.color);
-#ifdef CONFIG_LED_COLOR_GRB
+#ifdef CONFIG_LED_COLOR_ORDER_GRB
         uint8_t red   = c >> 16;
         uint8_t green = c >> 8;
         uint8_t blue  = c;

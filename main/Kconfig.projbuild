@@ -204,43 +204,54 @@ config LCD_ROTATION_DEGREE
     default  90 if LCD_ORIENTATION_NORMAL
     default 270 if LCD_ORIENTATION_UPSIDE_DOWN
 
-choice LED_LAYER_DIR
-    prompt "LED Layer Direction"
-    default LED_LAYER_H
-    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
-    help
-        Select LED layer direction.
-
-config LED_LAYER_H
-    bool "Horizontal"
-config LED_LAYER_H_ZI
-    bool "Horizontal Z-Inverted"
-config LED_LAYER_H_XYI
-    bool "Horizontal XY-Inverted"
-config LED_LAYER_H_XYZI
-    bool "Horizontal XYZ-Inverted"
-config LED_LAYER_V
-    bool "Vertical"
-config LED_LAYER_V_ZI
-    bool "Vertical Z-Inverted"
-config LED_LAYER_V_XYI
-    bool "Vertical XY-Inverted"
-config LED_LAYER_V_XYZI
-    bool "Vertical XYZ-Inverted"
-endchoice
-
 choice LED_COLOR_ORDER
     prompt "LED Color Order"
-    default LED_COLOR_RGB
+    default LED_COLOR_ORDER_RGB
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
     help
         Select LED color order.
 
-config LED_COLOR_RGB
-    bool "RGB"
-config LED_COLOR_GRB
-    bool "GRB"
+config LED_COLOR_ORDER_RGB
+    bool "R-G-B"
+config LED_COLOR_ORDER_GRB
+    bool "G-R-B"
 endchoice
+
+choice LED_LAYER_DIR
+    prompt "LED Layer Direction"
+    default LED_LAYER_DIR_XYZ
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
+    help
+        Select LED layer direction.
+
+config LED_LAYER_DIR_XYZ
+    bool "X-Y-Z"
+config LED_LAYER_DIR_XZY
+    bool "X-Z-Y"
+config LED_LAYER_DIR_YXZ
+    bool "Y-X-Z"
+config LED_LAYER_DIR_YZX
+    bool "Y-Z-X"
+config LED_LAYER_DIR_ZXY
+    bool "Z-X-Y"
+config LED_LAYER_DIR_ZYX
+    bool "Z-Y-X"
+endchoice
+
+config LED_LAYER_INV_X
+    bool "LED Layer X-Inverted"
+    default n
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
+
+config LED_LAYER_INV_Y
+    bool "LED Layer Y-Inverted"
+    default n
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
+
+config LED_LAYER_INV_Z
+    bool "LED Layer Z-Inverted"
+    default n
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
 
 choice CUBE0414_REVISION
     prompt "CUBE0414 Revision"

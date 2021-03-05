@@ -58,40 +58,34 @@ uint32_t hsl2rgb(float H, float S, float L)
 #if defined(CONFIG_VFX_OUTPUT_WS2812) || defined(CONFIG_VFX_OUTPUT_CUBE0414)
 void vfx_draw_pixel_raw(uint8_t x, uint8_t y, uint8_t z, uint32_t color)
 {
-#ifdef CONFIG_LED_LAYER_H
-    uint8_t pixel_x = x + y * 8;
-    uint8_t pixel_y = z;
+#ifdef CONFIG_LED_LAYER_INV_X
+    x = 7 - x;
 #endif
-#ifdef CONFIG_LED_LAYER_H_ZI
-    uint8_t pixel_x = x + y * 8;
-    uint8_t pixel_y = 7 - z;
+#ifdef CONFIG_LED_LAYER_INV_Y
+    y = 7 - y;
 #endif
-#ifdef CONFIG_LED_LAYER_H_XYI
-    uint8_t pixel_x = (7 - x) + (7 - y) * 8;
-    uint8_t pixel_y = z;
-#endif
-#ifdef CONFIG_LED_LAYER_H_XYZI
-    uint8_t pixel_x = (7 - x) + (7 - y) * 8;
-    uint8_t pixel_y = 7 - z;
-#endif
-#ifdef CONFIG_LED_LAYER_V
-    uint8_t pixel_x = x + z * 8;
-    uint8_t pixel_y = y;
-#endif
-#ifdef CONFIG_LED_LAYER_V_ZI
-    uint8_t pixel_x = x + z * 8;
-    uint8_t pixel_y = 7 - y;
-#endif
-#ifdef CONFIG_LED_LAYER_V_XYI
-    uint8_t pixel_x = (7 - x) + (7 - z) * 8;
-    uint8_t pixel_y = y;
-#endif
-#ifdef CONFIG_LED_LAYER_V_XYZI
-    uint8_t pixel_x = (7 - x) + (7 - z) * 8;
-    uint8_t pixel_y = 7 - y;
+#ifdef CONFIG_LED_LAYER_INV_Z
+    z = 7 - z;
 #endif
 
-    gdispGDrawPixel(vfx_gdisp, pixel_x, pixel_y, color);
+#ifdef CONFIG_LED_LAYER_DIR_XYZ
+    gdispGDrawPixel(vfx_gdisp, x + y * 8, z, color);
+#endif
+#ifdef CONFIG_LED_LAYER_DIR_XZY
+    gdispGDrawPixel(vfx_gdisp, x + z * 8, y, color);
+#endif
+#ifdef CONFIG_LED_LAYER_DIR_YXZ
+    gdispGDrawPixel(vfx_gdisp, y + x * 8, z, color);
+#endif
+#ifdef CONFIG_LED_LAYER_DIR_YZX
+    gdispGDrawPixel(vfx_gdisp, y + z * 8, x, color);
+#endif
+#ifdef CONFIG_LED_LAYER_DIR_ZXY
+    gdispGDrawPixel(vfx_gdisp, z + x * 8, y, color);
+#endif
+#ifdef CONFIG_LED_LAYER_DIR_ZYX
+    gdispGDrawPixel(vfx_gdisp, z + y * 8, x, color);
+#endif
 }
 
 void vfx_draw_pixel(uint8_t x, uint8_t y, uint8_t z, float color_h, float color_l)
@@ -122,7 +116,7 @@ void vfx_draw_cube_bitmap(const uint8_t *bitmap, float color_l)
 
     color_p = color_h;
     for (uint8_t i = 0; i < 64; i++) {
-        uint8_t temp = *(bitmap + i);
+        uint8_t temp = bitmap[i];
 
         for (uint8_t j = 0; j < 8; j++) {
             if (temp & 0x80) {
@@ -165,7 +159,7 @@ void vfx_draw_layer_bitmap(uint8_t layer, const uint8_t *bitmap, float color_l)
 
     color_p = color_h;
     for (uint8_t i = 0; i < 8; i++) {
-        uint8_t temp = *(bitmap + i);
+        uint8_t temp = bitmap[i];
 
         for (uint8_t j = 0; j < 8; j++) {
             if (temp & 0x80) {

@@ -65,14 +65,19 @@ static void vfx_task(void *pvParameter)
         // LCD Output
         case VFX_MODE_IDX_12_BAND_R:    // 音樂頻譜-12段-彩虹
         case VFX_MODE_IDX_12_BAND_G: {  // 音樂頻譜-12段-漸變
+            enum { BAND_N = 12 };
             vfx_mode_t mode = vfx.mode;
             uint16_t color_p = 0;
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             uint16_t backlight = vfx.backlight;
+            uint16_t delay[BAND_N] = {0};
             uint16_t fft_out[BAND_N] = {0};
+            float xscale[BAND_N + 1] = {0.0};
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
+
+            fft_compute_xscale(xscale, BAND_N);
 
             xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
 
@@ -89,7 +94,7 @@ static void vfx_task(void *pvParameter)
                     fft_execute(vfx.scale_factor / 1000.0);
                 }
 
-                fft_compute_bands(fft_out, vfx_disp_height / 2, 0);
+                fft_compute_bands(fft_out, xscale, BAND_N, delay, vfx_disp_height / 2, 0);
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -99,7 +104,7 @@ static void vfx_task(void *pvParameter)
                     color_p = color_h;
                 }
 
-                for (uint16_t i = 0; i < BAND_N; i++) {
+                for (uint8_t i = 0; i < BAND_N; i++) {
                     uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
@@ -163,8 +168,10 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             uint16_t backlight = vfx.backlight;
-            uint16_t fft_out[FFT_OUT_N] = {0};
+            uint16_t fft_out[vfx_disp_width];
             const uint16_t flush_period = 20;
+
+            memset(fft_out, 0x00, vfx_disp_width * sizeof(uint16_t));
 
             xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
 
@@ -181,7 +188,7 @@ static void vfx_task(void *pvParameter)
                     fft_execute(vfx.scale_factor / 1000.0);
                 }
 
-                fft_compute_lin(fft_out, vfx_disp_height, 1);
+                fft_compute_lin(fft_out, vfx_disp_width, 1, vfx_disp_height, 1);
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -194,33 +201,12 @@ static void vfx_task(void *pvParameter)
                 for (uint16_t i = 0; i < vfx_disp_width; i++) {
                     uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
-#if defined(CONFIG_VFX_OUTPUT_ST7735)
-                    uint16_t clear_x  = i * 3;
-                    uint16_t clear_cx = 3;
-                    uint16_t clear_y  = 0;
-                    uint16_t clear_cy = vfx_disp_height - fft_out[i];
-
-                    uint16_t fill_x  = i * 3;
-                    uint16_t fill_cx = 3;
-                    uint16_t fill_y  = vfx_disp_height - fft_out[i];
-                    uint16_t fill_cy = fft_out[i];
-#else
-                    uint16_t clear_x  = i * 4;
-                    uint16_t clear_cx = 4;
-                    uint16_t clear_y  = 0;
-                    uint16_t clear_cy = vfx_disp_height - fft_out[i];
-
-                    uint16_t fill_x  = i * 4;
-                    uint16_t fill_cx = 4;
-                    uint16_t fill_y  = vfx_disp_height - fft_out[i];
-                    uint16_t fill_cy = fft_out[i];
-#endif
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
-                    gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
+                    gdispGFillArea(vfx_gdisp, i, 0, 1, vfx_disp_height, Black);
+                    gdispGFillArea(vfx_gdisp, i, vfx_disp_height - fft_out[i], 1, fft_out[i], pixel_color);
 
                     if (mode == VFX_MODE_IDX_SPECTRUM_R_N) {
-                        if ((color_h += 8) == 512) {
-                            color_h = 0;
+                        if ((color_h += 2) >= 512) {
+                            color_h -= 512;
                         }
                     } else {
                         if (++color_h == 512) {
@@ -257,9 +243,11 @@ static void vfx_task(void *pvParameter)
             uint16_t color_h = 0;
             uint16_t color_l = vfx.lightness;
             uint16_t backlight = vfx.backlight;
-            uint16_t fft_out[FFT_OUT_N] = {0};
+            uint16_t fft_out[vfx_disp_width];
             uint16_t center_y = vfx_disp_height % 2 ? vfx_disp_height / 2 : vfx_disp_height / 2 - 1;
             const uint16_t flush_period = 20;
+
+            memset(fft_out, 0x00, vfx_disp_width * sizeof(uint16_t));
 
             xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
 
@@ -276,7 +264,7 @@ static void vfx_task(void *pvParameter)
                     fft_execute(vfx.scale_factor / 1000.0);
                 }
 
-                fft_compute_log(fft_out, vfx_disp_height / 2, 0);
+                fft_compute_log(fft_out, vfx_disp_width, 1, vfx_disp_height / 2, 0);
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
@@ -289,33 +277,12 @@ static void vfx_task(void *pvParameter)
                 for (uint16_t i = 0; i < vfx_disp_width; i++) {
                     uint32_t pixel_color = hsl2rgb(color_h / 511.0, 1.0, color_l / 511.0);
 
-#if defined(CONFIG_VFX_OUTPUT_ST7735)
-                    uint16_t clear_x  = i * 3;
-                    uint16_t clear_cx = 3;
-                    uint16_t clear_y  = 0;
-                    uint16_t clear_cy = vfx_disp_height;
-
-                    uint16_t fill_x  = i * 3;
-                    uint16_t fill_cx = 3;
-                    uint16_t fill_y  = center_y - fft_out[i];
-                    uint16_t fill_cy = fft_out[i] * 2 + 2;
-#else
-                    uint16_t clear_x  = i * 4;
-                    uint16_t clear_cx = 4;
-                    uint16_t clear_y  = 0;
-                    uint16_t clear_cy = vfx_disp_height;
-
-                    uint16_t fill_x  = i * 4;
-                    uint16_t fill_cx = 4;
-                    uint16_t fill_y  = center_y - fft_out[i];
-                    uint16_t fill_cy = fft_out[i] * 2 + 1;
-#endif
-                    gdispGFillArea(vfx_gdisp, clear_x, clear_y, clear_cx, clear_cy, Black);
-                    gdispGFillArea(vfx_gdisp, fill_x, fill_y, fill_cx, fill_cy, pixel_color);
+                    gdispGFillArea(vfx_gdisp, i, 0, 1, vfx_disp_height, Black);
+                    gdispGFillArea(vfx_gdisp, i, center_y - fft_out[i], 1, fft_out[i] * 2 + 1, pixel_color);
 
                     if (mode == VFX_MODE_IDX_SPECTRUM_R_L) {
-                        if ((color_h += 8) == 512) {
-                            color_h = 0;
+                        if ((color_h += 2) >= 512) {
+                            color_h -= 512;
                         }
                     } else {
                         if (++color_h == 512) {
@@ -349,9 +316,9 @@ static void vfx_task(void *pvParameter)
         case VFX_MODE_IDX_SPECTRUM_M_L: {   // 音樂頻譜-電平-對數
             vfx_mode_t mode = vfx.mode;
             uint16_t color_h = 0;
+            uint16_t color_p = 432;
             uint16_t color_l = vfx.lightness;
             uint16_t backlight = vfx.backlight;
-            uint16_t fft_out[FFT_OUT_N] = {0};
 #if defined(CONFIG_VFX_OUTPUT_ST7735)
             const uint8_t vu_idx_min = 0;
             const uint8_t vu_idx_max = 19;
@@ -369,16 +336,19 @@ static void vfx_task(void *pvParameter)
             const uint8_t vu_width = 10;
             const uint8_t vu_step = 6;
 #endif
-            static uint8_t vu_peak_value[24] = {0};
-            static uint8_t vu_peak_delay[24] = {0};
-            static uint8_t vu_drop_delay[24] = {0};
-            const uint16_t vu_peak_delay_cnt = 20;
-            const uint16_t vu_drop_delay_cnt = 2;
+            uint16_t fft_out[vu_idx_max + 1];
+            uint8_t vu_peak_value[vu_idx_max + 1];
+            uint8_t vu_peak_delay[vu_idx_max + 1];
+            uint8_t vu_drop_delay[vu_idx_max + 1];
+            const uint16_t vu_peak_delay_max = 19;
+            const uint16_t vu_drop_delay_max = 1;
             const uint16_t flush_period = 20;
 
-            memset(vu_peak_value, 0x00, sizeof(vu_peak_value));
-            memset(vu_peak_delay, vu_peak_delay_cnt - 1, sizeof(vu_peak_delay));
-            memset(vu_drop_delay, vu_drop_delay_cnt - 1, sizeof(vu_drop_delay));
+            memset(fft_out, 0x00, (vu_idx_max + 1) * sizeof(uint16_t));
+
+            memset(vu_peak_value, 0x00, (vu_idx_max + 1) * sizeof(uint8_t));
+            memset(vu_peak_delay, vu_peak_delay_max, (vu_idx_max + 1) * sizeof(uint8_t));
+            memset(vu_drop_delay, vu_drop_delay_max, (vu_idx_max + 1) * sizeof(uint8_t));
 
             xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
 
@@ -396,9 +366,9 @@ static void vfx_task(void *pvParameter)
                 }
 
                 if (mode == VFX_MODE_IDX_SPECTRUM_M_N) {
-                    fft_compute_lin(fft_out, vu_val_max, 0);
+                    fft_compute_lin(fft_out, vu_idx_max + 1, FFT_N / 64, vu_val_max, 0);
                 } else {
-                    fft_compute_log(fft_out, vu_val_max, 0);
+                    fft_compute_log(fft_out, vu_idx_max + 1, FFT_N / 64, vu_val_max, 0);
                 }
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
@@ -415,19 +385,19 @@ static void vfx_task(void *pvParameter)
                     if (vu_peak_delay[i]-- == 0) {
                         vu_peak_delay[i] = 0;
                         if (vu_drop_delay[i]-- == 0) {
-                            vu_drop_delay[i] = vu_drop_delay_cnt - 1;
+                            vu_drop_delay[i] = vu_drop_delay_max;
                             vu_peak_value[i]--;
                         }
                     }
                     if (vu_peak_value[i] <= vu_val_out) {
                         vu_peak_value[i] = vu_val_out;
-                        vu_peak_delay[i] = vu_peak_delay_cnt - 1 + vu_peak_delay[i] % vu_drop_delay_cnt;
+                        vu_peak_delay[i] = vu_peak_delay_max;
                     }
                     if (vu_peak_value[i] != vu_val_out) {
                         gdispGFillArea(vfx_gdisp, i * vu_width + 1, (vu_val_max - vu_peak_value[i]) * vu_height + 1, vu_width - 2, vu_height - 2, Black);
                     }
 
-                    uint32_t peak_color = hsl2rgb(432 / 511.0, 1.0, color_l / 511.0);
+                    uint32_t peak_color = hsl2rgb(color_p / 511.0, 1.0, color_l / 511.0);
                     gdispGFillArea(vfx_gdisp, i * vu_width + 1, (vu_val_max - vu_peak_value[i]) * vu_height + 1, vu_width - 2, vu_height - 2, peak_color);
 
                     color_h = 0;
@@ -438,11 +408,9 @@ static void vfx_task(void *pvParameter)
                             continue;
                         }
 
-                        if (j > vu_val_out || ((j == 0) && (vu_val_out == 0))) {
-                            // upside
+                        if (j > vu_val_out || (j == 0 && vu_val_out == 0)) {
                             gdispGFillArea(vfx_gdisp, i * vu_width + 1, (vu_val_max - j) * vu_height + 1, vu_width - 2, vu_height - 2, Black);
                         } else {
-                            // underside
                             gdispGFillArea(vfx_gdisp, i * vu_width + 1, (vu_val_max - j) * vu_height + 1, vu_width - 2, vu_height - 2, pixel_color);
                         }
 
@@ -599,18 +567,21 @@ static void vfx_task(void *pvParameter)
                     break;
                 }
 
-                vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, fade_cnt * color_l / 256.0);
+                vfx_fill_cube(0, 0, 0, 8, 8, 8, color_h, fade_cnt * color_l / 255.0);
 
                 if (scale_dir == 0) {
-                    // 暗->明
                     if (++fade_cnt == 256) {
+                        fade_cnt = 255;
+
                         scale_dir = 1;
                     }
                 } else {
-                    // 明->暗
-                    if (--fade_cnt == 0) {
-                        scale_dir = 0;
+                    if (fade_cnt-- == 0) {
+                        fade_cnt = 0;
+
                         color_h = esp_random() % 512;
+
+                        scale_dir = 0;
                     }
                 }
 
@@ -627,6 +598,7 @@ static void vfx_task(void *pvParameter)
             uint8_t x = 0;
             uint8_t y = 0;
             uint8_t z = 0;
+            int16_t led_base = 0;
             uint16_t led_num = 32;
             uint16_t led_idx[512] = {0};
             uint16_t color_h[512] = {0};
@@ -644,40 +616,42 @@ static void vfx_task(void *pvParameter)
             }
 
             for (uint16_t i = 0; i < 512; i++) {
-                uint16_t rnd = esp_random() % 512;
-                uint16_t tmp = led_idx[rnd];
-                led_idx[rnd] = led_idx[i];
-                led_idx[i] = tmp;
+                uint16_t r = esp_random() % 512;
+                uint16_t t = led_idx[r];
+                led_idx[r] = led_idx[i];
+                led_idx[i] = t;
             }
 
             for (uint16_t i = 0; i < 512; i++) {
-                uint16_t rnd = esp_random() % 512;
-                uint16_t tmp = color_h[rnd];
-                color_h[rnd] = color_h[i];
-                color_h[i] = tmp;
+                uint16_t r = esp_random() % 512;
+                uint16_t t = color_h[r];
+                color_h[r] = color_h[i];
+                color_h[i] = t;
             }
 
-            int16_t idx_base = -led_num;
+            led_base = -led_num;
             while (1) {
-                for (uint16_t i = 0; i <= 256; i++) {
+                for (uint16_t i = 0; i < 256; i++) {
                     xLastWakeTime = xTaskGetTickCount();
 
                     if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
                         goto exit;
                     }
 
-                    if (idx_base >= 0) {
-                        x = (led_idx[idx_base] % 64) % 8;
-                        y = (led_idx[idx_base] % 64) / 8;
-                        z = led_idx[idx_base] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base], (256 - i) * color_l / 256.0);
+                    if (led_base >= 0) {
+                        x = (led_idx[led_base] % 64) % 8;
+                        y = (led_idx[led_base] % 64) / 8;
+                        z = led_idx[led_base] / 64;
+
+                        vfx_draw_pixel(x, y, z, color_h[led_base], (255 - i) * color_l / 255.0);
                     }
 
-                    if ((idx_base + led_num) < 512) {
-                        x = (led_idx[idx_base + led_num] % 64) % 8;
-                        y = (led_idx[idx_base + led_num] % 64) / 8;
-                        z = led_idx[idx_base + led_num] / 64;
-                        vfx_draw_pixel(x, y, z, color_h[idx_base + led_num], i * color_l / 256.0);
+                    if ((led_base + led_num) < 512) {
+                        x = (led_idx[led_base + led_num] % 64) % 8;
+                        y = (led_idx[led_base + led_num] % 64) / 8;
+                        z = led_idx[led_base + led_num] / 64;
+
+                        vfx_draw_pixel(x, y, z, color_h[led_base + led_num], i * color_l / 255.0);
                     }
 
                     gtimerJab(&vfx_flush_timer);
@@ -685,8 +659,8 @@ static void vfx_task(void *pvParameter)
                     vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
                 }
 
-                if (++idx_base == 512) {
-                    idx_base = -led_num;
+                if (++led_base == 512) {
+                    led_base = -led_num;
                 }
             }
 exit:
@@ -802,7 +776,9 @@ exit:
 
             break;
         }
-        case VFX_MODE_IDX_ROTATING_F: {   // 旋轉曲面-正
+        case VFX_MODE_IDX_ROTATING_F:     // 旋轉曲面-正
+        case VFX_MODE_IDX_ROTATING_B: {   // 旋轉曲面-反
+            vfx_mode_t mode = vfx.mode;
             uint16_t frame_p = 0;
             uint16_t frame_i = 0;
             uint16_t color_l = vfx.lightness;
@@ -819,48 +795,17 @@ exit:
                 for (uint8_t i = 0; i < 8; i++) {
                     vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_i], color_l);
 
-                    if (++frame_i == 28) {
+                    if (mode == VFX_MODE_IDX_ROTATING_F && frame_i-- == 0) {
+                        frame_i = 27;
+                    } else if (mode == VFX_MODE_IDX_ROTATING_B && ++frame_i == 28) {
                         frame_i = 0;
                     }
                 }
 
-                if (++frame_p == 28) {
-                    frame_i = 0;
-                } else {
-                    frame_i = frame_p;
-                }
-
-                gtimerJab(&vfx_flush_timer);
-
-                vTaskDelayUntil(&xLastWakeTime, flush_period / portTICK_RATE_MS);
-            }
-
-            break;
-        }
-        case VFX_MODE_IDX_ROTATING_B: {   // 旋轉曲面-反
-            uint16_t frame_p = 0;
-            uint16_t frame_i = 0;
-            uint16_t color_l = vfx.lightness;
-            const uint16_t flush_period = 40;
-
-            while (1) {
-                xLastWakeTime = xTaskGetTickCount();
-
-                if (xEventGroupGetBits(user_event_group) & VFX_RLD_MODE_BIT) {
-                    break;
-                }
-
-                frame_p = frame_i;
-                for (uint8_t i = 0; i < 8; i++) {
-                    vfx_draw_layer_bitmap(i, vfx_bitmap_line[frame_i], color_l);
-
-                    if (frame_i-- == 0) {
-                        frame_i = 27;
-                    }
-                }
-
-                if (frame_p-- == 0) {
+                if (mode == VFX_MODE_IDX_ROTATING_F && frame_p-- == 0) {
                     frame_i = 27;
+                } else if (mode == VFX_MODE_IDX_ROTATING_B && ++frame_p == 28) {
+                    frame_i = 0;
                 } else {
                     frame_i = frame_p;
                 }
@@ -883,9 +828,7 @@ exit:
             uint16_t color_p = 504;
             uint16_t color_h = 504;
             uint16_t color_l = vfx.lightness;
-            uint16_t fft_out[FFT_OUT_N] = {0};
-            const coord_t canvas_width = 64;
-            const coord_t canvas_height = 8;
+            uint16_t fft_out[64] = {0};
             const uint16_t flush_period = 20;
 
             xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
@@ -904,9 +847,9 @@ exit:
                 }
 
                 if (mode == VFX_MODE_IDX_FOUNTAIN_S_N || mode == VFX_MODE_IDX_FOUNTAIN_G_N) {
-                    fft_compute_lin(fft_out, canvas_height, 1);
+                    fft_compute_lin(fft_out, 64, FFT_N / 64, 8, 1);
                 } else {
-                    fft_compute_log(fft_out, canvas_height, 1);
+                    fft_compute_log(fft_out, 64, FFT_N / 64, 8, 1);
                 }
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
@@ -917,27 +860,9 @@ exit:
                     color_h = color_p;
                 }
 
-                for (uint16_t i = 0; i < canvas_width; i++) {
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = canvas_height - fft_out[i];
-
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = canvas_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
-
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 0);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_h, color_l);
+                for (uint8_t i = 0; i < 64; i++) {
+                    vfx_fill_cube(x, 7 - y, 0, 1, 1, 8 - fft_out[i], 0, 0);
+                    vfx_fill_cube(x, 7 - y, 8 - fft_out[i], 1, 1, fft_out[i], color_h, color_l);
 
                     if (++y == 8) {
                         y = 0;
@@ -946,17 +871,17 @@ exit:
                         }
                     }
 
-                    if (color_h >= 8) {
-                        color_h -= 8;
-                    } else {
+                    if ((color_h - 8) < 0) {
                         color_h += 504;
+                    } else {
+                        color_h -= 8;
                     }
                 }
 
                 if (++color_d == 2) {
                     color_d = 0;
-                    if (++color_p == 512) {
-                        color_p = 0;
+                    if (color_p-- == 0) {
+                        color_p = 511;
                     }
                 }
 
@@ -978,7 +903,7 @@ exit:
             uint8_t color_d = 0;
             uint16_t color_h[64] = {0};
             uint16_t color_l = vfx.lightness;
-            uint16_t fft_out[FFT_OUT_N] = {0};
+            uint16_t fft_out[64] = {0};
             const uint8_t led_idx_table[2][64] = {
                 {
                     3, 4, 4, 3, 2, 2, 2, 3, 4, 5, 5, 5, 5, 4, 3, 2,
@@ -992,12 +917,10 @@ exit:
                     0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7
                 }
             };
-            const coord_t canvas_width = 64;
-            const coord_t canvas_height = 8;
             const uint16_t flush_period = 20;
 
-            for (uint16_t i = 0; i < 64; i++) {
-                color_h[i] = 504 - i * 8;
+            for (uint8_t i = 0; i < 64; i++) {
+                color_h[i] = i * 8;
             }
 
             xEventGroupSetBits(user_event_group, VFX_FFT_MODE_BIT);
@@ -1016,42 +939,22 @@ exit:
                 }
 
                 if (mode == VFX_MODE_IDX_FOUNTAIN_H_N) {
-                    fft_compute_lin(fft_out, canvas_height, 1);
+                    fft_compute_lin(fft_out, 64, FFT_N / 64, 8, 1);
                 } else {
-                    fft_compute_log(fft_out, canvas_height, 1);
+                    fft_compute_log(fft_out, 64, FFT_N / 64, 8, 1);
                 }
 
                 xEventGroupSetBits(user_event_group, VFX_FFT_IDLE_BIT);
 
-                for (uint16_t i = 0; i < canvas_width; i++) {
+                for (uint8_t i = 0; i < 64; i++) {
                     x = led_idx_table[0][i];
                     y = led_idx_table[1][i];
 
-                    uint8_t clear_x  = x;
-                    uint8_t clear_cx = 1;
-                    uint8_t clear_y  = 7 - y;
-                    uint8_t clear_cy = 1;
-                    uint8_t clear_z  = 0;
-                    uint8_t clear_cz = canvas_height - fft_out[i];
+                    vfx_fill_cube(x, 7 - y, 0, 1, 1, 8 - fft_out[i], 0, 0);
+                    vfx_fill_cube(x, 7 - y, 8 - fft_out[i], 1, 1, fft_out[i], color_h[i], color_l);
 
-                    uint8_t fill_x  = x;
-                    uint8_t fill_cx = 1;
-                    uint8_t fill_y  = 7 - y;
-                    uint8_t fill_cy = 1;
-                    uint8_t fill_z  = canvas_height - fft_out[i];
-                    uint8_t fill_cz = fft_out[i];
-
-                    vfx_fill_cube(clear_x, clear_y, clear_z,
-                                  clear_cx, clear_cy, clear_cz,
-                                  0, 0);
-                    vfx_fill_cube(fill_x, fill_y, fill_z,
-                                  fill_cx, fill_cy, fill_cz,
-                                  color_h[i], color_l);
-
-                    if (color_n) {
-                        if (++color_h[i] == 512) {
-                            color_h[i] = 0;
-                        }
+                    if (color_n && color_h[i]-- == 0) {
+                        color_h[i] = 511;
                     }
                 }
 
