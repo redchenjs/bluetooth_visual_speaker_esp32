@@ -132,7 +132,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     LLDSPEC void gdisp_lld_write_color(GDisplay *g) {
         uint16_t pos = write_y * g->g.Width + write_x;
         LLDCOLOR_TYPE c = gdispColor2Native(g->p.color);
-#ifdef CONFIG_LED_COLOR_ORDER_GRB
+#ifdef CONFIG_LED_COLOR_ODR_GRB
         *((uint8_t *)g->priv + pos * 3 + 0) = c >> 8;
         *((uint8_t *)g->priv + pos * 3 + 1) = c >> 16;
         *((uint8_t *)g->priv + pos * 3 + 2) = c;
@@ -170,7 +170,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     }
     LLDSPEC color_t gdisp_lld_read_color(GDisplay *g) {
         uint16_t pos = read_y * g->g.Width + read_x;
-#ifdef CONFIG_LED_COLOR_ORDER_GRB
+#ifdef CONFIG_LED_COLOR_ODR_GRB
         LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + pos * 3 + 0) << 8)
                         | (*((uint8_t *)g->priv + pos * 3 + 1) << 16)
                         | (*((uint8_t *)g->priv + pos * 3 + 2));

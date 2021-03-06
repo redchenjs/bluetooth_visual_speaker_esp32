@@ -209,21 +209,21 @@ config LCD_ROTATION_DEGREE
 config LED_PANEL_CASCADE
     int "LED Panel Cascade"
     default 1
-    range 1 4
+    range 1 8
     depends on ENABLE_VFX && VFX_OUTPUT_WS2812
 
 choice LED_COLOR_ORDER
     prompt "LED Color Order"
-    default LED_COLOR_ORDER_RGB
+    default LED_COLOR_ODR_RGB
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
 
-config LED_COLOR_ORDER_RGB
+config LED_COLOR_ODR_RGB
     bool "R-G-B"
-config LED_COLOR_ORDER_GRB
+config LED_COLOR_ODR_GRB
     bool "G-R-B"
 endchoice
 
-choice LED_LAYER_DIR
+choice LED_LAYER_DIRECTION
     prompt "LED Layer Direction"
     default LED_LAYER_DIR_XYZ
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
@@ -287,10 +287,15 @@ config LED_T1L_TIME
     range 1 255
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
 
-config WS2812_DIN_PIN
-    int "WS2812 DIN Pin"
+config WS2812_DIN0_PIN
+    int "WS2812 DIN0 Pin"
     default 18
     depends on ENABLE_VFX && VFX_OUTPUT_WS2812
+
+config WS2812_DIN1_PIN
+    int "WS2812 DIN1 Pin"
+    default 19
+    depends on ENABLE_VFX && VFX_OUTPUT_WS2812 && LED_PANEL_CASCADE > 4
 
 config CUBE0414_RST_PIN
     int "CUBE0414 RST Pin"

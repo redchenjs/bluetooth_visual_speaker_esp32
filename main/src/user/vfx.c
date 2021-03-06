@@ -1001,8 +1001,10 @@ exit:
 
             vTaskDelay(500 / portTICK_RATE_MS);
 #endif
+
             if (vfx.mode != VFX_MODE_IDX_PAUSE) {
                 gdispGClear(vfx_gdisp, Black);
+
                 gtimerJab(&vfx_flush_timer);
             }
         }
