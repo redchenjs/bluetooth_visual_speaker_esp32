@@ -87,10 +87,10 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     gfxSleepMilliseconds(120);
 
     write_cmd(g, CUBE0414_CONF_WR);     //  1: set write reg conf, 4 args, no delay:
-        write_data(g, CONFIG_CUBE0414_LED_T0H);    // T0H Time: val * 10 ns
-        write_data(g, CONFIG_CUBE0414_LED_T0L);    // T0L Time: val * 10 ns
-        write_data(g, CONFIG_CUBE0414_LED_T1H);    // T1H Time: val * 10 ns
-        write_data(g, CONFIG_CUBE0414_LED_T1L);    // T1L Time: val * 10 ns
+        write_data(g, CONFIG_LED_T0H_TIME); // T0H Time: val * 10 ns
+        write_data(g, CONFIG_LED_T0L_TIME); // T0L Time: val * 10 ns
+        write_data(g, CONFIG_LED_T1H_TIME); // T1H Time: val * 10 ns
+        write_data(g, CONFIG_LED_T1L_TIME); // T1L Time: val * 10 ns
 #endif
     write_cmd(g, CUBE0414_ADDR_WR);     //  2: set write ram addr, 64 args, no delay:
         write_buff(g, (uint8_t *)ram_addr_table, sizeof(ram_addr_table));

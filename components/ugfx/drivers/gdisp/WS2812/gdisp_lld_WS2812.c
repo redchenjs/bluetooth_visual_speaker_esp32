@@ -45,11 +45,17 @@
 #define GDISP_FLG_NEEDFLUSH         (GDISP_FLG_DRIVER << 0)
 
 LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
+    g->priv = gfxAlloc(GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 3);
+    if (g->priv == NULL) {
+        gfxHalt("GDISP WS2812: Failed to allocate private memory");
+    }
+
+    memset(g->priv, 0x00, GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 3);
+
     // initialise the board interface
     init_board(g);
 
-    // clear
-    clear(g);
+    refresh_gram(g, (uint8_t *)g->priv);
 
     /* initialise the GDISP structure */
     g->g.Width  = GDISP_SCREEN_WIDTH;
@@ -67,7 +73,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         if (!(g->flags & GDISP_FLG_NEEDFLUSH)) {
             return;
         }
-        refresh(g);
+        refresh_gram(g, (uint8_t *)g->priv);
         g->flags &= ~GDISP_FLG_NEEDFLUSH;
     }
 #endif
@@ -87,15 +93,14 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         uint16_t pos = write_y * g->g.Width + write_x;
         LLDCOLOR_TYPE c = gdispColor2Native(g->p.color);
 #ifdef CONFIG_LED_COLOR_ORDER_GRB
-        uint8_t red   = c >> 16;
-        uint8_t green = c >> 8;
-        uint8_t blue  = c;
+        *((uint8_t *)g->priv + pos * 3 + 0) = c >> 8;
+        *((uint8_t *)g->priv + pos * 3 + 1) = c >> 16;
+        *((uint8_t *)g->priv + pos * 3 + 2) = c;
 #else
-        uint8_t red   = c >> 8;
-        uint8_t green = c >> 16;
-        uint8_t blue  = c;
+        *((uint8_t *)g->priv + pos * 3 + 0) = c >> 16;
+        *((uint8_t *)g->priv + pos * 3 + 1) = c >> 8;
+        *((uint8_t *)g->priv + pos * 3 + 2) = c;
 #endif
-        set_pixel(g, pos, red, green, blue);
         write_x++;
         if (--write_cx == 0) {
             write_x  = g->p.x;
@@ -110,6 +115,43 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     LLDSPEC void gdisp_lld_write_stop(GDisplay *g) {
         g->flags |= GDISP_FLG_NEEDFLUSH;
     }
+#endif
+
+#if GDISP_HARDWARE_STREAM_READ
+    static uint8_t read_x  = 0;
+    static uint8_t read_cx = 0;
+    static uint8_t read_y  = 0;
+    static uint8_t read_cy = 0;
+    LLDSPEC void gdisp_lld_read_start(GDisplay *g) {
+        read_x  = g->p.x;
+        read_cx = g->p.cx;
+        read_y  = g->p.y;
+        read_cy = g->p.cy;
+    }
+    LLDSPEC color_t gdisp_lld_read_color(GDisplay *g) {
+        uint16_t pos = read_y * g->g.Width + read_x;
+#ifdef CONFIG_LED_COLOR_ORDER_GRB
+        LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + pos * 3 + 0) << 8)
+                        | (*((uint8_t *)g->priv + pos * 3 + 1) << 16)
+                        | (*((uint8_t *)g->priv + pos * 3 + 2));
+#else
+        LLDCOLOR_TYPE c = (*((uint8_t *)g->priv + pos * 3 + 0) << 16)
+                        | (*((uint8_t *)g->priv + pos * 3 + 1) << 8)
+                        | (*((uint8_t *)g->priv + pos * 3 + 2));
+#endif
+        read_x++;
+        if (--read_cx == 0) {
+            read_x  = g->p.x;
+            read_cx = g->p.cx;
+            read_y++;
+            if (--read_cy == 0) {
+                read_y  = g->p.y;
+                read_cy = g->p.cy;
+            }
+        }
+        return c;
+    }
+    LLDSPEC void gdisp_lld_read_stop(GDisplay *g) {}
 #endif
 
 #endif /* GFX_USE_GDISP */

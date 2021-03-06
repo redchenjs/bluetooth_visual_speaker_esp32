@@ -16,8 +16,6 @@
 
 extern void ws2812_init_board(void);
 
-extern void ws2812_set_pixel(uint16_t index, uint8_t red, uint8_t green, uint8_t blue);
-extern void ws2812_refresh(void);
-extern void ws2812_clear(void);
+extern void ws2812_refresh_gram(uint8_t *gram);
 
 #endif /* INC_BOARD_WS2812_H_ */

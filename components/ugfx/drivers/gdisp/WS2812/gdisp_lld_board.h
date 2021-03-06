@@ -10,9 +10,7 @@
 
 #include "board/ws2812.h"
 
-#define init_board(g)                           ws2812_init_board()
-#define set_pixel(g, index, red, green, blue)   ws2812_set_pixel(index, red, green, blue)
-#define refresh(g)                              ws2812_refresh()
-#define clear(g)                                ws2812_clear()
+#define init_board(g)           ws2812_init_board()
+#define refresh_gram(g, gram)   ws2812_refresh_gram(gram)
 
 #endif /* _GDISP_LLD_BOARD_H */
