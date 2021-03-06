@@ -79,7 +79,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     // initialise the board interface
     init_board(g);
 
-#ifdef CONFIG_CUBE0414_REV_3
+#ifdef CONFIG_CUBE0414_RTL_REV_3
     // hardware reset
     setpin_reset(g, 0);
     gfxSleepMilliseconds(120);

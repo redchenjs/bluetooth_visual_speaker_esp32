@@ -76,7 +76,7 @@ idf.py flash monitor
 
 <img src="docs/ws2812.png">
 
-## VFX on CUBE0414 8x8x8 Music Light Cube
+## VFX on CUBE0414 8x8x8 LED Light Cube
 
 <img src="docs/cube0414.png">
 

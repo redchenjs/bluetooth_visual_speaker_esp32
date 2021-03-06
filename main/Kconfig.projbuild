@@ -4,22 +4,16 @@ menu "Bluetooth Configuration"
 config BT_NAME
     string "Bluetooth Name"
     default "Bluetooth Visual Speaker"
-    help
-        Bluetooth name exposed by the device.
 
 config ENABLE_BLE_CONTROL_IF
     bool "Enable BLE Control Interface"
     default n
-    help
-        Select this to enable BLE OTA and RC features.
 endmenu
 
 menu "Audio Configuration"
 menuconfig ENABLE_AUDIO_PROMPT
     bool "Enable Audio Prompt"
     default y
-    help
-        Select this to enable Audio Prompt.
 
 config AUDIO_PROMPT_CONNECTED
     bool "Connected"
@@ -44,8 +38,6 @@ config AUDIO_PROMPT_WAKEUP
 choice AUDIO_OUTPUT
     prompt "Audio Output"
     default AUDIO_OUTPUT_I2S1
-    help
-        Select Audio Output Interface.
 
     config AUDIO_OUTPUT_I2S0
         bool "I2S-0"
@@ -62,8 +54,6 @@ config AUDIO_OUTPUT_I2S_NUM
 choice AUDIO_INPUT
     prompt "Audio Input"
     default AUDIO_INPUT_NONE
-    help
-        Select Audio Input Interface.
 
     config AUDIO_INPUT_NONE
         bool "None"
@@ -136,45 +126,37 @@ menu "VFX Configuration"
 config ENABLE_VFX
     bool "Enable Visual Effects Output"
     default n
-    help
-        Select this to enable Visual Effects Output.
 
 choice AUDIO_INPUT_FFT_CHANNEL
-    prompt "Audio Input FFT Channel"
+    prompt "Audio FFT Channel - Input"
     default AUDIO_INPUT_FFT_ONLY_LEFT
     depends on ENABLE_VFX && !AUDIO_INPUT_NONE
-    help
-        Select Audio Input FFT Channel.
 
 config AUDIO_INPUT_FFT_ONLY_LEFT
-    bool "Left Channel"
+    bool "Left"
 config AUDIO_INPUT_FFT_ONLY_RIGHT
-    bool "Right Channel"
+    bool "Right"
 config AUDIO_INPUT_FFT_BOTH
-    bool "Both Channel"
+    bool "Both"
 endchoice
 
 choice BT_AUDIO_FFT_CHANNEL
-    prompt "Bluetooth Audio FFT Channel"
+    prompt "Audio FFT Channel - Bluetooth"
     default BT_AUDIO_FFT_BOTH
     depends on ENABLE_VFX
-    help
-        Select Bluetooth Audio FFT Channel.
 
 config BT_AUDIO_FFT_ONLY_LEFT
-    bool "Left Channel"
+    bool "Left"
 config BT_AUDIO_FFT_ONLY_RIGHT
-    bool "Right Channel"
+    bool "Right"
 config BT_AUDIO_FFT_BOTH
-    bool "Both Channel"
+    bool "Both"
 endchoice
 
 choice VFX_OUTPUT
     prompt "VFX Output Device"
     default VFX_OUTPUT_CUBE0414
     depends on ENABLE_VFX
-    help
-        Select which device to output VFX.
 
 config VFX_OUTPUT_WS2812
     bool "WS2812 8x8 LED Panel"
@@ -183,15 +165,35 @@ config VFX_OUTPUT_ST7735
 config VFX_OUTPUT_ST7789
     bool "ST7789 135x240 LCD Panel"
 config VFX_OUTPUT_CUBE0414
-    bool "CUBE0414 8x8x8 Music Light Cube"
+    bool "CUBE0414 8x8x8 LED Light Cube"
+endchoice
+
+choice CUBE0414_RTL_REVISION
+    prompt "CUBE0414 RTL Revision"
+    default CUBE0414_RTL_REV_3
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+
+config CUBE0414_RTL_REV_2
+    bool "Rev 2"
+config CUBE0414_RTL_REV_3
+    bool "Rev 3"
+endchoice
+
+choice CUBE0414_LINE_TYPE
+    prompt "CUBE0414 Line Type"
+    default CUBE0414_LINE_S_CURVE
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
+
+config CUBE0414_LINE_NORMAL
+    bool "Normal"
+config CUBE0414_LINE_S_CURVE
+    bool "S Curve"
 endchoice
 
 choice LCD_ORIENTATION
     prompt "LCD Orientation"
     default LCD_ORIENTATION_NORMAL
     depends on ENABLE_VFX && !VFX_OUTPUT_WS2812 && !VFX_OUTPUT_CUBE0414
-    help
-        Select LCD orientation.
 
 config LCD_ORIENTATION_NORMAL
     bool "Normal"
@@ -214,8 +216,6 @@ choice LED_COLOR_ORDER
     prompt "LED Color Order"
     default LED_COLOR_ORDER_RGB
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
-    help
-        Select LED color order.
 
 config LED_COLOR_ORDER_RGB
     bool "R-G-B"
@@ -227,8 +227,6 @@ choice LED_LAYER_DIR
     prompt "LED Layer Direction"
     default LED_LAYER_DIR_XYZ
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
-    help
-        Select LED layer direction.
 
 config LED_LAYER_DIR_XYZ
     bool "X-Y-Z"
@@ -259,74 +257,48 @@ config LED_LAYER_INV_Z
     default n
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
 
-choice CUBE0414_REVISION
-    prompt "CUBE0414 Revision"
-    default CUBE0414_REV_3
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
-    help
-        Select CUBE0414 revision.
-
-config CUBE0414_REV_2
-    bool "Rev 2"
-config CUBE0414_REV_3
-    bool "Rev 3"
-endchoice
-
-choice CUBE0414_LINE_TYPE
-    prompt "CUBE0414 Line Type"
-    default CUBE0414_LINE_S_CURVE
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
-    help
-        Select CUBE0414 line type.
-
-config CUBE0414_LINE_NORMAL
-    bool "Normal"
-config CUBE0414_LINE_S_CURVE
-    bool "S Curve"
-endchoice
-
 comment "Limit: T0H + T0L <= 257"
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3
 
 config LED_T0H_TIME
     int "LED T0H Time (10 ns)"
     default 40
     range 1 255
-    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3))
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
 
 config LED_T0L_TIME
     int "LED T0L Time (10 ns)"
     default 85
     range 1 255
-    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3))
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
 
 comment "Limit: T1H + T1L <= 257"
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3
 
 config LED_T1H_TIME
     int "LED T1H Time (10 ns)"
     default 85
     range 1 255
-    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3))
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
 
 config LED_T1L_TIME
     int "LED T1L Time (10 ns)"
     default 40
     range 1 255
-    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3))
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
 
 config WS2812_DIN_PIN
     int "WS2812 DIN Pin"
     default 18
     depends on ENABLE_VFX && VFX_OUTPUT_WS2812
 
-config DEV_RST_PIN
-    int "DEV RST Pin"
+config CUBE0414_RST_PIN
+    int "CUBE0414 RST Pin"
     default 14
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_REV_3
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3
 
-config DEV_DC_PIN
-    int "DEV DC Pin"
+config CUBE0414_DC_PIN
+    int "CUBE0414 DC Pin"
     default 23
     depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
 
@@ -365,15 +337,11 @@ menu "LED Configuration"
 config ENABLE_LED
     bool "Enable LED"
     default n
-    help
-        Select this to enable LED Output.
 
 choice LED_ACTIVE_LEVEL
     prompt "LED Active Level"
     default LED_ACTIVE_HIGH
     depends on ENABLE_LED
-    help
-        Select LED Active Level.
 
 config LED_ACTIVE_HIGH
     bool "Active High"
@@ -391,8 +359,6 @@ menu "Key Configuration"
 config ENABLE_SLEEP_KEY
     bool "Enable Sleep Key"
     default n
-    help
-        Select this to enable Sleep Key.
 
 config SLEEP_KEY_HOLD_TIME
     int "Sleep Key Hold Time (ms)"
@@ -403,8 +369,6 @@ choice SLEEP_KEY_ACTIVE_LEVEL
     prompt "Sleep Key Active Level"
     default SLEEP_KEY_ACTIVE_LOW
     depends on ENABLE_SLEEP_KEY
-    help
-        Select Sleep Key Active Level.
 
 config SLEEP_KEY_ACTIVE_HIGH
     bool "Active High"
