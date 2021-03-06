@@ -12,6 +12,7 @@
 
 #define WS2812_X 8
 #define WS2812_Y 8
+#define WS2812_Z CONFIG_LED_PANEL_CASCADE
 
 extern void ws2812_init_board(void);
 

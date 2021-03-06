@@ -204,6 +204,12 @@ config LCD_ROTATION_DEGREE
     default  90 if LCD_ORIENTATION_NORMAL
     default 270 if LCD_ORIENTATION_UPSIDE_DOWN
 
+config LED_PANEL_CASCADE
+    int "LED Panel Cascade"
+    default 1
+    range 1 4
+    depends on ENABLE_VFX && VFX_OUTPUT_WS2812
+
 choice LED_COLOR_ORDER
     prompt "LED Color Order"
     default LED_COLOR_ORDER_RGB
