@@ -87,13 +87,17 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     gfxSleepMilliseconds(120);
 
     write_cmd(g, CUBE0414_CONF_WR);     //  1: set write reg conf, 4 args, no delay:
-        write_data(g, CONFIG_LED_T0H_TIME); // T0H Time: val * 10 ns
-        write_data(g, CONFIG_LED_T0L_TIME); // T0L Time: val * 10 ns
-        write_data(g, CONFIG_LED_T1H_TIME); // T1H Time: val * 10 ns
-        write_data(g, CONFIG_LED_T1L_TIME); // T1L Time: val * 10 ns
+        write_data(g, CONFIG_LED_T0H_TIME - 1); // T0H time (10 ns): 0 - 255
+        write_data(g, CONFIG_LED_T0L_TIME - 1); // T0L time (10 ns): 0 - 255
+        write_data(g, CONFIG_LED_T1H_TIME - 1); // T1H time (10 ns): 0 - 255
+        write_data(g, CONFIG_LED_T1L_TIME - 1); // T1L time (10 ns): 0 - 255
+        write_data(g, CONFIG_LED_CHAN_LEN - 1); // channel length: 0 - 255
+        write_data(g, CONFIG_LED_CHAN_CNT - 1); // channel count: 0 - 15
 #endif
     write_cmd(g, CUBE0414_ADDR_WR);     //  2: set write ram addr, 64 args, no delay:
+    for (int i = 0; i < 8; i++) {
         write_buff(g, (uint8_t *)ram_addr_table, sizeof(ram_addr_table));
+    }
     write_cmd(g, CUBE0414_DATA_WR);     //  3: set write ram data, N args, no delay:
         write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 3);
 

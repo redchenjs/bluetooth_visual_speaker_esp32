@@ -46,7 +46,7 @@ void hspi_init(void)
         .clock_speed_hz = 40000000,               // clock out at 40 MHz
         .pre_cb = st7789_setpin_dc,               // specify pre-transfer callback to handle D/C line
 #else
-        .clock_speed_hz = 40000000,               // clock out at 40 MHz
+        .clock_speed_hz = 26000000,               // clock out at 26 MHz
         .pre_cb = cube0414_setpin_dc,             // specify pre-transfer callback to handle D/C line
 #endif
         .queue_size = 2,                          // we want to be able to queue 2 transactions at a time

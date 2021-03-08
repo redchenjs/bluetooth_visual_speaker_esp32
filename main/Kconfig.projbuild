@@ -257,35 +257,41 @@ config LED_LAYER_INV_Z
     default n
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
 
-comment "Limit: T0H + T0L <= 257"
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3
-
 config LED_T0H_TIME
     int "LED T0H Time (10 ns)"
     default 40
-    range 1 255
+    range 1 256
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
 
 config LED_T0L_TIME
     int "LED T0L Time (10 ns)"
     default 85
-    range 1 255
+    range 1 256
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
-
-comment "Limit: T1H + T1L <= 257"
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3
 
 config LED_T1H_TIME
     int "LED T1H Time (10 ns)"
     default 85
-    range 1 255
+    range 1 256
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
 
 config LED_T1L_TIME
     int "LED T1L Time (10 ns)"
     default 40
-    range 1 255
+    range 1 256
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
+
+config LED_CHAN_LEN
+    int "LED Channel Length"
+    default 64
+    range 1 256
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3
+
+config LED_CHAN_CNT
+    int "LED Channel Count"
+    default 8
+    range 1 16
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3
 
 config WS2812_DIN0_PIN
     int "WS2812 DIN0 Pin"
