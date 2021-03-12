@@ -179,17 +179,6 @@ config CUBE0414_RTL_REV_3
     bool "Rev 3"
 endchoice
 
-choice CUBE0414_LINE_TYPE
-    prompt "CUBE0414 Line Type"
-    default CUBE0414_LINE_S_CURVE
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
-
-config CUBE0414_LINE_NORMAL
-    bool "Normal"
-config CUBE0414_LINE_S_CURVE
-    bool "S Curve"
-endchoice
-
 choice LCD_ORIENTATION
     prompt "LCD Orientation"
     default LCD_ORIENTATION_NORMAL
@@ -206,11 +195,16 @@ config LCD_ROTATION_DEGREE
     default  90 if LCD_ORIENTATION_NORMAL
     default 270 if LCD_ORIENTATION_UPSIDE_DOWN
 
-config LED_PANEL_CASCADE
-    int "LED Panel Cascade"
-    default 1
-    range 1 8
-    depends on ENABLE_VFX && VFX_OUTPUT_WS2812
+choice LED_SCAN_TYPE
+    prompt "LED Scan Type"
+    default LED_SCAN_S_CURVE
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
+
+config LED_SCAN_S_CURVE
+    bool "S Curve"
+config LED_SCAN_LINE_BY_LINE
+    bool "Line by line"
+endchoice
 
 choice LED_COLOR_ORDER
     prompt "LED Color Order"
@@ -256,6 +250,12 @@ config LED_LAYER_INV_Z
     bool "LED Layer Z-Inverted"
     default n
     depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || VFX_OUTPUT_CUBE0414)
+
+config LED_PANEL_CASCADE
+    int "LED Panel Cascade"
+    default 1
+    range 1 8
+    depends on ENABLE_VFX && VFX_OUTPUT_WS2812
 
 config LED_T0H_TIME
     int "LED T0H Time (10 ns)"
