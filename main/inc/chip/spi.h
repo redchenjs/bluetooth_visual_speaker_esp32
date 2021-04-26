@@ -10,8 +10,11 @@
 
 #include "driver/spi_master.h"
 
-extern spi_device_handle_t hspi;
+#define SPI_HOST_TAG "spi-2"
+#define SPI_HOST_NUM SPI2_HOST
 
-extern void hspi_init(void);
+extern spi_device_handle_t spi_host;
+
+extern void spi_host_init(void);
 
 #endif /* INC_CHIP_SPI_H_ */

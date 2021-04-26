@@ -10,7 +10,7 @@
 #include "esp_log.h"
 
 #include "freertos/FreeRTOS.h"
-#include "driver/i2s.h"
+#include "freertos/task.h"
 
 #include "core/os.h"
 #include "core/app.h"

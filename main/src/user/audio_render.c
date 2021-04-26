@@ -11,8 +11,6 @@
 #include "freertos/ringbuf.h"
 #include "freertos/task.h"
 
-#include "driver/i2s.h"
-
 #include "core/os.h"
 #include "chip/i2s.h"
 

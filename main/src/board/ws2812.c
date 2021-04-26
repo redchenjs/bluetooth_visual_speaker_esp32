@@ -10,7 +10,6 @@
 #include "esp_log.h"
 
 #include "driver/rmt.h"
-
 #include "board/ws2812.h"
 
 #ifdef CONFIG_VFX_OUTPUT_WS2812

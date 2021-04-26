@@ -11,8 +11,6 @@
 
 #include "driver/gpio.h"
 #include "driver/ledc.h"
-#include "driver/spi_master.h"
-
 #include "drivers/gdisp/ST7789/ST7789.h"
 
 #include "chip/spi.h"
@@ -22,11 +20,11 @@
 
 #define TAG "st7789"
 
-static spi_transaction_t hspi_trans[2];
+static spi_transaction_t spi_trans[2];
 
 void st7789_init_board(void)
 {
-    memset(hspi_trans, 0x00, sizeof(hspi_trans));
+    memset(spi_trans, 0x00, sizeof(spi_trans));
 
     gpio_config_t io_conf = {
         .pin_bit_mask = BIT64(CONFIG_LCD_DC_PIN) | BIT64(CONFIG_LCD_RST_PIN),
@@ -78,44 +76,44 @@ void st7789_setpin_reset(uint8_t val)
 
 void st7789_write_cmd(uint8_t cmd)
 {
-    hspi_trans[0].length = 8;
-    hspi_trans[0].tx_buffer = &cmd;
-    hspi_trans[0].user = (void *)0;
+    spi_trans[0].length = 8;
+    spi_trans[0].tx_buffer = &cmd;
+    spi_trans[0].user = (void *)0;
 
-    spi_device_transmit(hspi, &hspi_trans[0]);
+    spi_device_transmit(spi_host, &spi_trans[0]);
 }
 
 void st7789_write_data(uint8_t data)
 {
-    hspi_trans[0].length = 8;
-    hspi_trans[0].tx_buffer = &data;
-    hspi_trans[0].user = (void *)1;
+    spi_trans[0].length = 8;
+    spi_trans[0].tx_buffer = &data;
+    spi_trans[0].user = (void *)1;
 
-    spi_device_transmit(hspi, &hspi_trans[0]);
+    spi_device_transmit(spi_host, &spi_trans[0]);
 }
 
 void st7789_write_buff(uint8_t *buff, uint32_t n)
 {
-    hspi_trans[0].length = n * 8;
-    hspi_trans[0].tx_buffer = buff;
-    hspi_trans[0].user = (void *)1;
+    spi_trans[0].length = n * 8;
+    spi_trans[0].tx_buffer = buff;
+    spi_trans[0].user = (void *)1;
 
-    spi_device_transmit(hspi, &hspi_trans[0]);
+    spi_device_transmit(spi_host, &spi_trans[0]);
 }
 
 void st7789_refresh_gram(uint8_t *gram)
 {
-    hspi_trans[0].length = 8,
-    hspi_trans[0].tx_data[0] = ST7789_RAMWR;
-    hspi_trans[0].user = (void *)0;
-    hspi_trans[0].flags = SPI_TRANS_USE_TXDATA;
+    spi_trans[0].length = 8,
+    spi_trans[0].tx_data[0] = ST7789_RAMWR;
+    spi_trans[0].user = (void *)0;
+    spi_trans[0].flags = SPI_TRANS_USE_TXDATA;
 
-    spi_device_queue_trans(hspi, &hspi_trans[0], portMAX_DELAY);
+    spi_device_queue_trans(spi_host, &spi_trans[0], portMAX_DELAY);
 
-    hspi_trans[1].length = ST7789_SCREEN_WIDTH * ST7789_SCREEN_HEIGHT * 2 * 8;
-    hspi_trans[1].tx_buffer = gram;
-    hspi_trans[1].user = (void *)1;
+    spi_trans[1].length = ST7789_SCREEN_WIDTH * ST7789_SCREEN_HEIGHT * 2 * 8;
+    spi_trans[1].tx_buffer = gram;
+    spi_trans[1].user = (void *)1;
 
-    spi_device_queue_trans(hspi, &hspi_trans[1], portMAX_DELAY);
+    spi_device_queue_trans(spi_host, &spi_trans[1], portMAX_DELAY);
 }
 #endif

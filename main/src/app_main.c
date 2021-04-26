@@ -42,7 +42,7 @@ static void chip_init(void)
 #endif
 
 #if defined(CONFIG_ENABLE_VFX) && !defined(CONFIG_VFX_OUTPUT_WS2812)
-    hspi_init();
+    spi_host_init();
 #endif
 }
 
