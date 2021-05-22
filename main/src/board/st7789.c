@@ -5,8 +5,6 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
-#include <string.h>
-
 #include "esp_log.h"
 
 #include "driver/gpio.h"
@@ -20,12 +18,10 @@
 
 #define TAG "st7789"
 
-static spi_transaction_t spi_trans[2];
+static spi_transaction_t spi_trans[2] = {0};
 
 void st7789_init_board(void)
 {
-    memset(spi_trans, 0x00, sizeof(spi_trans));
-
     gpio_config_t io_conf = {
         .pin_bit_mask = BIT64(CONFIG_LCD_DC_PIN) | BIT64(CONFIG_LCD_RST_PIN),
         .mode = GPIO_MODE_OUTPUT,
@@ -77,8 +73,11 @@ void st7789_setpin_reset(uint8_t val)
 void st7789_write_cmd(uint8_t cmd)
 {
     spi_trans[0].length = 8;
+    spi_trans[0].rxlength = 0;
     spi_trans[0].tx_buffer = &cmd;
+    spi_trans[0].rx_buffer = NULL;
     spi_trans[0].user = (void *)0;
+    spi_trans[0].flags = 0;
 
     spi_device_transmit(spi_host, &spi_trans[0]);
 }
@@ -86,8 +85,11 @@ void st7789_write_cmd(uint8_t cmd)
 void st7789_write_data(uint8_t data)
 {
     spi_trans[0].length = 8;
+    spi_trans[0].rxlength = 0;
     spi_trans[0].tx_buffer = &data;
+    spi_trans[0].rx_buffer = NULL;
     spi_trans[0].user = (void *)1;
+    spi_trans[0].flags = 0;
 
     spi_device_transmit(spi_host, &spi_trans[0]);
 }
@@ -95,24 +97,32 @@ void st7789_write_data(uint8_t data)
 void st7789_write_buff(uint8_t *buff, uint32_t n)
 {
     spi_trans[0].length = n * 8;
+    spi_trans[0].rxlength = 0;
     spi_trans[0].tx_buffer = buff;
+    spi_trans[0].rx_buffer = NULL;
     spi_trans[0].user = (void *)1;
+    spi_trans[0].flags = 0;
 
     spi_device_transmit(spi_host, &spi_trans[0]);
 }
 
 void st7789_refresh_gram(uint8_t *gram)
 {
-    spi_trans[0].length = 8,
+    spi_trans[0].length = 8;
+    spi_trans[0].rxlength = 0;
     spi_trans[0].tx_data[0] = ST7789_RAMWR;
+    spi_trans[0].rx_buffer = NULL;
     spi_trans[0].user = (void *)0;
     spi_trans[0].flags = SPI_TRANS_USE_TXDATA;
 
     spi_device_queue_trans(spi_host, &spi_trans[0], portMAX_DELAY);
 
     spi_trans[1].length = ST7789_SCREEN_WIDTH * ST7789_SCREEN_HEIGHT * 2 * 8;
+    spi_trans[1].rxlength = 0;
     spi_trans[1].tx_buffer = gram;
+    spi_trans[1].rx_buffer = NULL;
     spi_trans[1].user = (void *)1;
+    spi_trans[1].flags = 0;
 
     spi_device_queue_trans(spi_host, &spi_trans[1], portMAX_DELAY);
 }
