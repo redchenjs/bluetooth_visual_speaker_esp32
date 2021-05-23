@@ -5,6 +5,8 @@
  *      Author: Jack Chen <redchenjs@live.com>
  */
 
+#include "esp_log.h"
+
 #include "gfx.h"
 
 #if GFX_USE_GDISP && defined(CONFIG_VFX_OUTPUT_CUBE0414)
@@ -46,6 +48,8 @@
 
 #include "CUBE0414.h"
 
+#define TAG "cube0414"
+
 static const uint8_t ram_addr_table[64] = {
 #ifdef CONFIG_LED_SCAN_S_CURVE
     0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x0f,
@@ -79,7 +83,7 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
     // initialise the board interface
     init_board(g);
 
-#ifdef CONFIG_CUBE0414_RTL_REV_3
+#ifndef CONFIG_CUBE0414_RTL_REV_2
     // hardware reset
     setpin_reset(g, 0);
     gfxSleepMilliseconds(120);
@@ -95,11 +99,28 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         write_data(g, CONFIG_LED_CHAN_CNT - 1); // channel count: 0 - 15
 #endif
     write_cmd(g, CUBE0414_ADDR_WR);     //  2: set write ram addr, 64 args, no delay:
+#ifndef CONFIG_CUBE0414_RTL_REV_2
     for (int i = 0; i < 8; i++) {
+#endif
         write_buff(g, (uint8_t *)ram_addr_table, sizeof(ram_addr_table));
+#ifndef CONFIG_CUBE0414_RTL_REV_2
     }
+#endif
     write_cmd(g, CUBE0414_DATA_WR);     //  3: set write ram data, N args, no delay:
         write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 3);
+
+#ifdef CONFIG_CUBE0414_RTL_REV_4
+    uint8_t rtl_revision = 0;
+
+    write_cmd(g, CUBE0414_INFO_RD);     //  4: set read chip info, 0 arg, no delay:
+        read_buff(g, &rtl_revision, 1);
+
+    if (rtl_revision != 0x00 && rtl_revision != 0xff) {
+        ESP_LOGI(TAG, "RTL revision: %d.%d", rtl_revision >> 4, rtl_revision & 0x0f);
+    } else {
+        ESP_LOGE(TAG, "chip not detected.");
+    }
+#endif
 
     /* initialise the GDISP structure */
     g->g.Width  = GDISP_SCREEN_WIDTH;

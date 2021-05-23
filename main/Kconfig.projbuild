@@ -170,13 +170,15 @@ endchoice
 
 choice CUBE0414_RTL_REVISION
     prompt "CUBE0414 RTL Revision"
-    default CUBE0414_RTL_REV_3
+    default CUBE0414_RTL_REV_4
     depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414
 
 config CUBE0414_RTL_REV_2
     bool "Rev 2"
 config CUBE0414_RTL_REV_3
     bool "Rev 3"
+config CUBE0414_RTL_REV_4
+    bool "Rev 4"
 endchoice
 
 choice LCD_ORIENTATION
@@ -261,37 +263,37 @@ config LED_T0H_TIME
     int "LED T0H Time (10 ns)"
     default 40
     range 1 256
-    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && !CUBE0414_RTL_REV_2))
 
 config LED_T0L_TIME
     int "LED T0L Time (10 ns)"
     default 85
     range 1 256
-    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && !CUBE0414_RTL_REV_2))
 
 config LED_T1H_TIME
     int "LED T1H Time (10 ns)"
     default 85
     range 1 256
-    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && !CUBE0414_RTL_REV_2))
 
 config LED_T1L_TIME
     int "LED T1L Time (10 ns)"
     default 40
     range 1 256
-    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3))
+    depends on ENABLE_VFX && (VFX_OUTPUT_WS2812 || (VFX_OUTPUT_CUBE0414 && !CUBE0414_RTL_REV_2))
 
 config LED_CHAN_LEN
     int "LED Channel Length"
     default 64
     range 1 256
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && !CUBE0414_RTL_REV_2
 
 config LED_CHAN_CNT
     int "LED Channel Count"
     default 8
     range 1 16
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && !CUBE0414_RTL_REV_2
 
 config WS2812_DIN0_PIN
     int "WS2812 DIN0 Pin"
@@ -306,7 +308,7 @@ config WS2812_DIN1_PIN
 config CUBE0414_RST_PIN
     int "CUBE0414 RST Pin"
     default 14
-    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_3
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && !CUBE0414_RTL_REV_2
 
 config CUBE0414_DC_PIN
     int "CUBE0414 DC Pin"
@@ -337,6 +339,11 @@ config SPI_MOSI_PIN
     int "SPI MOSI Pin"
     default 18
     depends on ENABLE_VFX && !VFX_OUTPUT_WS2812
+
+config SPI_MISO_PIN
+    int "SPI MISO Pin"
+    default 19
+    depends on ENABLE_VFX && VFX_OUTPUT_CUBE0414 && CUBE0414_RTL_REV_4
 
 config SPI_CS_PIN
     int "SPI CS Pin"
