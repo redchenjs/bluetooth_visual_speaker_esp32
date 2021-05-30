@@ -95,8 +95,8 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         write_data(g, CONFIG_LED_T0L_TIME - 1); // T0L time (10 ns): 0 - 255
         write_data(g, CONFIG_LED_T1H_TIME - 1); // T1H time (10 ns): 0 - 255
         write_data(g, CONFIG_LED_T1L_TIME - 1); // T1L time (10 ns): 0 - 255
-        write_data(g, CONFIG_LED_CHAN_LEN - 1); // channel length: 0 - 255
-        write_data(g, CONFIG_LED_CHAN_CNT - 1); // channel count: 0 - 15
+        write_data(g, CONFIG_LED_CHAN_LEN - 1); // Channel length: 0 - 255
+        write_data(g, CONFIG_LED_CHAN_CNT - 1); // Channel count: 0 - 15
 #endif
     write_cmd(g, CUBE0414_ADDR_WR);     //  2: set write ram addr, 64 args, no delay:
 #ifndef CONFIG_CUBE0414_RTL_REV_2
@@ -110,13 +110,13 @@ LLDSPEC bool_t gdisp_lld_init(GDisplay *g) {
         write_buff(g, (uint8_t *)g->priv, GDISP_SCREEN_WIDTH * GDISP_SCREEN_HEIGHT * 3);
 
 #ifdef CONFIG_CUBE0414_RTL_REV_4
-    uint8_t rtl_revision = 0;
+    uint8_t chip_info[2] = {0};
 
     write_cmd(g, CUBE0414_INFO_RD);     //  4: set read chip info, 0 arg, no delay:
-        read_buff(g, &rtl_revision, 1);
+        read_buff(g, chip_info, 2);
 
-    if (rtl_revision != 0x00 && rtl_revision != 0xff) {
-        ESP_LOGI(TAG, "RTL revision: %d.%d", rtl_revision >> 4, rtl_revision & 0x0f);
+    if (chip_info[1] != 0x00 && chip_info[1] != 0xff) {
+        ESP_LOGI(TAG, "RTL revision: %d.%d", chip_info[1] >> 4, chip_info[1] & 0x0f);
     } else {
         ESP_LOGE(TAG, "chip not detected.");
     }
