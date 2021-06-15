@@ -17,14 +17,14 @@ Bluetooth Visual Speaker based on ESP32 chip.
 ### Obtain the source
 
 ```
-git clone --recursive --shallow-submodules https://github.com/redchenjs/bluetooth_visual_speaker_esp32.git
+git clone --recursive https://github.com/redchenjs/bluetooth_visual_speaker_esp32.git
 ```
 
 ### Update an existing repository
 
 ```
 git pull
-git submodule update --init --recursive --depth 1 --recommend-shallow
+git submodule update --init --recursive
 ```
 
 ### Setup the tools
