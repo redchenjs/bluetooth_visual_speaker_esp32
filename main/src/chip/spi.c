@@ -48,7 +48,7 @@ void spi_host_init(void)
         .clock_speed_hz = SPI_MASTER_FREQ_40M,
         .pre_cb = st7789_setpin_dc,
 #else
-        .clock_speed_hz = SPI_MASTER_FREQ_20M,
+        .clock_speed_hz = SPI_MASTER_FREQ_8M,
         .pre_cb = cube0414_setpin_dc,
 #endif
         .queue_size = 2,
