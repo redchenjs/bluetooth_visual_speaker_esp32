@@ -21,11 +21,11 @@
 #define BLE_APP_TAG "ble_app"
 #define BLE_GAP_TAG "ble_gap"
 
-static uint8_t adv_data_raw[5 + sizeof(CONFIG_BT_NAME)] = {
+static uint8_t adv_data_raw[5 + sizeof(CONFIG_BLE_NAME)] = {
     2,
     ESP_BT_EIR_TYPE_FLAGS,
     ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT,
-    1 + sizeof(CONFIG_BT_NAME),
+    1 + sizeof(CONFIG_BLE_NAME),
     ESP_BLE_AD_TYPE_NAME_CMPL
 };
 
@@ -54,6 +54,10 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
             ESP_LOGE(BLE_GAP_TAG, "failed to stop advertising");
         }
         break;
+    case ESP_GAP_BLE_SET_LOCAL_PRIVACY_COMPLETE_EVT:
+        strcpy((char *)adv_data_raw + 5, CONFIG_BLE_NAME);
+        esp_ble_gap_config_adv_data_raw(adv_data_raw, sizeof(adv_data_raw));
+        break;
     default:
         break;
     }
@@ -68,12 +72,8 @@ void ble_app_init(void)
 {
     xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
-    esp_ble_gap_set_device_name(CONFIG_BT_NAME);
-    esp_ble_gap_set_rand_addr(ble_get_mac_address());
     esp_ble_gap_register_callback(ble_gap_event_handler);
-
-    strcpy((char *)adv_data_raw + 5, CONFIG_BT_NAME);
-    esp_ble_gap_config_adv_data_raw(adv_data_raw, sizeof(adv_data_raw));
+    esp_ble_gap_config_local_privacy(true);
 
     esp_ble_gatts_register_callback(ble_gatts_event_handler);
     esp_ble_gatts_app_register(PROFILE_IDX_OTA);

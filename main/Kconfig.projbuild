@@ -8,6 +8,11 @@ config BT_NAME
 config ENABLE_BLE_CONTROL_IF
     bool "Enable BLE Control Interface"
     default n
+
+config BLE_NAME
+    string "BLE Control Interface Name"
+    default "Bluetooth Visual Speaker BLE"
+    depends on ENABLE_BLE_CONTROL_IF
 endmenu
 
 menu "Audio Configuration"
