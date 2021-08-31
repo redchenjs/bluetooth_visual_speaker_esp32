@@ -12,7 +12,7 @@
 
 enum gatts_profile_idx {
     PROFILE_IDX_OTA = 0x00,
-    PROFILE_IDX_VFX = 0x01,
+    PROFILE_IDX_CFG = 0x01,
 
     PROFILE_IDX_MAX
 };

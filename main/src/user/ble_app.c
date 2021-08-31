@@ -16,11 +16,13 @@
 #include "core/os.h"
 #include "chip/bt.h"
 
+#include "user/ble_app.h"
 #include "user/ble_gatts.h"
 
 #define BLE_APP_TAG "ble_app"
 #define BLE_GAP_TAG "ble_gap"
 
+#ifdef CONFIG_ENABLE_BLE_CONTROL_IF
 static uint8_t adv_data_raw[5 + sizeof(CONFIG_BLE_NAME)] = {
     2,
     ESP_BT_EIR_TYPE_FLAGS,
@@ -54,18 +56,20 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
             ESP_LOGE(BLE_GAP_TAG, "failed to stop advertising");
         }
         break;
-    case ESP_GAP_BLE_SET_LOCAL_PRIVACY_COMPLETE_EVT:
-        strcpy((char *)adv_data_raw + 5, CONFIG_BLE_NAME);
-        esp_ble_gap_config_adv_data_raw(adv_data_raw, sizeof(adv_data_raw));
-        break;
     default:
         break;
     }
 }
 
-esp_ble_adv_params_t *ble_app_get_adv_params(void)
+void *ble_app_get_adv_params(void)
 {
     return &adv_params;
+}
+
+void ble_app_config_adv_data(void)
+{
+    strcpy((char *)adv_data_raw + 5, CONFIG_BLE_NAME);
+    esp_ble_gap_config_adv_data_raw(adv_data_raw, sizeof(adv_data_raw));
 }
 
 void ble_app_init(void)
@@ -73,13 +77,16 @@ void ble_app_init(void)
     xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
     esp_ble_gap_register_callback(ble_gap_event_handler);
-    esp_ble_gap_config_local_privacy(true);
+    esp_ble_gap_set_rand_addr(ble_get_mac_address());
+
+    ble_app_config_adv_data();
 
     esp_ble_gatts_register_callback(ble_gatts_event_handler);
     esp_ble_gatts_app_register(PROFILE_IDX_OTA);
-    esp_ble_gatts_app_register(PROFILE_IDX_VFX);
+    esp_ble_gatts_app_register(PROFILE_IDX_CFG);
 
     esp_ble_gatt_set_local_mtu(ESP_GATT_MAX_MTU_SIZE);
 
     ESP_LOGI(BLE_APP_TAG, "started.");
 }
+#endif
