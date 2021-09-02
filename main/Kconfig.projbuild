@@ -3,7 +3,7 @@ menu "Bluetooth Visual Speaker"
 menu "Bluetooth Configuration"
 config BT_NAME
     string "Bluetooth Name"
-    default "Bluetooth Visual Speaker"
+    default "Bluetooth Speaker"
 
 config ENABLE_BLE_CONTROL_IF
     bool "Enable BLE Control Interface"
@@ -11,7 +11,7 @@ config ENABLE_BLE_CONTROL_IF
 
 config BLE_NAME
     string "BLE Control Interface Name"
-    default "Bluetooth Visual Speaker BLE"
+    default "Bluetooth Speaker BLE"
     depends on ENABLE_BLE_CONTROL_IF
 endmenu
 
