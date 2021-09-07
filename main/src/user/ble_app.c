@@ -56,6 +56,9 @@ static void ble_gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
             ESP_LOGE(BLE_GAP_TAG, "failed to stop advertising");
         }
         break;
+    case ESP_GAP_BLE_SET_LOCAL_PRIVACY_COMPLETE_EVT:
+        ble_app_config_adv_data();
+        break;
     default:
         break;
     }
@@ -77,9 +80,7 @@ void ble_app_init(void)
     xEventGroupSetBits(user_event_group, BLE_GATTS_IDLE_BIT);
 
     esp_ble_gap_register_callback(ble_gap_event_handler);
-    esp_ble_gap_set_rand_addr(ble_get_mac_address());
-
-    ble_app_config_adv_data();
+    esp_ble_gap_config_local_privacy(true);
 
     esp_ble_gatts_register_callback(ble_gatts_event_handler);
     esp_ble_gatts_app_register(PROFILE_IDX_OTA);
